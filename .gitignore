@@ -1,0 +1,7 @@
+.DS_Store
+.env
+sample-data/
+.ipynb_checkpoints/
+*.duckdb
+python-prototype/chroma/
+__pycache__
