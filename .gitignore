@@ -5,3 +5,4 @@ sample-data/
 *.duckdb
 python-prototype/chroma/
 __pycache__
+js/meaningfully/storage
