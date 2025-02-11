@@ -6,7 +6,7 @@ async function main() {
         // path is relative to where the script is run from, not script location
         const storagePath = './storage'
         const manager = new DocumentSetManager(storagePath);
-        const projectName = "test"
+        const projectName = "test2"
         const description = "test description"
         const textColumns = ["case_name"]
         const metadataColumns = ["case_id"]
@@ -27,7 +27,7 @@ async function main() {
             useSploder: true,
             sploderMaxSize: 100,
             vectorStoreType: 'simple',
-            projectName: 'test',
+            projectName: projectName,
             storagePath: storagePath // relative to where the script is run from
           });
         console.log('Embeddings result:', result);
