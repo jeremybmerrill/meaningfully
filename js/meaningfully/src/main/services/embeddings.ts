@@ -5,8 +5,9 @@ import {
   IngestionPipeline,
   TransformComponent,
   TextNode,
+  ModalityType,
   // ChromaVectorStore,
-  // PGVectorStore,
+  PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
 } from "llamaindex";
@@ -18,21 +19,21 @@ import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 
-interface EmbeddingConfig {
+export interface EmbeddingConfig {
   modelName: string;
   useSploder: boolean;
   sploderMaxSize: number;
-  vectorStoreType: "simple"; // # "chroma" | "duckdb" | "postgres" | "weaviate";
+  vectorStoreType: "simple" | "postgres" ; // # "chroma" | "duckdb" | "postgres" | "weaviate";
   projectName: string;
   storagePath: string;
 }
 
 // unused, but probalby eventually will be used.
 // to be used by postgres store, which it' slooking increasingly like I have to enable again
-// const MODEL_DIMENSIONS = {
-//   "text-embedding-3-small": 1536,
-//   "text-embedding-3-large": 3072,
-// };
+const MODEL_DIMENSIONS = {
+  "text-embedding-3-small": 1536,
+  "text-embedding-3-large": 3072,
+};
 
 const PRICE_PER_1M = {
   "text-embedding-3-small": 0.02,
@@ -91,6 +92,25 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
   };
 }
 
+export async function getExistingVectorStoreIndex(config: EmbeddingConfig) {
+  switch (config.vectorStoreType) {
+    case "simple":
+      const persistDir = join(config.storagePath, config.projectName);
+      const storageContext = await storageContextFromDefaults({
+        persistDir: persistDir,
+      });
+      return await VectorStoreIndex.init({
+        storageContext: storageContext,
+      });
+
+      case "postgres":
+      throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
+      // return await createVectorStore(config);
+    default:
+      throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
+  }
+}
+
 export async function embedDocuments(
   documents: Document[],
   config: EmbeddingConfig
@@ -113,12 +133,17 @@ export async function embedDocuments(
 
   const storageContext = await storageContextFromDefaults({
     persistDir: join(config.storagePath, config.projectName),
-    vectorStore //  join(app.getPath('userData'), 'simple_vector_store', config.projectName),
+    vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
 
   // Create index and embed documents
-  const index = await VectorStoreIndex.init({ nodes, storageContext });
-
+  const index = await VectorStoreIndex.init({ 
+    nodes, 
+    storageContext, 
+  });
+  // I'm not sure this why is necessary. 
+  // storageContext should handle this, but it doesn't.
+  await  vectorStore.persist(join(config.storagePath, config.projectName, "vector_store.json"))
   return index;
 }
 
@@ -130,13 +155,12 @@ async function createVectorStore(config: EmbeddingConfig) {
     //     collectionName: config.projectName,
     //   });
 
-    // case "postgres":
-    // not embedded, obviously
-    //   return new PGVectorStore({
-    //     connectionString: process.env.POSTGRES_CONNECTION_STRING,
-    //     tableName: config.projectName,
-    //     dimensions: MODEL_DIMENSIONS[config.modelName],
-    //   });
+    case "postgres":
+      return new PGVectorStore({
+        clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
+        tableName: config.projectName,
+        dimensions: MODEL_DIMENSIONS[config.modelName],
+      });
 
     case "simple":
       return new SimpleVectorStore({

@@ -2,6 +2,13 @@
 /// <reference types="vite/client" />
 
 
+
+interface SearchResult {
+  content: string;
+  similarity: number;
+  [key: string]: any; // For metadata fields
+} 
+
 interface Window {
     electron: {
       ipcRenderer: {
@@ -19,7 +26,13 @@ interface Window {
         description: string,
         textColumns: string[],
         metadataColumns: string[]
-      }) => Promise<{ success: true, setId: number }>
+      }) => Promise<{ success: true, setId: number }>,
+      searchDocumentSet: (params: {
+        documentSetId: number;
+        query: string;
+        filters?: Record<string, string>;
+      }) => Promise<SearchResult[]>;
+  
     }
   }
   

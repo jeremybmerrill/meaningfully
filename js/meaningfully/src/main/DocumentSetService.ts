@@ -8,7 +8,7 @@ export class DocumentService {
   private manager: DocumentSetManager;
 
   constructor() {
-    this.manager = new DocumentSetManager();
+    this.manager = new DocumentSetManager(app.getPath('userData'));
   }
 
   async listDocumentSets() {

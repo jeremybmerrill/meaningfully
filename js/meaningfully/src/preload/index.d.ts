@@ -1,5 +1,39 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import { DocumentSetMetadata } from '../main/DocumentSetManager'
+
+
+// copy pasta from ../main/types/index.tx
+export interface SearchResult {
+  text: string;
+  score: number;
+  metadata: Record<string, any>;
+}
+
+export interface EmbeddingResult {
+  success: boolean;
+  error?: string;
+  index?: any;
+}
+
+export interface PreviewResult {
+  success: boolean;
+  error?: string;
+  nodes?: Array<{
+    text: string;
+    metadata: Record<string, any>;
+  }>;
+  estimatedPrice?: number;
+  tokenCount?: number;
+} 
+
+
+// Define types for our document set metadata
+export interface DocumentSetMetadata {
+  setId: number;
+  name: string;
+  uploadDate: Date;
+  parameters: Record<string, unknown>;
+  totalDocuments: number;
+}
 
 declare global {
   interface Window {
@@ -12,10 +46,12 @@ declare global {
         description: string,
         textColumns: string[],
         metadataColumns: string[]
-      }) => Promise<{ success: true, setId: number }>
-    },
-    api2: {
-      listDocumentSets: () => Promise<DocumentSetMetadata[]>,
+      }) => Promise<{ success: true, setId: number }>,
+      searchDocumentSet: (params: {
+        documentSetId: number;
+        query: string;
+        filters?: Record<string, string>;
+      }) => Promise<SearchResult[]>
     }
   }
 }

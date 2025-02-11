@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { DocumentSet } from '../main';
+  // import { createEventDispatcher } from 'svelte';
+  import { navigate } from 'svelte-routing';
 
+//   const dispatch = createEventDispatcher();
   let documentSets: DocumentSet[] = [];
   let loading = true;
   let error: string | null = null;
@@ -19,6 +22,10 @@
     } finally {
       loading = false;
     }
+  }
+
+  function handleSetSelect(set: DocumentSet) {
+    navigate(`/search/${set.setId}`, { state: { documentSet: set } });
   }
 
   onMount(loadDocumentSets);
@@ -50,7 +57,10 @@
           </thead>
           <tbody>
             {#each documentSets as set}
-              <tr class="border-t">
+              <tr 
+                class="border-t hover:bg-gray-50 cursor-pointer transition-colors" 
+                on:click={() => handleSetSelect(set)}
+              >
                 <td class="px-4 py-2 font-medium">{set.name}</td>
                 <td class="px-4 py-2 text-gray-600">{set.uploadDate.toLocaleString()}</td>
                 <td class="px-4 py-2 text-gray-600">{set.totalDocuments}</td>

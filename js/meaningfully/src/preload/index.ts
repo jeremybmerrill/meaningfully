@@ -20,7 +20,12 @@ contextBridge.exposeInMainWorld('api', {
         path: file.path
       }
     });
-  }
+  },
+  searchDocumentSet: (params: {
+    documentSetId: number;
+    query: string;
+    filters?: Record<string, string>;
+  }) => ipcRenderer.invoke('search-document-set', params)
 })
 
 // Expose electron utilities

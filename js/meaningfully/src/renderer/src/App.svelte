@@ -1,10 +1,9 @@
 <script lang="ts">
-  import ExistingDatabases from './components/ExistingDatabases.svelte'
-  import CsvUpload from './components/CsvUpload.svelte'
-
+  import { Router, Route } from "svelte-routing"; // also Link
+  import SearchPage from './components/SearchPage.svelte'
+  import FrontPage from './components/FrontPage.svelte'
 //  import electronLogo from './assets/electron.svg'
 
-  let databasesComponent: ExistingDatabases
 </script>
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
@@ -15,10 +14,9 @@
 </div>
 <p class="tip">Please try pressing <code>F12</code> to open the devTool</p>
 
-<div class="container mx-auto px-4 space-y-8">
-  <CsvUpload on:upload-complete={() => {
-    // Optionally refresh the ExistingDatabases component loadDocumentSets
-    databasesComponent.loadDocumentSets()
-  }}/>
-  <ExistingDatabases />
-</div>
+<Router>
+  <main class="container mx-auto px-4 py-8">
+    <Route path="/" component={FrontPage} />
+    <Route path="/search/:id" component={SearchPage} />
+  </main>
+</Router>

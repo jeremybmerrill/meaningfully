@@ -4,8 +4,8 @@
   "description": "Semantic search over CSVs`",
   "main": "./out/main/index.js",
   "author": "example.com",
-  "type": "module",
   "homepage": "https://electron-vite.org",
+  "type": "module",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -19,31 +19,26 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
-    "test:embed": "tsx scripts/test-embed.ts"
+    "build:linux": "npm run build && electron-builder --linux"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
-    "@llamaindex/weaviate": "^0.0.2",
     "better-sqlite3": "^11.8.1",
-    "chromadb": "^1.10.4",
     "csv-parse": "^5.5.3",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
-    "llamaindex": "^0.8.32",
+    "llamaindex": "^0.8.36",
     "natural": "^8.0.1",
-    "tsx": "^4.19.2",
-    "weaviate-ts-embedded": "^1.2.0",
-    "zod": "^3.24.1"
+    "svelte-routing": "^2.13.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
     "@electron-toolkit/eslint-config-ts": "^2.0.0",
     "@electron-toolkit/tsconfig": "^1.0.1",
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
-    "@types/natural": "^5.1.5",
     "@types/node": "^20.14.8",
+    "@types/natural": "^5.1.5",
     "electron": "^31.0.2",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
@@ -53,9 +48,9 @@
     "prettier-plugin-svelte": "^3.2.5",
     "svelte": "^4.2.18",
     "svelte-check": "^3.8.2",
-    "ts-node": "^10.9.2",
     "tslib": "^2.6.3",
     "typescript": "^5.7.3",
     "vite": "^5.3.1"
   }
+  
 }

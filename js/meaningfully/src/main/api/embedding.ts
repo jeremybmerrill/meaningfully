@@ -1,7 +1,8 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments } from "../services/embeddings";
+import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex } from "../services/embeddings";
 import type { EmbeddingResult, SearchResult, PreviewResult } from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
+import type { EmbeddingConfig } from "../services/embeddings";
 
 export async function createEmbeddings(
   csvPath: string,
@@ -30,12 +31,16 @@ export async function createEmbeddings(
   }
 }
 
+export async function getIndex(config: EmbeddingConfig) {
+  return await getExistingVectorStoreIndex(config);
+}
+
 export async function search(
   index: any,
   query: string,
   numResults: number = 10
 ): Promise<SearchResult[]> {
-  const results = await searchDocuments(index, query, numResults);
+  const results = await searchDocuments(index, query, numResults); //  (await searchDocuments(index, query, numResults)) as TextNode[];
   return results.map((result) => ({
     text: result.node.getContent(MetadataMode.NONE),
     score: result.score ?? 0, 

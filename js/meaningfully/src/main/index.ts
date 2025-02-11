@@ -18,7 +18,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.mjs'), // was index.js, but this caused it to note work. maybe related to package.json's type: module
       sandbox: false
     }
   })
