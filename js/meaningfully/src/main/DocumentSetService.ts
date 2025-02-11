@@ -1,6 +1,6 @@
 import { DocumentSetManager } from './DocumentSetManager';
 import { loadDocumentsFromCsv } from './services/csvLoader';
-import { createEmbeddings } from './api/embedding';
+import { createEmbeddings, getIndex, search } from './api/embedding';
 import { app } from 'electron';
 import { join } from 'path';
 
@@ -73,4 +73,22 @@ export class DocumentService {
       throw error;
     }
   }
+
+
+  async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10) {
+    const documentSet = await this.manager.getDocumentSet(documentSetId);
+    if (!documentSet) {
+      throw new Error('Document set not found');
+    } 
+    const index = await getIndex({
+      modelName: 'text-embedding-3-small',
+      useSploder: true,
+      sploderMaxSize: 100,
+      vectorStoreType: 'simple',
+      projectName: documentSet.name,
+      storagePath: join(app.getPath('userData'), 'simple_vector_store'),
+    });
+    const results = await search(index, query, n_results);
+    return results;
+  }   
 }

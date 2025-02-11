@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('api', {
   searchDocumentSet: (params: {
     documentSetId: number;
     query: string;
+    n_results: number;
     filters?: Record<string, string>;
   }) => ipcRenderer.invoke('search-document-set', params)
 })

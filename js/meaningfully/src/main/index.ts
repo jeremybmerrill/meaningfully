@@ -56,7 +56,6 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
   //ipc stuff could go in its own file.
   ipcMain.handle('list-document-sets', async () => {
     try {
@@ -64,6 +63,15 @@ app.whenReady().then(() => {
     } catch (error) {
       console.error('Error listing document sets:', error);
       throw error;
+    }
+  });
+
+  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number}) => {
+    try {
+      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results);
+    } catch (error) {
+      console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results);
+      throw error;  
     }
   });
 

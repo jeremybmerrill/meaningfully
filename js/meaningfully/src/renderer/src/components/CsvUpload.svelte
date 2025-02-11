@@ -26,6 +26,7 @@
     Papa.parse(file, {
       complete: async (results) => {
         parsedData = results.data;
+        console.log("parsedData", parsedData);
         availableColumns = results.meta.fields || [];
         selectedTextColumn = '';
         selectedMetadataColumns = [];
@@ -147,12 +148,17 @@
           {/each}
         </div>
       </div>
-
-      <Preview
-        data={parsedData}
-        textColumn={selectedTextColumn}
-        metadataColumns={selectedMetadataColumns}
-      />
+      {#key parsedData}
+        {#key selectedTextColumn}
+          {#key selectedMetadataColumns}
+          <Preview
+            data={parsedData}
+            textColumn={selectedTextColumn}
+            metadataColumns={selectedMetadataColumns}
+          />
+          {/key}
+        {/key}
+      {/key}
 
       <button
         on:click={handleUpload}

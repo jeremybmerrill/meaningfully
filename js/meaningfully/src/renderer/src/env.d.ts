@@ -30,6 +30,7 @@ interface Window {
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;
+        n_results: number;
         filters?: Record<string, string>;
       }) => Promise<SearchResult[]>;
   

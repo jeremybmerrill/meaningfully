@@ -4,8 +4,9 @@
   export let metadataColumns: string[] = [];
   export let showSimilarity: boolean = false;
   
-  // Combine all columns in display order: metadata, text, similarity
-  $: columns = [...metadataColumns, textColumn, ...(showSimilarity ? ['similarity'] : [])];
+  // Combine all columns in display order: metadata, similarity
+  // text column is always called text internally, but we rename just the header.
+  $: columns = [textColumn, ...metadataColumns, ...(showSimilarity ? ['similarity'] : [])];
 </script>
 
 <div class="w-full overflow-x-auto">
@@ -25,7 +26,7 @@
               {#if column === 'similarity' && row[column] !== undefined}
                 {(row[column] * 100).toFixed(1)}%
               {:else}
-                {row[column] || ''}
+                {(row[column]) || ''}
               {/if}
             </td>
           {/each}

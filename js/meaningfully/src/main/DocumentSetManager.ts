@@ -42,11 +42,13 @@ export class DocumentSetManager {
   }
 
   async getDocumentSet(setId: number): Promise<DocumentSetMetadata | null> {
+    console.log("getDocumentSet arg", setId);
     const stmt = this.sqliteDb.prepare(`
       SELECT * FROM document_sets WHERE set_id = ?
     `);
     
     const row = stmt.get(setId);
+    console.log("getDocumentSet return", row);
     if (!row) return null;
 
     return {

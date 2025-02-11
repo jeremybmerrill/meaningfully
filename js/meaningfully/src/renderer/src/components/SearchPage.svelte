@@ -4,7 +4,9 @@
   import Results from './Results.svelte';
 
   export let documentSet: DocumentSet = history.state?.documentSet;
-  
+
+  let metadataColumns: string[] = (documentSet.parameters.metadataColumns ?? []) as string[];
+  let textColumn: string = documentSet.parameters.textColumn as string;
   let searchQuery = '';
   let metadataFilters: Record<string, string> = {};
   let results: Array<Record<string, any>> = [];
@@ -19,12 +21,14 @@
       const searchResults = await window.api.searchDocumentSet({
         documentSetId: documentSet.setId,
         query: searchQuery,
-        filters: metadataFilters
+        n_results: 10, // selector not yet implemented
+        filters: metadataFilters // not yet implemented
       });
-      
+      console.log("searchResults", searchResults);
       results = searchResults.map(result => ({
-        ...result,
-        similarity: result.similarity.toFixed(2)
+        ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
+        similarity: result.score.toFixed(2),
+        [textColumn]: result.text
       }));
     } catch (error) {
       console.error('Search failed:', error);
@@ -80,12 +84,13 @@
     </div>
 
     <!-- Metadata Filters -->
+    {#if metadataColumns}  
     <div class="space-y-2">
       <p class="block text-sm font-medium text-gray-700">
         Metadata Filters
       </p>
       <div class="grid grid-cols-2 gap-4">
-        {#each Object.keys(documentSet.parameters) as field}
+        {#each metadataColumns as field}
           <div>
             <label class="block text-sm text-gray-600" for={field}>
               {field}
@@ -101,6 +106,8 @@
         {/each}
       </div>
     </div>
+    <!-- keyword filters TK -->
+    {/if}
   </div>
 
   <!-- Results -->
@@ -108,6 +115,6 @@
     {results}
     {loading}
     textColumn="content"
-    metadataColumns={Object.keys(documentSet.parameters)}
+    metadataColumns={metadataColumns}
   />
 </div> 

@@ -4,12 +4,15 @@
   export let data: Array<Record<string, any>> = [];
   export let textColumn: string;
   export let metadataColumns: string[] = [];
-  
+  console.log("Preview data", data);
   // Take 10 rows from the middle of the dataset for preview
-  $: previewData = data.slice(
+  const previewData = data.slice(
     Math.floor(data.length / 2),
     Math.floor(data.length / 2) + 10
   );
+  console.log("previewData", previewData);
+  console.log("textColumn", textColumn);
+  console.log("metadataColumns", metadataColumns);
 </script>
 
 <div class="space-y-4">
