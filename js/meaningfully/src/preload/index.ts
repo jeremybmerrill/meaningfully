@@ -9,11 +9,39 @@ contextBridge.exposeInMainWorld('api', {
     datasetName: string,
     description: string,
     textColumns: string[],
-    metadataColumns: string[]
+    metadataColumns: string[],
+    useSploder: boolean,
+    sploderMaxSize: number, 
+    chunkSize: number,
+    chunkOverlap: number,
   }) => {
     // Convert File object to a format that can be sent over IPC
     const { file, ...rest } = formData;
     return ipcRenderer.invoke('upload-csv', {
+      ...rest,
+      file: {
+        name: file.name,
+        path: file.path
+      }
+    });
+  },
+  // generatePreviewData and uploadCsv
+  // should have exactly the same argument signatures, etc.
+  // but different return types (because uploadCsv mutates the state of the
+  // various databases returning an ID and generatePreviewData just returns a list of records)
+  generatePreviewData: (formData: {
+    file: File,
+    datasetName: string,
+    description: string,
+    textColumns: string[],
+    metadataColumns: string[],
+    useSploder: boolean,
+    sploderMaxSize: number, 
+    chunkSize: number,
+    chunkOverlap: number,
+  }) => {
+    const { file, ...rest } = formData;
+    return ipcRenderer.invoke('generate-preview-data', {
       ...rest,
       file: {
         name: file.name,

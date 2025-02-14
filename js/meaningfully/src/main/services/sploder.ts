@@ -1,15 +1,18 @@
-import { TextNode } from "llamaindex";
+import { TextNode, BaseNode, TransformComponent } from "llamaindex";
 import { encodingForModel } from "js-tiktoken";
 
 interface SploderConfig {
   maxStringTokenCount: number;
 }
 
-export class Sploder {
+export class Sploder extends TransformComponent {
   private maxTokenCount: number;
   private tokenizer: any; // js-tiktoken encoder
 
+  // TODO: this is a hack to get the tokenizer for the embedding model
+  // TODO: this should be a singleton
   constructor(config: SploderConfig) {
+    super(async (nodes: BaseNode[]) => nodes); // no-op, to be replaced later
     this.maxTokenCount = config.maxStringTokenCount;
     this.tokenizer = encodingForModel("text-embedding-3-small");
   }
@@ -18,7 +21,7 @@ export class Sploder {
     return this.tokenizer.encode(text).length;
   }
 
-  transform(nodes: TextNode[]): TextNode[] {
+  async transform(nodes: TextNode[]): Promise<TextNode[]> {
     const newNodes: TextNode[] = [];
 
     nodes.forEach((node, index) => {

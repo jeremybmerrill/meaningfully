@@ -80,7 +80,11 @@ app.whenReady().then(() => {
     datasetName: string,
     description: string,
     textColumns: string[],
-    metadataColumns: string[]
+    metadataColumns: string[],
+    useSploder: boolean,
+    sploderMaxSize: number,
+    chunkSize: number,
+    chunkOverlap: number
   }) => {
     try {
       // For files from renderer, we need to handle the Buffer data
@@ -96,8 +100,31 @@ app.whenReady().then(() => {
     }
   });
 
-  createWindow()
+  ipcMain.handle('generate-preview-data', async (_, formData: {
+    file: { path: string, name: string },
+    datasetName: string,
+    description: string,
+    textColumns: string[],
+    metadataColumns: string[],
+    useSploder: boolean,
+    sploderMaxSize: number,
+    chunkSize: number,
+    chunkOverlap: number
+  }) => {
+    try {
+      const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)
+      await writeFileSync(tempPath, readFileSync(formData.file.path))
+      return await docService.generatePreviewData({
+        ...formData,
+        filePath: tempPath
+      });
 
+    } catch (error) {
+      console.error('Error generating preview data:', error);
+      throw error;
+    }
+  });
+  createWindow()
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

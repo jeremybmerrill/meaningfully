@@ -6,7 +6,7 @@
   export let documentSet: DocumentSet = history.state?.documentSet;
 
   let metadataColumns: string[] = (documentSet.parameters.metadataColumns ?? []) as string[];
-  let textColumn: string = documentSet.parameters.textColumn as string;
+  let textColumn: string = documentSet.parameters.textColumns[0] as string;
   let searchQuery = '';
   let metadataFilters: Record<string, string> = {};
   let results: Array<Record<string, any>> = [];
@@ -21,15 +21,17 @@
       const searchResults = await window.api.searchDocumentSet({
         documentSetId: documentSet.setId,
         query: searchQuery,
-        n_results: 10, // selector not yet implemented
+        n_results: 100, // selector not yet implemented
         filters: metadataFilters // not yet implemented
       });
+      console.log("textColumn", textColumn)
       console.log("searchResults", searchResults);
-      results = searchResults.map(result => ({
+      results = searchResults.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
         ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
         similarity: result.score.toFixed(2),
         [textColumn]: result.text
-      }));
+      })); 
+      console.log("results", results);
     } catch (error) {
       console.error('Search failed:', error);
       // You might want to show an error message to the user
@@ -114,7 +116,7 @@
   <Results
     {results}
     {loading}
-    textColumn="content"
-    metadataColumns={metadataColumns}
+    {textColumn}
+    {metadataColumns}
   />
 </div> 

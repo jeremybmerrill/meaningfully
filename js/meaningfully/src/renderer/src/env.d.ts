@@ -25,8 +25,23 @@ interface Window {
         datasetName: string,
         description: string,
         textColumns: string[],
-        metadataColumns: string[]
+        metadataColumns: string[],
+        useSploder: boolean,
+        sploderMaxSize: number,
+        chunkSize: number,
+        chunkOverlap: number,
       }) => Promise<{ success: true, setId: number }>,
+      generatePreviewData: (formData: {
+        file: File,
+        datasetName: string, // not really needed
+        description: string, // not really needed
+        textColumns: string[],
+        metadataColumns: string[],
+        useSploder: boolean,
+        sploderMaxSize: number,
+        chunkSize: number,
+        chunkOverlap: number,
+      }) => Promise<{ success: true, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;

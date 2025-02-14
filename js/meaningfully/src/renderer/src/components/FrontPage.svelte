@@ -7,10 +7,10 @@
 
 
 <div class="container mx-auto px-4 space-y-8">
-    <CsvUpload on:upload-complete={() => {
-      // Optionally refresh the ExistingDatabases component loadDocumentSets
-      databasesComponent.loadDocumentSets()
+    <CsvUpload on:file-selected={() => {databasesComponent.hide()}} on:upload-complete={() => {
+      databasesComponent.loadDocumentSets(); 
+      databasesComponent.show();
     }}/>
-    <ExistingDatabases />
-  </div>
+    <ExistingDatabases bind:this={databasesComponent}/>
+</div>
   

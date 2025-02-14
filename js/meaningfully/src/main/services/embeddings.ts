@@ -8,12 +8,13 @@ import {
   ModalityType,
   // ChromaVectorStore,
   PGVectorStore,
+  // SentenceSplitter,
   storageContextFromDefaults,
   SimpleVectorStore,
 } from "llamaindex";
 // import { WeaviateVectorStore } from "@llamaindex/weaviate";
 // import weaviate, { EmbeddedOptions } from 'weaviate-ts-embedded';
-// import { Sploder } from "./sploder";
+import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
@@ -21,11 +22,13 @@ import { join } from "path";
 
 export interface EmbeddingConfig {
   modelName: string;
-  useSploder: boolean;
-  sploderMaxSize: number;
   vectorStoreType: "simple" | "postgres" ; // # "chroma" | "duckdb" | "postgres" | "weaviate";
   projectName: string;
   storagePath: string;
+  useSploder: boolean;
+  sploderMaxSize: number;
+  chunkSize: number;
+  chunkOverlap: number;
 }
 
 // unused, but probalby eventually will be used.
@@ -40,18 +43,22 @@ const PRICE_PER_1M = {
   "text-embedding-3-large": 0.13
 };
 
-function getPreviewTransformations(config: EmbeddingConfig){
+function sanitizeProjectName(projectName: string) {
+  return projectName.replace(/[^a-zA-Z0-9]/g, "_");
+}
+
+/* all transformations except the embedding step (which costs money) */
+function getBaseTransformations(config: EmbeddingConfig){
   const transformations: TransformComponent[] = [
-    new CustomSentenceSplitter({ chunkSize: 1024, chunkOverlap: 20 }),
+    new CustomSentenceSplitter({ chunkSize: config.chunkSize, chunkOverlap: config.chunkOverlap }),
   ];
 
   if (config.useSploder) {
-    // TODO: fix this
-    // transformations.push(
-    //   new Sploder({
-    //     maxStringTokenCount: config.sploderMaxSize
-    //   })
-    // );
+    transformations.push(
+      new Sploder({
+        maxStringTokenCount: config.sploderMaxSize
+      })
+    );
   }
 
   return transformations;
@@ -70,7 +77,7 @@ export async function createPreviewNodes(
   config: EmbeddingConfig
 ): Promise<TextNode[]> {
 
-  const transformations = getPreviewTransformations(config);
+  const transformations = getBaseTransformations(config);
   return transformDocuments(documents, transformations);
 }
 
@@ -95,7 +102,7 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
 export async function getExistingVectorStoreIndex(config: EmbeddingConfig) {
   switch (config.vectorStoreType) {
     case "simple":
-      const persistDir = join(config.storagePath, config.projectName);
+      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
       const storageContext = await storageContextFromDefaults({
         persistDir: persistDir,
       });
@@ -111,6 +118,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig) {
   }
 }
 
+// TODO: rename this to be parallel to createPreviewNodes
 export async function embedDocuments(
   documents: Document[],
   config: EmbeddingConfig
@@ -121,18 +129,20 @@ export async function embedDocuments(
 
   // use the same transformations as previewNodes
   // but with the actual embedding step added
-  // TODO: make this a method parallel to getPreviewNodes()
-  const transformations = getPreviewTransformations(config);
+  const transformations = getBaseTransformations(config);
   transformations.push(embedModel)
 
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
+  return nodes;
+}
 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
   const vectorStore = await createVectorStore(config);
 
   const storageContext = await storageContextFromDefaults({
-    persistDir: join(config.storagePath, config.projectName),
+    persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
     vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
 
@@ -143,7 +153,7 @@ export async function embedDocuments(
   });
   // I'm not sure this why is necessary. 
   // storageContext should handle this, but it doesn't.
-  await  vectorStore.persist(join(config.storagePath, config.projectName, "vector_store.json"))
+  await  vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"))
   return index;
 }
 
@@ -158,7 +168,7 @@ async function createVectorStore(config: EmbeddingConfig) {
     case "postgres":
       return new PGVectorStore({
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
-        tableName: config.projectName,
+        tableName: sanitizeProjectName(config.projectName),
         dimensions: MODEL_DIMENSIONS[config.modelName],
       });
 

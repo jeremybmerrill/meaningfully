@@ -8,21 +8,36 @@
   let files: FileList;
   let uploading = false;
   let error = '';
-  let parsedData: Array<Record<string, any>> = [];
+  let parsedData: Array<Record<string, any>> = []; // parsed 'raw' CSV
   let availableColumns: string[] = [];
   let selectedTextColumn = '';
   let selectedMetadataColumns: string[] = [];
-  let showPreview = false;
+  let showPreview = false; // don't show a preview until the user has selected a text column and a file.
+  let generatingPreview = false; // loading state for the preview data.
   let datasetName = '';
+  let chunkSize = 100;
+  let chunkOverlap = 20;
+
+  let previewData: Array<Record<string, any>> = []; // processed data from 'backend'
+  let costEstimate: number;
+  let tokenCount: number;
+
+  $: {
+    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize || chunkOverlap) {
+      generatePreview();
+    }
+  }
 
   const handleFileSelect = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
+    dispatch('file-selected');
 
     const file = input.files[0];
     showPreview = false;
     datasetName = file.name.replace(/\.csv$/, '');
     
+    // only necessary to get the column names.
     Papa.parse(file, {
       complete: async (results) => {
         parsedData = results.data;
@@ -34,11 +49,67 @@
       },
       header: true
     });
+    files = input.files;
+  };
+
+  const generatePreview = async () => {
+    if (!selectedTextColumn) {
+      error = 'Please select a text column';
+      return;
+    }
+    if (!files?.[0]) {
+      error = 'Please select a file';
+      return;
+    }
+
+    try {
+      uploading = true;
+      generatingPreview = true;
+      error = '';
+      
+      const response = await window.api.generatePreviewData({
+        file: files[0],
+        datasetName,
+        description: 'TK',
+        textColumns: [selectedTextColumn],
+        metadataColumns: selectedMetadataColumns,
+        useSploder: true,
+        sploderMaxSize: 100,
+        chunkSize,
+        chunkOverlap
+      });
+
+      if (response.success) {
+        console.log("response", response);
+        costEstimate = response.estimatedPrice; // TODO rename to costEstimate
+        tokenCount = response.tokenCount;
+        previewData = response.nodes.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
+          ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
+          [selectedTextColumn]: result.text
+        })); 
+
+        console.log("previewData", previewData);
+        showPreview = true;
+        generatingPreview = false;
+      } else {
+        console.log("response", response);
+        error =  'Upload failed';
+        generatingPreview = false;
+      }
+    } catch (e) {
+      error = e.message;
+    } finally {
+      uploading = false;
+    }
   };
 
   const handleUpload = async () => {
-    if (!selectedTextColumn || !files?.[0]) {
+    if (!selectedTextColumn) {
       error = 'Please select a text column';
+      return;
+    }
+    if (!files?.[0]) {
+      error = 'Please select a file';
       return;
     }
 
@@ -51,7 +122,11 @@
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns
+        metadataColumns: selectedMetadataColumns,
+        useSploder: true,
+        sploderMaxSize: 100,
+        chunkSize,
+        chunkOverlap
       });
 
       if (response.success) {
@@ -81,8 +156,8 @@
   };
 </script>
 
-<div class="bg-white p-6 rounded-lg shadow space-y-6">
-  <h2 class="text-xl font-semibold">Upload New Dataset</h2>
+<div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+  <h2 class="text-xl font-semibold">Upload New Spreadsheet</h2>
   
   <label class="block">
     <span class="sr-only">Choose CSV file</span>
@@ -129,9 +204,9 @@
       </div>
 
       <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">
-          Select Metadata Columns:
-        </label>
+        <p class="block text-sm font-medium text-gray-700">
+          Which metadata columns should be shown in results and available for filtering?
+        </p>
         <div class="flex flex-wrap gap-2">
           {#each availableColumns as column}
             <label class="inline-flex items-center">
@@ -148,11 +223,51 @@
           {/each}
         </div>
       </div>
-      {#key parsedData}
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">
+          Chunk Size (in tokens):
+          <input
+            type="number"
+            bind:value={chunkSize}
+            min="1"
+            max="8192"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+          />
+        </label>
+        <p class="text-xs text-gray-500">
+          <strong>Sentence length</strong>Split documents into chunks of this size. 
+        </p>
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">
+          Chunk Overlap (in tokens):
+          <input
+            type="number" 
+            bind:value={chunkOverlap}
+            min="0"
+            max="8192"
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+          />
+        </label>  
+        <p class="text-xs text-gray-500">
+          Overlap between chunks.
+        </p>
+      </div>
+      {#key costEstimate}
+        {#key tokenCount}
+          {#if tokenCount > 0 && costEstimate > 0}
+            <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens </p>
+            <p>Disclaimer TK; price and model name TK</p>
+          {/if}
+        {/key}
+      {/key}
+      
+      {#key previewData}
         {#key selectedTextColumn}
           {#key selectedMetadataColumns}
           <Preview
-            data={parsedData}
+            loading={generatingPreview}
+            previewData={previewData}
             textColumn={selectedTextColumn}
             metadataColumns={selectedMetadataColumns}
           />

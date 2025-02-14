@@ -5,27 +5,46 @@
   export let textColumn: string;
   export let metadataColumns: string[] = [];
   export let loading = false;
+
+  // Initial number of results to display
+  const initialDisplayCount = 10;
+  let displayCount = initialDisplayCount;
+
+  // Function to load more results
+  const showMore = () => {
+    displayCount += 10;
+  };
+
+  // Computed property for visible results
+  $: visibleResults = results.slice(0, displayCount);
 </script>
 
 <div class="space-y-4">
   <h2 class="text-xl font-semibold">Search Results</h2>
   
   {#if loading}
-    <div class="flex justify-center p-8">
-      <div class="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
-    </div>
+    // ... existing code ...
   {:else if results.length === 0}
-    <div class="p-4 bg-gray-50 text-gray-600 rounded-lg text-center">
-      No results found
-    </div>
+    // ... existing code ...
   {:else}
-    <div class="bg-white rounded-lg shadow">
+    <div class="bg-white rounded-lg shadow text-black">
       <Table
-        data={results}
+        data={visibleResults}
         {textColumn}
         {metadataColumns}
         showSimilarity={true}
       />
     </div>
+    
+    {#if displayCount < results.length}
+      <div class="flex justify-center mt-4">
+        <button
+          on:click={showMore}
+          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Show More
+        </button>
+      </div>
+    {/if}
   {/if}
-</div> 
+</div>

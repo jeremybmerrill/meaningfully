@@ -17,7 +17,7 @@ export class DocumentSetManager {
     this.sqliteDb.exec(`
       CREATE TABLE IF NOT EXISTS document_sets (
         set_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         upload_date TEXT NOT NULL,
         parameters TEXT NOT NULL,
         total_documents INTEGER NOT NULL DEFAULT 0
