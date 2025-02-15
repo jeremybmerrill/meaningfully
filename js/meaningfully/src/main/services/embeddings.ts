@@ -6,23 +6,20 @@ import {
   TransformComponent,
   TextNode,
   ModalityType,
-  // ChromaVectorStore,
   PGVectorStore,
-  // SentenceSplitter,
   storageContextFromDefaults,
   SimpleVectorStore,
 } from "llamaindex";
-// import { WeaviateVectorStore } from "@llamaindex/weaviate";
-// import weaviate, { EmbeddedOptions } from 'weaviate-ts-embedded';
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
+// import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
 
 export interface EmbeddingConfig {
   modelName: string;
-  vectorStoreType: "simple" | "postgres" ; // # "chroma" | "duckdb" | "postgres" | "weaviate";
+  vectorStoreType: "simple" | "postgres" ;
   projectName: string;
   storagePath: string;
   useSploder: boolean;
@@ -131,6 +128,12 @@ export async function embedDocuments(
   // but with the actual embedding step added
   const transformations = getBaseTransformations(config);
   transformations.push(embedModel)
+
+  // llama-index stupidly includes all the metadata in the embedding, which is a waste of tokens
+  // so we exclude everything except the text column from the embedding
+  for (const document of documents) {
+    document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
+  }
 
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);

@@ -50,7 +50,6 @@ export async function previewResults(
   }
 ): Promise<PreviewResult> {
   try {
-    console.log("previewResults", config);
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
 
     // Take 10 rows from the middle of the dataset for preview

@@ -23,9 +23,13 @@
   <h2 class="text-xl font-semibold">Search Results</h2>
   
   {#if loading}
-    // ... existing code ...
+  <div class="flex justify-center items-center h-full">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
+  </div>
   {:else if results.length === 0}
-    // ... existing code ...
+    <div class="bg-white rounded-lg shadow text-black">
+      <p>No results found. Is it possible there is no data in the dataset?</p>
+    </div>
   {:else}
     <div class="bg-white rounded-lg shadow text-black">
       <Table
