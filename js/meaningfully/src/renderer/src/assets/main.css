@@ -64,6 +64,8 @@ code {
   margin: 0 10px;
   padding: 16px 0;
 }
+h1 { font-size: var(--text-2xl);  } 
+h2 { font-size: var(--text-xl);  }
 
 .tip {
   font-size: 16px;

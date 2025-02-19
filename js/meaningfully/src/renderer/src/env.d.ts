@@ -30,6 +30,8 @@ interface Window {
         sploderMaxSize: number,
         chunkSize: number,
         chunkOverlap: number,
+        modelName: string,
+        modelProvider: string
       }) => Promise<{ success: true, setId: number }>,
       generatePreviewData: (formData: {
         file: File,
@@ -41,6 +43,8 @@ interface Window {
         sploderMaxSize: number,
         chunkSize: number,
         chunkOverlap: number,
+        modelName: string,
+        modelProvider: string
       }) => Promise<{ success: true, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;

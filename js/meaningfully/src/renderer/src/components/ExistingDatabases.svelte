@@ -72,7 +72,7 @@
                   <Link 
                     to={`/search/${set.setId}`} 
                     state={{ documentSet: set }}
-                    class="block w-full"
+                    class="block w-full underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
                   >
                     {set.name}
                   </Link>

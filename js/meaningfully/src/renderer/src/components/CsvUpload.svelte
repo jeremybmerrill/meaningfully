@@ -15,15 +15,20 @@
   let showPreview = false; // don't show a preview until the user has selected a text column and a file.
   let generatingPreview = false; // loading state for the preview data.
   let datasetName = '';
-  let chunkSize = 100;
-  let chunkOverlap = 20;
+  const defaultChunkSize = 100
+  const defaultChunkOverlap = 20;
+  let chunkSize = defaultChunkSize;
+  let chunkOverlap = defaultChunkOverlap;
+//  const availableModelNames = ["text-embedding-3-small"] // TODO: add Llama support
+  let modelName = "text-embedding-3-small"; // TODO: make configurable
+  let modelProvider = "openai"; // TODO: make configurable
 
   let previewData: Array<Record<string, any>> = []; // processed data from 'backend'
   let costEstimate: number;
   let tokenCount: number;
 
   $: {
-    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize || chunkOverlap) {
+    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
       generatePreview();
     }
   }
@@ -53,15 +58,15 @@
   };
 
   const generatePreview = async () => {
-    if (!selectedTextColumn) {
-      error = 'Please select a text column';
-      return;
-    }
+
     if (!files?.[0]) {
       error = 'Please select a file';
       return;
     }
-
+    if (!selectedTextColumn) {
+      error = 'Please select a text column';
+      return;
+    }
     try {
       uploading = true;
       generatingPreview = true;
@@ -75,6 +80,8 @@
         metadataColumns: selectedMetadataColumns,
         useSploder: true,
         sploderMaxSize: 100,
+        modelName,
+        modelProvider,
         chunkSize,
         chunkOverlap
       });
@@ -104,12 +111,12 @@
   };
 
   const handleUpload = async () => {
-    if (!selectedTextColumn) {
-      error = 'Please select a text column';
-      return;
-    }
     if (!files?.[0]) {
       error = 'Please select a file';
+      return;
+    }
+    if (!selectedTextColumn) {
+      error = 'Please select a text column';
       return;
     }
 
@@ -126,7 +133,9 @@
         useSploder: true,
         sploderMaxSize: 100,
         chunkSize,
-        chunkOverlap
+        chunkOverlap,
+        modelName,
+        modelProvider
       });
 
       if (response.success) {
@@ -282,6 +291,9 @@
       >
         {uploading ? 'Uploading...' : 'Upload Dataset'}
       </button>
+      {#if uploading }
+        <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
+      {/if }
     </div>
   {/if}
 

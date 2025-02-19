@@ -84,7 +84,9 @@ app.whenReady().then(() => {
     useSploder: boolean,
     sploderMaxSize: number,
     chunkSize: number,
-    chunkOverlap: number
+    chunkOverlap: number,
+    modelName, string,
+    modelProvider: string
   }) => {
     try {
       // For files from renderer, we need to handle the Buffer data
@@ -109,7 +111,9 @@ app.whenReady().then(() => {
     useSploder: boolean,
     sploderMaxSize: number,
     chunkSize: number,
-    chunkOverlap: number
+    chunkOverlap: number,
+    modelName: string,
+    modelProvider: string
   }) => {
     try {
       const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)

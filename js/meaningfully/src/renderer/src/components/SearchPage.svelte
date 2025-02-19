@@ -7,8 +7,10 @@
 
   let metadataColumns: string[] = (documentSet.parameters.metadataColumns ?? []) as string[];
   let textColumn: string = documentSet.parameters.textColumns[0] as string;
-  let searchQuery = '';
-  let metadataFilters: Record<string, string> = {};
+  const blankSearchQuery = '';
+  let searchQuery = blankSearchQuery
+  const emptyMetadataFilters: Record<string, string>  = {};
+  let metadataFilters: Record<string, string> = emptyMetadataFilters;
   let results: Array<Record<string, any>> = [];
   let loading = false;
 
@@ -24,14 +26,11 @@
         n_results: 100, // selector not yet implemented
         filters: metadataFilters // not yet implemented
       });
-      console.log("textColumn", textColumn)
-      console.log("searchResults", searchResults);
       results = searchResults.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
         ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
         similarity: result.score.toFixed(2),
         [textColumn]: result.text
       })); 
-      console.log("results", results);
     } catch (error) {
       console.error('Search failed:', error);
       // You might want to show an error message to the user
@@ -113,10 +112,12 @@
   </div>
 
   <!-- Results -->
-  <Results
-    {results}
-    {loading}
-    {textColumn}
-    {metadataColumns}
-  />
+   {#if searchQuery != blankSearchQuery || metadataFilters != emptyMetadataFilters}
+    <Results
+      {results}
+      {loading}
+      {textColumn}
+      {metadataColumns}
+    />
+  {/if}
 </div> 

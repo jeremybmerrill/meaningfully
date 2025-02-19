@@ -52,6 +52,12 @@
             Eventually, some Meaningfully features may require payment.
         </p>
     </section>
+    <section>
+        <h2>How can I support development of Meaningfully??</h2>
+        <p>
+            You can <a href="https://buymeacoffee.com/jeremybmerrill">Buy Me A Coffee</a>.
+        </p>
 
+    </section>
 </div>
   

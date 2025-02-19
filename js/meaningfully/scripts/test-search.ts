@@ -18,7 +18,9 @@ async function main() {
             sploderMaxSize: 100,
             vectorStoreType: 'simple',
             projectName: projectName,
-            storagePath: storagePath // relative to where the script is run from
+            storagePath: storagePath, // relative to where the script is run from
+            chunkSize: 100,
+            chunkOverlap: 20
         })
         const results = await search(index, "someone's FB page", 10);
         console.log('results:', results);

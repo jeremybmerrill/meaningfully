@@ -9,10 +9,12 @@
 </script>
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
-<h1>Meaningfully</h1>
-<div class="text">
+<h1 class="text">
+  Meaningfully
+</h1>
+<h2 class="text">
   Semantic search for your spreadsheets
-</div>
+</h2>
 
 <Router>
   <main class="container mx-auto px-4 py-8">

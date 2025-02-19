@@ -36,11 +36,13 @@ export class DocumentService {
     useSploder: boolean,
     sploderMaxSize: number,
     chunkSize: number,
-    chunkOverlap: number
+    chunkOverlap: number,
+    modelName: string,
+    modelProvider: string
   }) {
     try {
       return await previewResults(data.filePath, data.textColumns[0], {
-        modelName: "text-embedding-3-small",
+        modelName: data.modelName, // needed to tokenize, estimate costs
         useSploder: true,
         sploderMaxSize: 100,
         vectorStoreType: "simple",
@@ -63,7 +65,9 @@ export class DocumentService {
     useSploder: boolean,
     sploderMaxSize: number,
     chunkSize: number,
-    chunkOverlap: number
+    chunkOverlap: number,
+    modelName: string,
+    modelProvider: string
   }) {
     // First create the document set record
     const setId = await this.manager.addDocumentSet({
@@ -72,7 +76,13 @@ export class DocumentService {
       parameters: {
         description: data.description,
         textColumns: data.textColumns,
-        metadataColumns: data.metadataColumns
+        metadataColumns: data.metadataColumns,
+        useSploder: data.useSploder,
+        sploderMaxSize: data.sploderMaxSize,
+        chunkSize: data.chunkSize,
+        chunkOverlap: data.chunkOverlap,
+        modelName: data.modelName,
+        modelProvider: data.modelProvider
       },
       totalDocuments: 0 // We'll update this after processing
     });
@@ -115,7 +125,7 @@ export class DocumentService {
       throw new Error('Document set not found');
     } 
     const index = await getIndex({
-      modelName: 'text-embedding-3-small',
+      modelName: documentSet.parameters.modelName as string,
       useSploder: true,
       sploderMaxSize: 100,
       vectorStoreType: 'simple',
