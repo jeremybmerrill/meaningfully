@@ -1,22 +1,12 @@
 import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingResult, SearchResult, PreviewResult } from "../types";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult } from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
-import type { EmbeddingConfig } from "../services/embeddings";
 
 export async function createEmbeddings(
   csvPath: string,
   textColumnName: string,
-  config: {
-    modelName: string;
-    useSploder: boolean;
-    sploderMaxSize: number;
-    vectorStoreType: "simple"; // TODO: | "chroma" | "duckdb" | "postgres" | "weaviate";
-    projectName: string;
-    storagePath: string;
-    chunkSize: number;
-    chunkOverlap: number;
-  }
+  config: EmbeddingConfig
 ): Promise<EmbeddingResult> {
   try {
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
@@ -38,16 +28,7 @@ export async function createEmbeddings(
 export async function previewResults(
   csvPath: string,
   textColumnName: string,
-  config: {
-    modelName: string;
-    useSploder: boolean;
-    sploderMaxSize: number;
-    vectorStoreType: "simple"  | "postgres"; // TODO: "chroma" | "duckdb";
-    projectName: string;
-    storagePath: string;
-    chunkSize: number;
-    chunkOverlap: number;
-  }
+  config: EmbeddingConfig
 ): Promise<PreviewResult> {
   try {
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);

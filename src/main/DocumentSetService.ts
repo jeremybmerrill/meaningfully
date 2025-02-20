@@ -3,18 +3,22 @@ import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults } from './api/embedding';
 import { app } from 'electron';
 import { join } from 'path';
+import { DocumentSetParams } from './types';
+
+type HasFilePath = {filePath: string};
+type DocumentSetParamsFilePath = DocumentSetParams & HasFilePath;
 
 export class DocumentService {
   private manager: DocumentSetManager;
 
   constructor() {
-    this.manager = new DocumentSetManager(app.getPath('userData'));
+    this.manager = new DocumentSetManager(app.getPath('userData'))
   }
 
   async listDocumentSets() {
     const stmt = this.manager['sqliteDb'].prepare(`
       SELECT * FROM document_sets ORDER BY upload_date DESC
-    `);
+    `)
     
     const rows = stmt.all();
     return rows.map(row => ({
@@ -23,52 +27,28 @@ export class DocumentService {
       uploadDate: new Date(row.upload_date),
       parameters: JSON.parse(row.parameters),
       totalDocuments: row.total_documents
-    }));
+    }))
   }
 
 
-  async generatePreviewData(data: {
-    filePath: string,
-    datasetName: string,
-    description: string,
-    textColumns: string[],
-    metadataColumns: string[],
-    useSploder: boolean,
-    sploderMaxSize: number,
-    chunkSize: number,
-    chunkOverlap: number,
-    modelName: string,
-    modelProvider: string
-  }) {
+  async generatePreviewData(data: DocumentSetParamsFilePath) {
     try {
       return await previewResults(data.filePath, data.textColumns[0], {
         modelName: data.modelName, // needed to tokenize, estimate costs
         useSploder: true,
         sploderMaxSize: 100,
-        vectorStoreType: "simple",
+        vectorStoreType: 'simple',
         projectName: data.datasetName,
         storagePath: join(app.getPath('userData'), 'simple_vector_store'),
         chunkSize: data.chunkSize,
-        chunkOverlap: data.chunkOverlap,
-      });
-    } catch (error) {
-      throw error;
-    }
+        chunkOverlap: data.chunkOverlap
+    });
+  } catch (error) {
+    throw error;
   }
+}
 
-  async uploadCsv(data: {
-    filePath: string,
-    datasetName: string,
-    description: string,
-    textColumns: string[],
-    metadataColumns: string[],
-    useSploder: boolean,
-    sploderMaxSize: number,
-    chunkSize: number,
-    chunkOverlap: number,
-    modelName: string,
-    modelProvider: string
-  }) {
+  async uploadCsv(data: DocumentSetParamsFilePath) {
     // First create the document set record
     const setId = await this.manager.addDocumentSet({
       name: data.datasetName,

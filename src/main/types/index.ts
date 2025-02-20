@@ -30,3 +30,28 @@ export interface DocumentSetMetadata {
   parameters: Record<string, unknown>;
   totalDocuments: number;
 }
+
+export interface DocumentSetParams {
+  datasetName: string,
+  description: string,
+  textColumns: string[],
+  metadataColumns: string[],
+  useSploder: boolean,
+  sploderMaxSize: number,
+  chunkSize: number,
+  chunkOverlap: number,
+  modelName: string,
+  modelProvider: string
+}
+
+
+export interface EmbeddingConfig {
+  modelName: string;
+  vectorStoreType: "simple" | "postgres" ;
+  projectName: string;
+  storagePath: string;
+  useSploder: boolean;
+  sploderMaxSize: number;
+  chunkSize: number;
+  chunkOverlap: number;
+}

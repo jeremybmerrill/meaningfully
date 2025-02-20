@@ -15,18 +15,8 @@ import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
+import { EmbeddingConfig } from "../types";
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
-
-export interface EmbeddingConfig {
-  modelName: string;
-  vectorStoreType: "simple" | "postgres" ;
-  projectName: string;
-  storagePath: string;
-  useSploder: boolean;
-  sploderMaxSize: number;
-  chunkSize: number;
-  chunkOverlap: number;
-}
 
 // unused, but probalby eventually will be used.
 // to be used by postgres store, which it' slooking increasingly like I have to enable again

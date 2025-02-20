@@ -6,6 +6,11 @@ import { DocumentService } from './DocumentSetService'
 import { writeFileSync, readFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
+import { DocumentSetParams } from './types';
+
+type HasFilePathAndName =  { file: { path: string, name: string }};
+type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
+
 
 const docService = new DocumentService()
 
@@ -75,19 +80,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('upload-csv', async (_, formData: {
-    file: { path: string, name: string },
-    datasetName: string,
-    description: string,
-    textColumns: string[],
-    metadataColumns: string[],
-    useSploder: boolean,
-    sploderMaxSize: number,
-    chunkSize: number,
-    chunkOverlap: number,
-    modelName, string,
-    modelProvider: string
-  }) => {
+  ipcMain.handle('upload-csv', async (_, formData: DocumentSetParamsFileAndPath) => {
     try {
       // For files from renderer, we need to handle the Buffer data
       const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)
@@ -102,19 +95,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('generate-preview-data', async (_, formData: {
-    file: { path: string, name: string },
-    datasetName: string,
-    description: string,
-    textColumns: string[],
-    metadataColumns: string[],
-    useSploder: boolean,
-    sploderMaxSize: number,
-    chunkSize: number,
-    chunkOverlap: number,
-    modelName: string,
-    modelProvider: string
-  }) => {
+  ipcMain.handle('generate-preview-data', async (_, formData: DocumentSetParamsFileAndPath) => {
     try {
       const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)
       await writeFileSync(tempPath, readFileSync(formData.file.path))
