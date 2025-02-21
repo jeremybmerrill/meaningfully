@@ -41,12 +41,13 @@ export async function previewResults(
       Math.floor(documents.length / 2) + 10
     );
 
-    const previewNodes = await createPreviewNodes(previewDocumentsSubset, config);
+    const previewNodes = await createPreviewNodes(documents, config);
+    const previewSubsetNodes = await createPreviewNodes(previewDocumentsSubset, config);
     const { estimatedPrice, tokenCount } = estimateCost(previewNodes, config.modelName);
 
     return {
       success: true,
-      nodes: previewNodes.map(node => ({
+      nodes: previewSubsetNodes.map(node => ({
         text: node.text,
         metadata: node.metadata
       })),
