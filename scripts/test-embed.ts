@@ -24,7 +24,7 @@ async function main() {
 
         const result = await createEmbeddings('../../sample-data/search_warrants_for_ner_from_rss.csv', textColumns[0], {
             modelName: 'text-embedding-3-small',
-            useSploder: true,
+            combineSentencesIntoChunks: true,
             sploderMaxSize: 100,
             vectorStoreType: 'simple',
             projectName: projectName,

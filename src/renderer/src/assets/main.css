@@ -1,14 +1,14 @@
 @import './base.css';
 @import "tailwindcss";
 
-body {
+/* body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* background-image: url('./wavy-lines.svg');
-  background-size: cover; */
-  /* user-select: none; */
-}
+  background-image: url('./wavy-lines.svg');
+  background-size: cover;
+  user-select: none;
+} */
 
 code {
   font-weight: 600;

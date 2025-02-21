@@ -40,7 +40,7 @@ function getBaseTransformations(config: EmbeddingConfig){
     new CustomSentenceSplitter({ chunkSize: config.chunkSize, chunkOverlap: config.chunkOverlap }),
   ];
 
-  if (config.useSploder) {
+  if (config.combineSentencesIntoChunks) {
     transformations.push(
       new Sploder({
         maxStringTokenCount: config.sploderMaxSize

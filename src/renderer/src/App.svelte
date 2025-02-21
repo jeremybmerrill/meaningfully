@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Router, Route } from "svelte-routing"; // also Link
+  import { Router, Route, Link } from "svelte-routing"; // also Link
   import SearchPage from './components/SearchPage.svelte'
   import FrontPage from './components/FrontPage.svelte'
   import HelpPage from './components/HelpPage.svelte'
@@ -9,20 +9,31 @@
 </script>
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
-<h1 class="text">
-  Meaningfully
-</h1>
-<h2 class="text">
-  Semantic search for your spreadsheets
-</h2>
 
 <Router>
+  <Link to="/">
+    <h1 class="text-2xl font-bold">
+      Meaningfully
+    </h1>
+  </Link>
+
+  <h2 class="text-xl font-semibold">
+    Semantic search for your spreadsheets
+  </h2>
+
   <main class="container mx-auto px-4 py-8">
     <Route path="/" component={FrontPage} />
     <Route path="/search/:id" component={SearchPage} />
     <Route path="/help" component={HelpPage} />
   </main>
+
+  <nav class="navbar">
+    <Link to="/" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
+    <Link to="/help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
+    <span class="nav-link">Built with ❤️ at The Eclectic Company</span>
+    <span class="nav-link">© 2025</span>
+  </nav>
+
 </Router>
 
-<div class="creator">Built with ❤️ at The Eclectic Company</div>
 

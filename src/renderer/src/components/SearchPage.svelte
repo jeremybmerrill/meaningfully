@@ -66,6 +66,10 @@
       <label for="search" class="block text-sm font-medium text-gray-700">
         Semantic Search
       </label>
+      <p class="text-xs text-gray-500">
+        Imagine the perfect document that you hope might exist in your spreadsheet. Type it here. Meaningfully will find the real documents that mean 
+        about the same thing -- even if they have no keywords in common.
+      </p>
       <div class="flex space-x-4">
         <input
           id="search"

@@ -31,18 +31,6 @@
   --color-text: var(--ev-c-text-1);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
-}
-
-ul {
-  list-style: none;
-}
-
 body {
   min-height: 100vh;
   color: var(--color-text);

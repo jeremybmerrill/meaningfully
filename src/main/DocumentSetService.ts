@@ -35,7 +35,8 @@ export class DocumentService {
     try {
       return await previewResults(data.filePath, data.textColumns[0], {
         modelName: data.modelName, // needed to tokenize, estimate costs
-        useSploder: true,
+        splitIntoSentences: data.splitIntoSentences,
+        combineSentencesIntoChunks: data.combineSentencesIntoChunks,
         sploderMaxSize: 100,
         vectorStoreType: 'simple',
         projectName: data.datasetName,
@@ -57,7 +58,8 @@ export class DocumentService {
         description: data.description,
         textColumns: data.textColumns,
         metadataColumns: data.metadataColumns,
-        useSploder: data.useSploder,
+        splitIntoSentences: data.splitIntoSentences,
+        combineSentencesIntoChunks: data.combineSentencesIntoChunks,
         sploderMaxSize: data.sploderMaxSize,
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap,
@@ -79,7 +81,8 @@ export class DocumentService {
         // Create embeddings for this column
         await createEmbeddings(data.filePath, textColumn, {
           modelName: "text-embedding-3-small", // Could make configurable
-          useSploder: true,
+          splitIntoSentences: data.splitIntoSentences,
+          combineSentencesIntoChunks: data.combineSentencesIntoChunks,
           sploderMaxSize: 100, // TODO: make configurable
           vectorStoreType: "simple",
           projectName: data.datasetName,
@@ -106,7 +109,8 @@ export class DocumentService {
     } 
     const index = await getIndex({
       modelName: documentSet.parameters.modelName as string,
-      useSploder: true,
+      splitIntoSentences: documentSet.parameters.splitIntoSentences as boolean,
+      combineSentencesIntoChunks: documentSet.parameters.combineSentencesIntoChunks as boolean,
       sploderMaxSize: 100,
       vectorStoreType: 'simple',
       projectName: documentSet.name,

@@ -36,7 +36,8 @@ export interface DocumentSetParams {
   description: string,
   textColumns: string[],
   metadataColumns: string[],
-  useSploder: boolean,
+  splitIntoSentences: boolean,
+  combineSentencesIntoChunks: boolean,
   sploderMaxSize: number,
   chunkSize: number,
   chunkOverlap: number,
@@ -50,7 +51,8 @@ export interface EmbeddingConfig {
   vectorStoreType: "simple" | "postgres" ;
   projectName: string;
   storagePath: string;
-  useSploder: boolean;
+  splitIntoSentences: boolean;
+  combineSentencesIntoChunks: boolean;
   sploderMaxSize: number;
   chunkSize: number;
   chunkOverlap: number;

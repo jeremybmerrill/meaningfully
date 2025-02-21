@@ -14,7 +14,7 @@ async function main() {
 
         const index = await getIndex({
             modelName: 'text-embedding-3-small',
-            useSploder: true,
+            combineSentencesIntoChunks: true,
             sploderMaxSize: 100,
             vectorStoreType: 'simple',
             projectName: projectName,

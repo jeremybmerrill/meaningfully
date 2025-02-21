@@ -19,10 +19,11 @@
   const defaultChunkOverlap = 20;
   let chunkSize = defaultChunkSize;
   let chunkOverlap = defaultChunkOverlap;
-//  const availableModelNames = ["text-embedding-3-small"] // TODO: add Llama support
-  let modelName = "text-embedding-3-small"; // TODO: make configurable
+  const availableModelNames = ["text-embedding-3-small", "text-embedding-3-large"] // TODO: add Llama support, get this from the backend.
+  let modelName = "text-embedding-3-small";
   let modelProvider = "openai"; // TODO: make configurable
-
+  let splitIntoSentences = true;
+  let combineSentencesIntoChunks = true; // aka combineSentencesIntoChunks
   let previewData: Array<Record<string, any>> = []; // processed data from 'backend'
   let costEstimate: number;
   let tokenCount: number;
@@ -78,7 +79,8 @@
         description: 'TK',
         textColumns: [selectedTextColumn],
         metadataColumns: selectedMetadataColumns,
-        useSploder: true,
+        splitIntoSentences: splitIntoSentences,
+        combineSentencesIntoChunks: combineSentencesIntoChunks,
         sploderMaxSize: 100,
         modelName,
         modelProvider,
@@ -130,7 +132,8 @@
         description: 'TK',
         textColumns: [selectedTextColumn],
         metadataColumns: selectedMetadataColumns,
-        useSploder: true,
+        splitIntoSentences: splitIntoSentences,
+        combineSentencesIntoChunks: combineSentencesIntoChunks,
         sploderMaxSize: 100,
         chunkSize,
         chunkOverlap,
@@ -183,23 +186,15 @@
       "
     />
   </label>
+</div>
 
   {#if showPreview && availableColumns.length > 0}
+  <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+    <h3>Column Configuation</h3>
     <div class="space-y-4">
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
-          Dataset Name:
-          <input
-            type="text"
-            bind:value={datasetName}
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-          />
-        </label>
-      </div>
-
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">
-          Select Text Column:
+          Which column holds the text you want to search?
           <select
             bind:value={selectedTextColumn}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
@@ -214,7 +209,11 @@
 
       <div class="space-y-2">
         <p class="block text-sm font-medium text-gray-700">
-          Which metadata columns should be shown in results and available for filtering?
+          Which other columns should be shown in the results, and available for filtering?
+        </p>
+        <p class="text-xs text-gray-500">
+          For instance, if your spreadsheet has a <code>Category</code> column, you might want to select it so you can filter by it when searching. If it has a 
+          <code>URL</code>, you might select it so you can click through to the original.
         </p>
         <div class="flex flex-wrap gap-2">
           {#each availableColumns as column}
@@ -232,36 +231,98 @@
           {/each}
         </div>
       </div>
+    </div>
+  </div>
+  <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+      <div class="space-y-2 flex flex-wrap gap-2">
+        <h3>Text Handling</h3>
+        <p>Each text might contain multiple ideas. Meaningfully tries to represent these ideas at multiple levels, returning search results of a 1, 2 or 3 sentences long</p>
+        <label class="inline-flex items-center">
+          <input
+            type="checkbox"
+            bind:checked={splitIntoSentences}
+            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+          />
+          <span class="ml-2 text-sm text-gray-700">Split into sentences?</span>
+        </label>
+        <label class="inline-flex items-center">
+          <input
+            type="checkbox"
+            bind:checked={combineSentencesIntoChunks}
+            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+          />
+          <span class="ml-2 text-sm text-gray-700">Combine sentences into chunks?</span>
+        </label>
+      </div>
+
+      <div class="space-y-2">
+        <h3>Split long sentences into chunks</h3>
+        <div class="flex flex-wrap gap-2">
+          <div class="inline-flex max-w-md p-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Chunk Size (in tokens):
+              <input
+                type="range"
+                bind:value={chunkSize}
+                min="10"
+                max="500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+              />
+            </label>
+            <p class="text-xs text-gray-500">
+              Split each text into chunks of about this many words.
+              (Sentences will stay together.)
+            </p>
+          </div>
+          <div class="inline-flex max-w-md p-2">
+            <label class="block text-sm font-medium text-gray-700">
+              Chunk Overlap (in tokens):
+              <input
+                type="range" 
+                bind:value={chunkOverlap}
+                min="0"
+                max="500"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+              />
+            </label>  
+            <p class="text-xs text-gray-500">
+              If a text is split into multiple chunks, about this many words between chunks will overlap.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
-          Chunk Size (in tokens):
+          Give the dataset a name:
           <input
-            type="number"
-            bind:value={chunkSize}
-            min="1"
-            max="8192"
+            type="text"
+            bind:value={datasetName}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
           />
         </label>
         <p class="text-xs text-gray-500">
-          <strong>Sentence length</strong>Split documents into chunks of this size. 
+          The name is just for you. Use something that will help you remember what this dataset is.
         </p>
       </div>
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
-          Chunk Overlap (in tokens):
-          <input
-            type="number" 
-            bind:value={chunkOverlap}
-            min="0"
-            max="8192"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-          />
+          What embedding model should we use?
+          <select
+            bind:value={modelName}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
+            {#each availableModelNames as modelNameChoice}
+              <option value={modelNameChoice}>{modelNameChoice}</option>
+            {/each}
+          </select>
         </label>  
         <p class="text-xs text-gray-500">
-          Overlap between chunks.
+          The model used to generate embeddings for the text.
         </p>
       </div>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       {#key costEstimate}
         {#key tokenCount}
           {#if tokenCount > 0 && costEstimate > 0}
@@ -300,4 +361,3 @@
   {#if error}
     <div class="mt-4 text-red-600">{error}</div>
   {/if}
-</div> 
