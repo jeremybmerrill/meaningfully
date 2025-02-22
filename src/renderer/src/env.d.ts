@@ -33,7 +33,7 @@ interface Window {
         chunkOverlap: number,
         modelName: string,
         modelProvider: string
-      }) => Promise<{ success: true, setId: number }>,
+      }) => Promise<{ success: true, documentSetId: number }>,
       generatePreviewData: (formData: {
         file: File,
         datasetName: string, // not really needed

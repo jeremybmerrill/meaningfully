@@ -21,7 +21,7 @@
     try {
       // Mock API call - replace with actual API call later
       const searchResults = await window.api.searchDocumentSet({
-        documentSetId: documentSet.setId,
+        documentSetId: documentSet.documentSetId,
         query: searchQuery,
         n_results: 100, // selector not yet implemented
         filters: metadataFilters // not yet implemented

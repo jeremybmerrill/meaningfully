@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
   import Preview from './Preview.svelte';
 
@@ -27,6 +28,7 @@
   let previewData: Array<Record<string, any>> = []; // processed data from 'backend'
   let costEstimate: number;
   let tokenCount: number;
+  let isCollapsed = true;
 
   $: {
     if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
@@ -47,7 +49,6 @@
     Papa.parse(file, {
       complete: async (results) => {
         parsedData = results.data;
-        console.log("parsedData", parsedData);
         availableColumns = results.meta.fields || [];
         selectedTextColumn = '';
         selectedMetadataColumns = [];
@@ -89,7 +90,6 @@
       });
 
       if (response.success) {
-        console.log("response", response);
         costEstimate = response.estimatedPrice; // TODO rename to costEstimate
         tokenCount = response.tokenCount;
         previewData = response.nodes.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
@@ -97,11 +97,9 @@
           [selectedTextColumn]: result.text
         })); 
 
-        console.log("previewData", previewData);
         showPreview = true;
         generatingPreview = false;
       } else {
-        console.log("response", response);
         error =  'Upload failed';
         generatingPreview = false;
       }
@@ -143,6 +141,7 @@
 
       if (response.success) {
         dispatch('upload-complete');
+        navigate("/search/" + response.documentSetId);
         showPreview = false;
         parsedData = [];
         files = null;
@@ -165,6 +164,10 @@
     } else {
       selectedMetadataColumns = selectedMetadataColumns.filter(c => c !== column);
     }
+  };
+
+  const toggleTextHandlingSectionCollapse = () => {
+    isCollapsed = !isCollapsed;
   };
 </script>
 
@@ -189,6 +192,37 @@
 </div>
 
   {#if showPreview && availableColumns.length > 0}
+  <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">
+        Give the dataset a name:
+        <input
+          type="text"
+          bind:value={datasetName}
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+        />
+      </label>
+      <p class="text-xs text-gray-500">
+        The name is just for you. Use something that will help you remember what this dataset is.
+      </p>
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">
+        What embedding model should we use?
+        <select
+          bind:value={modelName}
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
+          {#each availableModelNames as modelNameChoice}
+            <option value={modelNameChoice}>{modelNameChoice}</option>
+          {/each}
+        </select>
+      </label>  
+      <p class="text-xs text-gray-500">
+        The model used to generate embeddings for the text.
+      </p>
+    </div>
+  </div>
+
   <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
     <h3>Column Configuation</h3>
     <div class="space-y-4">
@@ -233,95 +267,71 @@
       </div>
     </div>
   </div>
+  
   <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-      <div class="space-y-2 flex flex-wrap gap-2">
-        <h3>Text Handling</h3>
-        <p>Each text might contain multiple ideas. Meaningfully tries to represent these ideas at multiple levels, returning search results of a 1, 2 or 3 sentences long</p>
-        <label class="inline-flex items-center">
-          <input
-            type="checkbox"
-            bind:checked={splitIntoSentences}
-            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-          />
-          <span class="ml-2 text-sm text-gray-700">Split into sentences?</span>
-        </label>
-        <label class="inline-flex items-center">
-          <input
-            type="checkbox"
-            bind:checked={combineSentencesIntoChunks}
-            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-          />
-          <span class="ml-2 text-sm text-gray-700">Combine sentences into chunks?</span>
-        </label>
-      </div>
+    <h3><button on:click={toggleTextHandlingSectionCollapse}>Text Handling Options {isCollapsed ? '›' : '⌄'}</button></h3>
 
-      <div class="space-y-2">
-        <h3>Split long sentences into chunks</h3>
-        <div class="flex flex-wrap gap-2">
-          <div class="inline-flex max-w-md p-2">
-            <label class="block text-sm font-medium text-gray-700">
-              Chunk Size (in tokens):
-              <input
-                type="range"
-                bind:value={chunkSize}
-                min="10"
-                max="500"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-              />
-            </label>
-            <p class="text-xs text-gray-500">
-              Split each text into chunks of about this many words.
-              (Sentences will stay together.)
-            </p>
-          </div>
-          <div class="inline-flex max-w-md p-2">
-            <label class="block text-sm font-medium text-gray-700">
-              Chunk Overlap (in tokens):
-              <input
-                type="range" 
-                bind:value={chunkOverlap}
-                min="0"
-                max="500"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-              />
-            </label>  
-            <p class="text-xs text-gray-500">
-              If a text is split into multiple chunks, about this many words between chunks will overlap.
-            </p>
+    {#if !isCollapsed}
+      <div class="space-y-6">
+        <div class="space-y-2 flex flex-wrap gap-2">
+          <p>Each text might contain multiple ideas. Meaningfully tries to represent these ideas at multiple levels, returning search results of a 1, 2 or 3 sentences long</p>
+          <label class="inline-flex items-center">
+            <input
+              type="checkbox"
+              bind:checked={splitIntoSentences}
+              class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+            />
+            <span class="ml-2 text-sm text-gray-700">Split into sentences?</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input
+              type="checkbox"
+              bind:checked={combineSentencesIntoChunks}
+              class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+            />
+            <span class="ml-2 text-sm text-gray-700">Combine sentences into chunks?</span>
+          </label>
+        </div>
+
+        <div class="space-y-2">
+          <h3>Split long sentences into chunks</h3>
+          <div class="flex flex-wrap gap-2">
+            <div class="inline-flex max-w-md p-2">
+              <label class="block text-sm font-medium text-gray-700">
+                Chunk Size (in tokens):
+                <input
+                  type="range"
+                  bind:value={chunkSize}
+                  min="10"
+                  max="500"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                />
+              </label>
+              <p class="text-xs text-gray-500">
+                Split each text into chunks of about this many words.
+                (Sentences will stay together.)
+              </p>
+            </div>
+            <div class="inline-flex max-w-md p-2">
+              <label class="block text-sm font-medium text-gray-700">
+                Chunk Overlap (in tokens):
+                <input
+                  type="range" 
+                  bind:value={chunkOverlap}
+                  min="0"
+                  max="500"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                />
+              </label>  
+              <p class="text-xs text-gray-500">
+                If a text is split into multiple chunks, about this many words between chunks will overlap.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">
-          Give the dataset a name:
-          <input
-            type="text"
-            bind:value={datasetName}
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-          />
-        </label>
-        <p class="text-xs text-gray-500">
-          The name is just for you. Use something that will help you remember what this dataset is.
-        </p>
-      </div>
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-gray-700">
-          What embedding model should we use?
-          <select
-            bind:value={modelName}
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
-            {#each availableModelNames as modelNameChoice}
-              <option value={modelNameChoice}>{modelNameChoice}</option>
-            {/each}
-          </select>
-        </label>  
-        <p class="text-xs text-gray-500">
-          The model used to generate embeddings for the text.
-        </p>
-      </div>
-    </div>
+    {/if}
+  </div>
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       {#key costEstimate}
         {#key tokenCount}

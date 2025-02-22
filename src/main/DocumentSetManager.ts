@@ -25,7 +25,7 @@ export class DocumentSetManager {
     `);
   }
 
-  async addDocumentSet(metadata: Omit<DocumentSetMetadata, 'setId'>): Promise<number> {
+  async addDocumentSet(metadata: Omit<DocumentSetMetadata, 'documentSetId'>): Promise<number> {
     const stmt = this.sqliteDb.prepare(`
       INSERT INTO document_sets (name, upload_date, parameters, total_documents)
       VALUES (?, ?, ?, ?)
@@ -41,18 +41,16 @@ export class DocumentSetManager {
     return result.lastInsertRowid as number;
   }
 
-  async getDocumentSet(setId: number): Promise<DocumentSetMetadata | null> {
-    console.log("getDocumentSet arg", setId);
+  async getDocumentSet(documentSetId: number): Promise<DocumentSetMetadata | null> {
     const stmt = this.sqliteDb.prepare(`
       SELECT * FROM document_sets WHERE set_id = ?
     `);
     
-    const row = stmt.get(setId);
-    console.log("getDocumentSet return", row);
+    const row = stmt.get(documentSetId);
     if (!row) return null;
 
     return {
-      setId: row.set_id,
+      documentSetId: row.set_id,
       name: row.name,
       uploadDate: new Date(row.upload_date),
       parameters: JSON.parse(row.parameters),
@@ -67,7 +65,7 @@ export class DocumentSetManager {
     const rows = stmt.all(10);
 
     return rows.map(row => ({
-        setId: row.set_id,
+        documentSetId: row.set_id,
         name: row.name,
         uploadDate: new Date(row.upload_date),
         parameters: JSON.parse(row.parameters),
@@ -75,23 +73,23 @@ export class DocumentSetManager {
     }))
   }
 
-  async updateDocumentCount(setId: number, count: number) {
+  async updateDocumentCount(documentSetId: number, count: number) {
     const stmt = this.sqliteDb.prepare(`
       UPDATE document_sets 
       SET total_documents = total_documents + ?
       WHERE set_id = ?
     `);
     
-    stmt.run(count, setId);
+    stmt.run(count, documentSetId);
   }
 
-  async deleteDocumentSet(setId: number) {
+  async deleteDocumentSet(documentSetId: number) {
     const stmt = this.sqliteDb.prepare(`
       DELETE FROM document_sets
       WHERE set_id = ?
     `);
     
-    stmt.run(setId);
+    stmt.run(documentSetId);
   }
 
   close() {

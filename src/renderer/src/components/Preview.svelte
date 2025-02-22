@@ -5,11 +5,6 @@
   export let textColumn: string;
   export let metadataColumns: string[] = [];
   export let loading: boolean = false;
-  console.log("CSV data", previewData);
-
-  console.log("Preview.svelte previewData", previewData);
-  console.log("textColumn", textColumn);
-  console.log("metadataColumns", metadataColumns);
 </script>
 
 {#if loading}

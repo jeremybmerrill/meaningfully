@@ -9,7 +9,7 @@ const app = new App({
 export default app
 
 export interface DocumentSet {
-  setId: number;
+  documentSetId: number;
   name: string;
   uploadDate: Date;
   parameters: Record<string, unknown>;

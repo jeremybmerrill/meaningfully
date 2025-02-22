@@ -28,7 +28,7 @@ export interface PreviewResult {
 
 // Define types for our document set metadata
 export interface DocumentSetMetadata {
-  setId: number;
+  documentSetId: number;
   name: string;
   uploadDate: Date;
   parameters: Record<string, unknown>;
@@ -46,7 +46,7 @@ declare global {
         description: string,
         textColumns: string[],
         metadataColumns: string[]
-      }) => Promise<{ success: true, setId: number }>,
+      }) => Promise<{ success: true, documentSetId: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;

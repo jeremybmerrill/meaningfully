@@ -23,7 +23,6 @@ export class LoggingOpenAIEmbedding extends OpenAIEmbedding {
     // overwrite private member "getMessage" 🙀
     (this as any).getOpenAIEmbedding = async function(input: string[]): Promise<number[][]> {
       // TODO: ensure this for every sub class by calling it in the base class
-      console.log("embedding input", input, this.model);
       input = this.truncateMaxTokens(input);
     
       const { data } = await (

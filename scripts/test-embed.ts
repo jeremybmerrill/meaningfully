@@ -10,7 +10,7 @@ async function main() {
         const description = "test description"
         const textColumns = ["case_name"]
         const metadataColumns = ["case_id"]
-        const setId = await manager.addDocumentSet({
+        const documentSetId = await manager.addDocumentSet({
             name: projectName,
             uploadDate: new Date(),
             parameters: {
@@ -31,7 +31,7 @@ async function main() {
             storagePath: storagePath // relative to where the script is run from
           });
         console.log('Embeddings result:', result);
-        console.log('Document set ID:', setId);
+        console.log('Document set ID:', documentSetId);
     } catch (error) {
         console.error('Error creating embeddings:', error);
     }

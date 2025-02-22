@@ -7,9 +7,9 @@ async function main() {
         const storagePath = './storage'
         const manager = new DocumentSetManager(storagePath);
         const projectName = "test2"
-        const projectSetId = 2
+        const projectdocumentSetId = 2
 
-        const documentSetMetadata = await manager.getDocumentSet(projectSetId);
+        const documentSetMetadata = await manager.getDocumentSet(projectdocumentSetId);
         assert.equal(documentSetMetadata?.name, projectName);
 
         const index = await getIndex({

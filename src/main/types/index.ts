@@ -24,7 +24,7 @@ export interface PreviewResult {
 
 // Define types for our document set metadata
 export interface DocumentSetMetadata {
-  setId: number;
+  documentSetId: number;
   name: string;
   uploadDate: Date;
   parameters: Record<string, unknown>;

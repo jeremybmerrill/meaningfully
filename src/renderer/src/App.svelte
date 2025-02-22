@@ -30,7 +30,7 @@
   <nav class="navbar">
     <Link to="/" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
     <Link to="/help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
-    <span class="nav-link">Built with ❤️ at The Eclectic Company</span>
+    <span class="nav-link">Built with ✨ by Jeremy</span>
     <span class="nav-link">© 2025</span>
   </nav>
 

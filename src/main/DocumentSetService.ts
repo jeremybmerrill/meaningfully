@@ -22,7 +22,7 @@ export class DocumentService {
     
     const rows = stmt.all();
     return rows.map(row => ({
-      setId: row.set_id,
+      documentSetId: row.set_id,
       name: row.name,
       uploadDate: new Date(row.upload_date),
       parameters: JSON.parse(row.parameters),
@@ -51,7 +51,7 @@ export class DocumentService {
 
   async uploadCsv(data: DocumentSetParamsFilePath) {
     // First create the document set record
-    const setId = await this.manager.addDocumentSet({
+    const documentSetId = await this.manager.addDocumentSet({
       name: data.datasetName,
       uploadDate: new Date(),
       parameters: {
@@ -76,7 +76,7 @@ export class DocumentService {
         const documents = await loadDocumentsFromCsv(data.filePath, textColumn);
         
         // Update total documents count
-        await this.manager.updateDocumentCount(setId, documents.length);
+        await this.manager.updateDocumentCount(documentSetId, documents.length);
 
         // Create embeddings for this column
         await createEmbeddings(data.filePath, textColumn, {
@@ -93,10 +93,10 @@ export class DocumentService {
         });
       }
 
-      return { success: true, setId };
+      return { success: true, documentSetId };
     } catch (error) {
       // If something fails, we should probably delete the document set
-      await this.manager.deleteDocumentSet(setId);
+      await this.manager.deleteDocumentSet(documentSetId);
       throw error;
     }
   }

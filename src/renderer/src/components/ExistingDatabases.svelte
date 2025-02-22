@@ -70,7 +70,7 @@
               >
                 <td class="px-4 py-2 font-medium">
                   <Link 
-                    to={`/search/${set.setId}`} 
+                    to={`/search/${set.documentSetId}`} 
                     state={{ documentSet: set }}
                     class="block w-full underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
                   >
