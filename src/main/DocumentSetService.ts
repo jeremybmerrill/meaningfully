@@ -3,7 +3,7 @@ import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults } from './api/embedding';
 import { app } from 'electron';
 import { join } from 'path';
-import { DocumentSetParams } from './types';
+import { DocumentSetParams, Settings } from './types';
 
 type HasFilePath = {filePath: string};
 type DocumentSetParamsFilePath = DocumentSetParams & HasFilePath;
@@ -35,6 +35,7 @@ export class DocumentService {
     try {
       return await previewResults(data.filePath, data.textColumns[0], {
         modelName: data.modelName, // needed to tokenize, estimate costs
+        modelProvider: data.modelProvider,
         splitIntoSentences: data.splitIntoSentences,
         combineSentencesIntoChunks: data.combineSentencesIntoChunks,
         sploderMaxSize: 100,
@@ -69,6 +70,8 @@ export class DocumentService {
       totalDocuments: 0 // We'll update this after processing
     });
 
+    const embedSettings = await this.manager.getSettings()
+
     // Load and process the documents
     try {
       // Process each text column
@@ -80,7 +83,8 @@ export class DocumentService {
 
         // Create embeddings for this column
         await createEmbeddings(data.filePath, textColumn, {
-          modelName: "text-embedding-3-small", // Could make configurable
+          modelName: data.modelName,
+          modelProvider: data.modelProvider,
           splitIntoSentences: data.splitIntoSentences,
           combineSentencesIntoChunks: data.combineSentencesIntoChunks,
           sploderMaxSize: 100, // TODO: make configurable
@@ -90,7 +94,7 @@ export class DocumentService {
           storagePath:  join(app.getPath('userData'), 'simple_vector_store'),
           chunkSize: data.chunkSize,
           chunkOverlap: data.chunkOverlap,
-        });
+        }, embedSettings);
       }
 
       return { success: true, documentSetId };
@@ -104,11 +108,13 @@ export class DocumentService {
 
   async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10) {
     const documentSet = await this.manager.getDocumentSet(documentSetId);
+    const settings = await this.manager.getSettings();
     if (!documentSet) {
       throw new Error('Document set not found');
     } 
     const index = await getIndex({
       modelName: documentSet.parameters.modelName as string,
+      modelProvider: documentSet.parameters.modelProvider as string,
       splitIntoSentences: documentSet.parameters.splitIntoSentences as boolean,
       combineSentencesIntoChunks: documentSet.parameters.combineSentencesIntoChunks as boolean,
       sploderMaxSize: 100,
@@ -117,8 +123,16 @@ export class DocumentService {
       storagePath: join(app.getPath('userData'), 'simple_vector_store'),
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
-    });
+    }, settings);
+    console.error(index, index.embedModel, index.vectorStores);
     const results = await search(index, query, n_results);
     return results;
   }   
+
+  async getSettings() {
+    return this.manager.getSettings();
+  }
+  async setSettings(settings: Settings) {
+    return this.manager.setSettings(settings);
+  } 
 }

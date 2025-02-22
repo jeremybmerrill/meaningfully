@@ -2,7 +2,11 @@
 /// <reference types="vite/client" />
 
 
-
+interface Settings {
+  openAIKey: string;
+  oLlamaModelType: string;
+  oLlamaBaseURL: string;
+}
 interface SearchResult {
   content: string;
   similarity: number;
@@ -47,14 +51,16 @@ interface Window {
         chunkOverlap: number,
         modelName: string,
         modelProvider: string
-      }) => Promise<{ success: true, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;
         n_results: number;
         filters?: Record<string, string>;
       }) => Promise<SearchResult[]>;
-  
+      getSettings: () => Promise<Settings>;
+      setSettings: (settings: Settings) => Promise<{success: boolean}>;
+
     }
   }
   

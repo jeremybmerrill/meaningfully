@@ -1,17 +1,18 @@
 import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult } from "../types";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings } from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
 
 export async function createEmbeddings(
   csvPath: string,
   textColumnName: string,
-  config: EmbeddingConfig
+  config: EmbeddingConfig,
+  settings: Settings
 ): Promise<EmbeddingResult> {
   try {
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
-    const nodes = await embedDocuments(documents, config);
-    const index = await persistNodes(nodes, config);
+    const nodes = await embedDocuments(documents, config, settings);
+    const index = await persistNodes(nodes, config, settings);
     return {
       success: true,
       index,
@@ -62,8 +63,8 @@ export async function previewResults(
   }
 } 
 
-export async function getIndex(config: EmbeddingConfig) {
-  return await getExistingVectorStoreIndex(config);
+export async function getIndex(config: EmbeddingConfig, settings: Settings) {
+  return await getExistingVectorStoreIndex(config, settings);
 }
 
 export async function search(

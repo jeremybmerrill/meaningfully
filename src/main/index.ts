@@ -109,6 +109,27 @@ app.whenReady().then(() => {
       throw error;
     }
   });
+
+  ipcMain.handle('get-settings', async () => {   
+    try {
+      return await docService.getSettings();
+    } catch (error) {
+      console.error('Error getting settings:', error);
+      throw error;
+    }
+  }
+  );
+
+  ipcMain.handle('set-settings', async (_, settings) => {
+    try {
+      return await docService.setSettings(settings);
+    } catch (error) {
+      console.error('Error setting settings:', error);
+      throw error;
+    }
+  });
+
+
   createWindow()
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

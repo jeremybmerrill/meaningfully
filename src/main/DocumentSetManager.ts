@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import type { DocumentSetMetadata } from './types';
+import type { DocumentSetMetadata, Settings } from './types';
 import { join } from 'path';
 export class DocumentSetManager {
   private sqliteDb: Database;
@@ -21,8 +21,14 @@ export class DocumentSetManager {
         upload_date TEXT NOT NULL,
         parameters TEXT NOT NULL,
         total_documents INTEGER NOT NULL DEFAULT 0
-      )
+      );
     `);
+    this.sqliteDb.exec(`
+      CREATE TABLE IF NOT EXISTS meaningfully_settings (
+        settings_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        settings TEXT NOT NULL
+      );
+    `);    
   }
 
   async addDocumentSet(metadata: Omit<DocumentSetMetadata, 'documentSetId'>): Promise<number> {
@@ -90,6 +96,38 @@ export class DocumentSetManager {
     `);
     
     stmt.run(documentSetId);
+  }
+
+  async getSettings() { 
+    const DEFAULT_SETTINGS = {
+      "openAIKey": null,
+      "oLlamaModelType": null,
+      "oLlamaBaseURL": null,
+    }
+    const stmt = this.sqliteDb.prepare(`
+      SELECT * FROM meaningfully_settings WHERE settings_id = 1
+    `);
+    
+    const row = stmt.get();
+    let settings;
+    if (row){
+      settings = JSON.parse(row.settings) as Settings;
+    }else{
+      settings = DEFAULT_SETTINGS;
+    }
+    settings = Object.assign({}, DEFAULT_SETTINGS, settings)
+    return settings; 
+  }
+
+  async setSettings(settings: Settings){
+    const stmt = this.sqliteDb.prepare(`
+      INSERT OR REPLACE INTO meaningfully_settings (settings_id, settings)
+      VALUES (1, ?)
+    `);
+    
+    stmt.run(JSON.stringify(settings));
+    return Object.assign(settings, {"success": true});
+
   }
 
   close() {

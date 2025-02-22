@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-
+// import type { Settings } from './index.d'
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('api', {
@@ -56,7 +56,12 @@ contextBridge.exposeInMainWorld('api', {
     query: string;
     n_results: number;
     filters?: Record<string, string>;
-  }) => ipcRenderer.invoke('search-document-set', params)
+  }) => ipcRenderer.invoke('search-document-set', params),
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  setSettings: (settings: {  openAIKey: string;
+    oLlamaModelType: string;
+    oLlamaBaseURL: string;
+  }) => ipcRenderer.invoke('set-settings', settings)
 })
 
 // Expose electron utilities

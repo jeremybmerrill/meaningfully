@@ -48,6 +48,7 @@ export interface DocumentSetParams {
 
 export interface EmbeddingConfig {
   modelName: string;
+  modelProvider: string
   vectorStoreType: "simple" | "postgres" ;
   projectName: string;
   storagePath: string;
@@ -56,4 +57,11 @@ export interface EmbeddingConfig {
   sploderMaxSize: number;
   chunkSize: number;
   chunkOverlap: number;
+}
+
+
+export interface Settings {
+  openAIKey: string | null;
+  oLlamaModelType: string | null;
+  oLlamaBaseURL: string | null;
 }

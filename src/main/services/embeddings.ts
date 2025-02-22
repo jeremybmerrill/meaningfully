@@ -2,6 +2,7 @@ import {
   Document, 
   VectorStoreIndex, 
   OpenAIEmbedding, 
+  OllamaEmbedding,
   IngestionPipeline,
   TransformComponent,
   TextNode,
@@ -15,7 +16,7 @@ import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
-import { EmbeddingConfig } from "../types";
+import { EmbeddingConfig, Settings  } from "../types";
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
 
 // unused, but probalby eventually will be used.
@@ -86,18 +87,21 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
   };
 }
 
-export async function getExistingVectorStoreIndex(config: EmbeddingConfig) {
+export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings) {
+  const embedModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     case "simple":
       const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
       const storageContext = await storageContextFromDefaults({
         persistDir: persistDir,
       });
-      return await VectorStoreIndex.init({
+      let vsi = await VectorStoreIndex.init({
         storageContext: storageContext,
       });
+      vsi.embedModel = embedModel;
+      return vsi;
 
-      case "postgres":
+    case "postgres":
       throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
       // return await createVectorStore(config);
     default:
@@ -105,15 +109,28 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig) {
   }
 }
 
+function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
+  let embedModel; 
+  if (config.modelProvider === "openai" ){
+    embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
+  } else if (config.modelProvider === "ollama") {
+    embedModel = new OllamaEmbedding({ model: config.modelName,     config: {
+      host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
+    }, }); 
+  } else {
+    throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
+  }
+  return embedModel;
+}
+
 // TODO: rename this to be parallel to createPreviewNodes
 export async function embedDocuments(
   documents: Document[],
-  config: EmbeddingConfig
+  config: EmbeddingConfig,
+  settings: Settings
 ) {
-
+  const embedModel = getEmbedModel(config, settings);
   // Create embedding model
-  const embedModel = new OpenAIEmbedding({ model: config.modelName });
-
   // use the same transformations as previewNodes
   // but with the actual embedding step added
   const transformations = getBaseTransformations(config);
@@ -130,9 +147,9 @@ export async function embedDocuments(
   return nodes;
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig): Promise<VectorStoreIndex> { 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
-  const vectorStore = await createVectorStore(config);
+  const vectorStore = await createVectorStore(config, settings);
 
   const storageContext = await storageContextFromDefaults({
     persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
@@ -150,7 +167,8 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig): 
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig) {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
+  const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
     //   // not gonna work, requires a 'server' to run this elsewhere
@@ -158,17 +176,19 @@ async function createVectorStore(config: EmbeddingConfig) {
     //     collectionName: config.projectName,
     //   });
 
+    // for some reason the embedding model has to be specified here TOO
+    // otherwise it defaults to Ada.
+
     case "postgres":
       return new PGVectorStore({
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
         tableName: sanitizeProjectName(config.projectName),
         dimensions: MODEL_DIMENSIONS[config.modelName],
+        embeddingModel: embeddingModel 
       });
 
     case "simple":
-      return new SimpleVectorStore({
-        //persistDir: join(app.getPath('userData'), 'simple_vector_store', config.projectName),
-      });
+      return new SimpleVectorStore({embeddingModel: embeddingModel});
 
     // case "weaviate": 
     // oddly the WeaviateClient from the embedded client doesn't define the same interface as the client from regular Weaviate

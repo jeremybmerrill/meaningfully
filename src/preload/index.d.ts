@@ -25,14 +25,18 @@ export interface PreviewResult {
   tokenCount?: number;
 } 
 
-
-// Define types for our document set metadata
 export interface DocumentSetMetadata {
   documentSetId: number;
   name: string;
   uploadDate: Date;
   parameters: Record<string, unknown>;
   totalDocuments: number;
+}
+
+export interface Settings {
+  openAIKey: string;
+  oLlamaModelType: string;
+  oLlamaBaseURL: string;
 }
 
 declare global {
@@ -51,7 +55,23 @@ declare global {
         documentSetId: number;
         query: string;
         filters?: Record<string, string>;
-      }) => Promise<SearchResult[]>
+      }) => Promise<SearchResult[]>,
+      getSettings: () => Promise<Settings>, 
+      setSettings: (settings: Settings) => Promise<void>,
+      generatePreviewData: (formData: {
+        file: File,
+        datasetName: string,
+        description: string,
+        textColumns: string[],
+        metadataColumns: string[],
+        splitIntoSentences: boolean,
+        combineSentencesIntoChunks: boolean,
+        sploderMaxSize: number,
+        chunkSize: number,
+        chunkOverlap: number,
+        modelName: string,
+        modelProvider: string
+      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
     }
   }
 }
