@@ -19,3 +19,12 @@ Try [Semantra](https://github.com/freedmand/semantra).
 Mostly. Semantic search requires "embedding" snippets of your document into numbers. You can do this on your computer, but it's very slow, but free (but for your electric bill). I recommend you get an OpenAI API key, put it into Meaningfully, and use that; you'll be responsible for the OpenAI charges, but Meaningfully doesn't cost any extra on top of that. (And it's generally very cheap. Most spreadsheets, even with tens of thousands of rows, will cost a few pennies.)
 
 Eventually, Meaningfully may include some paid options.
+
+## How can I run this app myself?
+
+You'll need Node v22. How to install that is outside the scope of this document.
+
+```
+npm install
+npm run dev
+```
