@@ -20,7 +20,8 @@ async function main() {
             projectName: projectName,
             storagePath: storagePath, // relative to where the script is run from
             chunkSize: 100,
-            chunkOverlap: 20
+            chunkOverlap: 20,
+            splitIntoSentences: true
         })
         const results = await search(index, "someone's FB page", 10);
         console.log('results:', results);
