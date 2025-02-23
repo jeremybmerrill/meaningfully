@@ -10,18 +10,16 @@
             Keyword search has been the only kind of search for decades. Sometimes it fails:
         </p>
 
-            <ol>
+            <ul>
                 <li>Typos</li>
-                <li>Documents written by laypeople describing complex situations</li>
-                <li>TK TK</li>
+                <li>Documents written by laypeople describing complex situations in widely-varied language</li>
+                <li>Circumlocutions and legalese</li>
                 <li>Multilingual documents</li>
-            </ol>
+            </ul>
         <p>
             Semantic search works better in these situations, by finding results that <i>mean</i> something
             similar to the query. Even if the words are completely different, semantic search can still
             surface the results you need.
-
-            Examples TK
         </p>
     </section>
     <section>
@@ -61,3 +59,40 @@
     </section>
 </div>
   
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    /* ol {
+        margin-left: 20px;
+    }       
+    ol li {
+        list-style-type: decimal;
+        list-style-position: inside;
+        padding-left: 0.5rem;
+    } */
+    ul li {
+        list-style-type: disc;
+        list-style-position: inside;
+        padding-left: 0.5rem;
+    }
+</style>

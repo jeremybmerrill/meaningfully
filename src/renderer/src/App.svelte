@@ -4,8 +4,10 @@
   import FrontPage from './components/FrontPage.svelte'
   import ApiKeyPage from './components/ApiKeyPage.svelte'
   import HelpPage from './components/HelpPage.svelte'
+  import ApiKeyStatus from './components/ApiKeyStatus.svelte'
 //  import electronLogo from './assets/electron.svg'
 
+  let apiKeyStatus: ApiKeyStatus;
 </script>
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
@@ -20,6 +22,8 @@
   <h2 class="text-xl font-semibold">
     Semantic search for your spreadsheets
   </h2>
+
+  <ApiKeyStatus bind:this={apiKeyStatus} on:settings-updated={() => apiKeyStatus.getSettings() } />
 
   <main class="container mx-auto px-4 py-8">
     <Route path="/" component={FrontPage} />
