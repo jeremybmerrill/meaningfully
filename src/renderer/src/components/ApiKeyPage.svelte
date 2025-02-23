@@ -1,16 +1,26 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
     import { navigate } from 'svelte-routing'
 
-    let openAIKey: string = null;
+    const dispatch = createEventDispatcher();
+
+    let realOpenAIKey: string = null;
+    let displayedOpenAIKey: string = null;
     let oLlamaModelType: string = null;
     let oLlamaBaseURL: string = null;
 
     let loading = true;
+
+    const maskKey = (key: string, n: number = 20): string => {
+        return key.length > (n*2) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
+    };
+
     const getSettings = async () => {
         try {
             const settings = await window.api.getSettings();
-            openAIKey = settings.openAIKey;
+            realOpenAIKey = settings.openAIKey;
+            // Mask the OpenAI key for display purposes
+            displayedOpenAIKey = maskKey(realOpenAIKey)
             oLlamaModelType = settings.oLlamaModelType;
             oLlamaBaseURL = settings.oLlamaBaseURL;
             loading = false;
@@ -20,18 +30,24 @@
     };
 
     const saveSettings = async () => {
+        if (displayedOpenAIKey != maskKey(realOpenAIKey)) {
+            // If the displayed key has changed from the masked version of the set key,
+            // then the displayed key is new, and we should set it.
+            realOpenAIKey = displayedOpenAIKey;
+        }
         const settings = {
-            openAIKey: openAIKey,
+            openAIKey: realOpenAIKey,
             oLlamaModelType: oLlamaModelType,
             oLlamaBaseURL: oLlamaBaseURL
         };
+
         try {
             const response = await window.api.setSettings(settings);
 
             if (!response.success) {
                 throw new Error('Failed to save settings');
             }
-
+            dispatch('settings-updated');
             navigate("/");
         } catch (error) {
             console.error(error);
@@ -53,7 +69,7 @@
         <div class="settings-section">
             <h2>OpenAI</h2>
             <p>OpenAI provides embeddings at a (generally very cheap) cost.</p>
-            <input type="text" placeholder="sk-proj-test-1234567890" bind:value={openAIKey} />
+            <input type="text" placeholder="sk-proj-test-1234567890" bind:value={displayedOpenAIKey} />
         </div>
     
         <div class="settings-section">
