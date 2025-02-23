@@ -13,10 +13,20 @@
   let metadataFilters: Record<string, string> = emptyMetadataFilters;
   let results: Array<Record<string, any>> = [];
   let loading = false;
+  let hasResults = false;
 
+  const placeholderQueries = [
+    "The CEO got fired",
+    "My car crashed into a wall, all on its own",
+    "I surprised my closest friends by starting a brand new business selling handmade candles",
+    "Our company's stock price could plummet if we don't address the recent scandal involving our CEO",
+    "Don't tell anyone that I was the one who leaked the confidential information about our competitor's new product launch",
+    "I can't believe I got fired for accidentally sending a company-wide email with a meme instead of the quarterly report",
+  ]
+  const placeholderQuery = placeholderQueries[Math.floor(Math.random()*placeholderQueries.length)];
   async function handleSearch() {
     if (!searchQuery.trim()) return;
-
+    hasResults = true;
     loading = true;
     try {
       // Mock API call - replace with actual API call later
@@ -75,7 +85,7 @@
           id="search"
           type="text"
           bind:value={searchQuery}
-          placeholder="Enter your search query..."
+          placeholder={placeholderQuery}
           class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
         />
         <button
@@ -116,7 +126,7 @@
   </div>
 
   <!-- Results -->
-   {#if searchQuery != blankSearchQuery || metadataFilters != emptyMetadataFilters}
+   {#if (searchQuery != blankSearchQuery || metadataFilters != emptyMetadataFilters) && hasResults}
     <Results
       {results}
       {loading}
