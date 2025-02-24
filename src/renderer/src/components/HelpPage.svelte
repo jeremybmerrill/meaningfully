@@ -11,9 +11,10 @@
         </p>
 
             <ul>
-                <li>Typos</li>
-                <li>Documents written by laypeople describing complex situations in widely-varied language</li>
+                <li>Ambiguity and synonyms (people getting fired and things catching on fire, cars and automobiles)</li>
                 <li>Circumlocutions and legalese</li>
+                <li>Documents written by laypeople describing complex situations in widely-varied language</li>
+                <li>Typos</li>
                 <li>Multilingual documents</li>
             </ul>
         <p>
