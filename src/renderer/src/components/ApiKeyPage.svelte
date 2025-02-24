@@ -12,7 +12,7 @@
     let loading = true;
 
     const maskKey = (key: string, n: number = 20): string => {
-        return key.length > (n*2) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
+        return (key && key.length > (n*2)) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
     };
 
     const getSettings = async () => {
