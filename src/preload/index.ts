@@ -4,6 +4,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('api', {
   listDocumentSets: () => ipcRenderer.invoke('list-document-sets'),
+  getDocumentSet: (documentSetId: number) => ipcRenderer.invoke('get-document-set', documentSetId),
+  deleteDocumentSet: (documentSetId: number) => ipcRenderer.invoke('delete-document-set', documentSetId),
   uploadCsv: (formData: {
     file: File,
     datasetName: string,

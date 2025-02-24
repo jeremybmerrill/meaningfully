@@ -60,7 +60,8 @@ interface Window {
       }) => Promise<SearchResult[]>;
       getSettings: () => Promise<Settings>;
       setSettings: (settings: Settings) => Promise<{success: boolean}>;
-
+      deleteDocumentSet: (documentSetId: number) => Promise<void>;
+      getDocumentSet: (documentSetId: number) => Promise<DocumentSet>;
     }
   }
   

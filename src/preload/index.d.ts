@@ -44,6 +44,8 @@ declare global {
     electron: ElectronAPI
     api: {
       listDocumentSets: () => Promise<DocumentSetMetadata[]>,
+      getDocumentSet: (documentSetId: number) => Promise<DocumentSetMetadata>,
+      deleteDocumentSet: (documentSetId: number) => Promise<void>,
       uploadCsv: (formData: {
         file: File,
         datasetName: string,

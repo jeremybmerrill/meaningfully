@@ -66,7 +66,7 @@ export class DocumentSetManager {
 
   async getDocumentSets(): Promise<DocumentSetMetadata[]> {
     const stmt = this.sqliteDb.prepare(`
-        SELECT * FROM document_sets ORDER BY uploadDate DESC LIMIT ?
+        SELECT * FROM document_sets ORDER BY upload_date DESC LIMIT ?
       `);
     const rows = stmt.all(10);
 

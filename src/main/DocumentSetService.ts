@@ -4,6 +4,7 @@ import { createEmbeddings, getIndex, search, previewResults } from './api/embedd
 import { app } from 'electron';
 import { join } from 'path';
 import { DocumentSetParams, Settings } from './types';
+import fs from 'fs';
 
 type HasFilePath = {filePath: string};
 type DocumentSetParamsFilePath = DocumentSetParams & HasFilePath;
@@ -16,18 +17,22 @@ export class DocumentService {
   }
 
   async listDocumentSets() {
-    const stmt = this.manager['sqliteDb'].prepare(`
-      SELECT * FROM document_sets ORDER BY upload_date DESC
-    `)
-    
-    const rows = stmt.all();
-    return rows.map(row => ({
-      documentSetId: row.set_id,
-      name: row.name,
-      uploadDate: new Date(row.upload_date),
-      parameters: JSON.parse(row.parameters),
-      totalDocuments: row.total_documents
-    }))
+    return await this.manager.getDocumentSets();
+  }
+
+  async getDocumentSet(documentSetId: number) {
+    return await this.manager.getDocumentSet(documentSetId);
+  }
+  async deleteDocumentSet(documentSetId: number) {
+    // Delete the document set from the database
+    const result = await this.manager.getDocumentSet(documentSetId);
+    if (result){
+      // Delete the document set from the database
+      await this.manager.deleteDocumentSet(documentSetId);
+      // Delete the associated files from the filesystem
+      fs.rmSync(join(app.getPath('userData'), 'simple_vector_store', result.name), { recursive: true, force: true });
+    }
+    return { success: true };
   }
 
 
@@ -124,7 +129,6 @@ export class DocumentService {
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     }, settings);
-    console.error(index, index.embedModel, index.vectorStores);
     const results = await search(index, query, n_results);
     return results;
   }   

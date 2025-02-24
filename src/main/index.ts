@@ -71,6 +71,23 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('get-document-set', async (_, documentSetId: number) => {
+    try {
+      return await docService.getDocumentSet(documentSetId);
+    } catch (error) {
+      console.error('Error getting document set:', error);
+      throw error;
+    }
+  });
+  ipcMain.handle('delete-document-set', async (_, documentSetId: number) => {
+    try {
+      return await docService.deleteDocumentSet(documentSetId);
+    } catch (error) {
+      console.error('Error deleting document set:', error); 
+      throw error;
+    }
+  });
+
   ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number}) => {
     try {
       return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results);
