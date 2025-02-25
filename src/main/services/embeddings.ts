@@ -17,6 +17,8 @@ import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings  } from "../types";
+import * as fs from 'fs';
+
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
 
 // unused, but probalby eventually will be used.
@@ -151,6 +153,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create and configure vector store based on type
   const vectorStore = await createVectorStore(config, settings);
 
+  fs.mkdirSync(config.storagePath, { recursive: true });
   const storageContext = await storageContextFromDefaults({
     persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
     vectorStores: {[ModalityType.TEXT]: vectorStore}
