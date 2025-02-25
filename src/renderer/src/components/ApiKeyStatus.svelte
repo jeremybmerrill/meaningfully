@@ -13,7 +13,7 @@
             openAIKey = settings.openAIKey;
             oLlamaModelType = settings.oLlamaModelType;
             oLlamaBaseURL = settings.oLlamaBaseURL;
-            noValidApiKeysSet = !settings.openAIKey && !(settings.oLlamaModelType && settings.oLlamaBaseURL);
+            noValidApiKeysSet = !openAIKey && !(oLlamaModelType && oLlamaBaseURL);
         } catch (error) {
             console.error('Error fetching settings:', error);
         }

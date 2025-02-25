@@ -9,7 +9,6 @@
   let files: FileList;
   let uploading = false;
   let error = '';
-  let parsedData: Array<Record<string, any>> = []; // parsed 'raw' CSV
   let availableColumns: string[] = [];
   let selectedTextColumn = '';
   let selectedMetadataColumns: string[] = [];
@@ -48,7 +47,6 @@
     // only necessary to get the column names.
     Papa.parse(file, {
       complete: async (results) => {
-        parsedData = results.data;
         availableColumns = results.meta.fields || [];
         selectedTextColumn = '';
         selectedMetadataColumns = [];
@@ -143,7 +141,6 @@
         dispatch('upload-complete');
         navigate("/search/" + response.documentSetId);
         showPreview = false;
-        parsedData = [];
         files = null;
       } else {
         error =  'Upload failed';
