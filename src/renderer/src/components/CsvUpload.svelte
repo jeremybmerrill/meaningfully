@@ -169,7 +169,7 @@
 </script>
 
 <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-  <h2 class="text-xl font-semibold">Upload New Spreadsheet</h2>
+  <h2 class="text-xl font-semibold">Upload A Spreadsheet</h2>
   
   <label class="block">
     <span class="sr-only">Choose CSV file</span>
@@ -192,7 +192,7 @@
   <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
     <div class="space-y-2">
       <label class="block text-sm font-medium text-gray-700">
-        Give the dataset a name:
+        Give the spreadsheet a name:
         <input
           type="text"
           bind:value={datasetName}
@@ -200,7 +200,7 @@
         />
       </label>
       <p class="text-xs text-gray-500">
-        The name is just for you. Use something that will help you remember what this dataset is.
+        The name is just for you. Use something that will help you remember what this spreadsheet is.
       </p>
     </div>
     <div class="space-y-2">
@@ -357,7 +357,7 @@
         disabled={!selectedTextColumn || uploading}
         class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {uploading ? 'Uploading...' : 'Upload Dataset'}
+        {uploading ? 'Uploading...' : 'Upload Spreadsheet'}
       </button>
       {#if uploading }
         <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
