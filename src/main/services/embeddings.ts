@@ -153,7 +153,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create and configure vector store based on type
   const vectorStore = await createVectorStore(config, settings);
 
-  fs.mkdirSync(config.storagePath, { recursive: true });
+  fs.mkdirSync(config.storagePath, { recursive: true }); 
   const storageContext = await storageContextFromDefaults({
     persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
     vectorStores: {[ModalityType.TEXT]: vectorStore}

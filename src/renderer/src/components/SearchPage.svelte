@@ -17,8 +17,9 @@
   let searchQuery = blankSearchQuery
   const emptyMetadataFilters: Record<string, string>  = {};
   let metadataFilters: Record<string, string> = emptyMetadataFilters;
-  let results: Array<Record<string, any>> = [];
 
+  let results: Array<Record<string, any>> = [];
+  let error: string | null = null;
 
   window.api.getDocumentSet(documentSetId).then(receivedDocumentSet => {
     documentSet = receivedDocumentSet;
@@ -59,8 +60,10 @@
         similarity: result.score.toFixed(2),
         [textColumn]: result.text
       })); 
-    } catch (error) {
-      console.error('Search failed:', error);
+      error = null; 
+    } catch (error_) {
+      console.error('Search failed:', error_);
+      error = error_;
       // You might want to show an error message to the user
     } finally {
       loading = false;
@@ -149,6 +152,11 @@
     </div>
 
     <!-- Results -->
+    {#if error}
+      <div class="my-10 p-4 bg-red-100 text-red-700 rounded-md">
+        {error}
+      </div>
+    {/if}
     {#if (searchQuery != blankSearchQuery || metadataFilters != emptyMetadataFilters) && hasResults}
       <Results
         {results}

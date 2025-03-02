@@ -87,7 +87,7 @@ export class DocumentService {
         await this.manager.updateDocumentCount(documentSetId, documents.length);
 
         // Create embeddings for this column
-        await createEmbeddings(data.filePath, textColumn, {
+        let ret = await createEmbeddings(data.filePath, textColumn, {
           modelName: data.modelName,
           modelProvider: data.modelProvider,
           splitIntoSentences: data.splitIntoSentences,
@@ -100,12 +100,15 @@ export class DocumentService {
           chunkSize: data.chunkSize,
           chunkOverlap: data.chunkOverlap,
         }, embedSettings);
+        if (!ret.success) {
+          throw new Error(ret.error);
+        }
       }
-
       return { success: true, documentSetId };
     } catch (error) {
       // If something fails, we should probably delete the document set
       await this.manager.deleteDocumentSet(documentSetId);
+      console.error("deleting document set due to failure ", documentSetId, error);
       throw error;
     }
   }
