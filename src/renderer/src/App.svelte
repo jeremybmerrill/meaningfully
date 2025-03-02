@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { Router, Route, Link } from "svelte-routing"; // also Link
   import SearchPage from './components/SearchPage.svelte'
   import FrontPage from './components/FrontPage.svelte'
@@ -7,7 +8,20 @@
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
 //  import electronLogo from './assets/electron.svg'
 
-  let apiKeyStatus: ApiKeyStatus;
+  let settings: Settings | null = null;
+
+  const getSettings = async () => {
+    console.log("getSettings")
+      try {
+          settings = await window.api.getSettings();
+          console.log("got settings", settings);
+      } catch (error) {
+          console.error('Error fetching settings:', error);
+      }
+  };
+
+  onMount(getSettings);
+
 </script>
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
@@ -23,13 +37,19 @@
     Semantic search for your spreadsheets
   </h2>
 
-  <ApiKeyStatus bind:this={apiKeyStatus} on:settings-updated={() => apiKeyStatus.getSettings() } />
+  {#if settings}
+    <ApiKeyStatus settings={settings} />
+  {/if}
 
   <main class="container mx-auto px-4 py-8">
     <Route path="/" component={FrontPage} />
     <Route path="/search/:id" component={SearchPage} />
     <Route path="/help" component={HelpPage} />
-    <Route path="/settings" component={ApiKeyPage} />
+    <Route path="/settings">
+      {#if settings}
+        <ApiKeyPage settings={settings} on:SettingsUpdated={() => getSettings() } />
+      {/if}
+    </Route>
   </main>
 
   <nav class="navbar">

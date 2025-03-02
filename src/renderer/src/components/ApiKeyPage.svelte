@@ -1,33 +1,19 @@
 <script lang="ts">
-    import { onMount, createEventDispatcher } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
     import { navigate } from 'svelte-routing'
 
     const dispatch = createEventDispatcher();
-
-    let realOpenAIKey: string = null;
-    let displayedOpenAIKey: string = null;
-    let oLlamaModelType: string = null;
-    let oLlamaBaseURL: string = null;
-
-    let loading = true;
 
     const maskKey = (key: string, n: number = 20): string => {
         return (key && key.length > (n*2)) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
     };
 
-    const getSettings = async () => {
-        try {
-            const settings = await window.api.getSettings();
-            realOpenAIKey = settings.openAIKey;
-            // Mask the OpenAI key for display purposes
-            displayedOpenAIKey = maskKey(realOpenAIKey)
-            oLlamaModelType = settings.oLlamaModelType;
-            oLlamaBaseURL = settings.oLlamaBaseURL;
-            loading = false;
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
+    export let settings : Settings;  // TODO: replace with $props call in Svelte5 
+    console.log("apikeypage settings", settings);
+    let realOpenAIKey: string = settings.openAIKey;
+    let displayedOpenAIKey: string = maskKey(settings.openAIKey);
+    let oLlamaModelType: string = settings.oLlamaModelType;
+    let oLlamaBaseURL: string = settings.oLlamaBaseURL;
 
     const saveSettings = async () => {
         if (displayedOpenAIKey != maskKey(realOpenAIKey)) {
@@ -47,41 +33,34 @@
             if (!response.success) {
                 throw new Error('Failed to save settings');
             }
-            dispatch('settings-updated');
+            dispatch('SettingsUpdated');
             navigate("/");
         } catch (error) {
             console.error(error);
             alert('Error saving settings');
         }
     };
-    onMount(() => {
-        getSettings();
-    });
 </script>
 
 <div>
     <h1>Settings and API Keys</h1>
 
-    {#if loading}
-        <p>Loading settings...</p>
-    {:else}
-        <p>Configure API keys for at least one provider.</p>
-        <div class="settings-section">
-            <h2>OpenAI</h2>
-            <p>OpenAI provides embeddings at a (generally very cheap) cost.</p>
-            <input type="text" placeholder="sk-proj-test-1234567890" bind:value={displayedOpenAIKey} />
-        </div>
-    
-        <div class="settings-section">
-            <h2>OLlama</h2>
-            <p>OLlama lets you run embedding models on your computer. This is free (except for electricity, wear-and-tear, etc.).</p>
-            <input type="text" placeholder="mxbai-embed-large" bind:value={oLlamaModelType} />
-            <input type="text" placeholder="http://localhost:11434" bind:value={oLlamaBaseURL} />
-        </div>
-    
-        <button on:click={saveSettings}>Save</button>
-    
-    {/if}
+    <p>Configure API keys for at least one provider.</p>
+    <div class="settings-section">
+        <h2>OpenAI</h2>
+        <p>OpenAI provides embeddings at a (generally very cheap) cost.</p>
+        <input type="text" placeholder="sk-proj-test-1234567890" bind:value={displayedOpenAIKey} />
+    </div>
+
+    <div class="settings-section">
+        <h2>OLlama</h2>
+        <p>OLlama lets you run embedding models on your computer. This is free (except for electricity, wear-and-tear, etc.).</p>
+        <input type="text" placeholder="mxbai-embed-large" bind:value={oLlamaModelType} />
+        <input type="text" placeholder="http://localhost:11434" bind:value={oLlamaBaseURL} />
+    </div>
+
+    <button on:click={saveSettings}>Save</button>
+
 </div>
 
 

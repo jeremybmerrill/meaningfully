@@ -1,30 +1,11 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { Link } from 'svelte-routing'
-
-    let openAIKey: string = null;
-    let oLlamaModelType: string = null;
-    let oLlamaBaseURL: string = null;
-
-    $: noValidApiKeysSet = false;
-    const getSettings = async () => {
-        try {
-            const settings = await window.api.getSettings();
-            openAIKey = settings.openAIKey;
-            oLlamaModelType = settings.oLlamaModelType;
-            oLlamaBaseURL = settings.oLlamaBaseURL;
-            noValidApiKeysSet = !openAIKey && !(oLlamaModelType && oLlamaBaseURL);
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        }
-    };
-
-    onMount(() => {
-        getSettings();
-    });
+    export let settings : Settings; // TODO: replace with $props call in Svelte5 
+    console.log("apikeystatus settings", settings);
+    $: validApiKeysSet = !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL));
 </script>
 
-{#if noValidApiKeysSet }
+{#if !validApiKeysSet }
     <div class="alert alert-warning">
         <p>No OpenAI API key is set. Please <Link to="/settings" class="text-blue text-decoration-line"><span class="text-blue text-decoration-line">add one</span></Link> (or details for another provider) in order to use Meaningfully.</p>
     </div>
