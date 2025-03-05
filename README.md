@@ -22,7 +22,7 @@ Eventually, Meaningfully may include some paid options.
 
 ## How can I run this app myself?
 
-You'll need Node v22. How to install that is outside the scope of this document.
+You'll need Node v22. You might try installing [nvm](https://github.com/nvm-sh/nvm) and then running `nvm install 22` and `nvm use 22` but troubleshooting and other methods are outside the scope of this document.
 
 ```
 npm install
