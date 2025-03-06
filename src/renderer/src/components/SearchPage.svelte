@@ -5,6 +5,8 @@
   import type { DocumentSet } from '../main';
   import Results from './Results.svelte';
 
+  export let validApiKeysSet: boolean;
+
   let documentSetId = parseInt(window.location.href.split("?")[0].split('/').pop());
   let documentSet: DocumentSet | null = null;
   let documentSetLoading = true;
@@ -116,7 +118,7 @@
           />
           <button
             on:click={handleSearch}
-            disabled={loading}
+            disabled={loading || !validApiKeysSet}
             class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Searching...' : 'Search'}

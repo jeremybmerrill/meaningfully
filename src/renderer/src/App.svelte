@@ -19,6 +19,7 @@
           console.error('Error fetching settings:', error);
       }
   };
+  $: validApiKeysSet = settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL));
 
   onMount(getSettings);
 
@@ -38,12 +39,14 @@
   </h2>
 
   {#if settings}
-    <ApiKeyStatus settings={settings} />
+    <ApiKeyStatus settings={settings} validApiKeysSet={validApiKeysSet} />
   {/if}
 
   <main class="container mx-auto px-4 py-8">
-    <Route path="/" component={FrontPage} />
-    <Route path="/search/:id" component={SearchPage} />
+    <Route path="/">
+      <FrontPage validApiKeysSet={validApiKeysSet} />
+    </Route>
+    <Route path="/search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
     <Route path="/help" component={HelpPage} />
     <Route path="/settings">
       {#if settings}

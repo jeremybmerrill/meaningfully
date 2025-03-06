@@ -4,6 +4,8 @@
   import Papa from 'papaparse';
   import Preview from './Preview.svelte';
 
+  export let validApiKeysSet: boolean;
+
   const dispatch = createEventDispatcher();
 
   let files: FileList;
@@ -354,7 +356,7 @@
 
       <button
         on:click={handleUpload}
-        disabled={!selectedTextColumn || uploading}
+        disabled={!selectedTextColumn || uploading || !validApiKeysSet}
         class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {uploading ? 'Uploading...' : 'Upload Spreadsheet'}

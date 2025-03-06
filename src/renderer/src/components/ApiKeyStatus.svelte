@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Link } from 'svelte-routing'
     export let settings : Settings; // TODO: replace with $props call in Svelte5 
+    export let validApiKeysSet: boolean;
     console.log("apikeystatus settings", settings);
-    $: validApiKeysSet = !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL));
 </script>
 
 {#if !validApiKeysSet }
