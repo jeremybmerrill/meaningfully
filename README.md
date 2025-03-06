@@ -38,3 +38,5 @@ You'll need Node v22 or higher. You might try installing [nvm](https://github.co
 npm install
 npm run dev
 ```
+
+There's a weird bug where sometimes I think the storage directory isn't created right. If you get weird errors like `Error searching document set: Error: ENOENT: no such file or directory`, maybe try running `mkdir ~/Library/Application\ Support/meaningfully/simple_vector_store/` and trying again. I'm trying to fix it. :D
