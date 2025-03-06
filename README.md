@@ -1,6 +1,6 @@
 # Meaningfully
 
-Meaningfully is a semantic search tool for text data in spreadsheets. Keyword searching in Excel or Google Sheets is painful because text data is displayed awkwardly and keywords miss circumlocutions, typos, unexpected wording and foreign-language data. Semantic search solves all of that.
+Meaningfully is a semantic search tool for text data in spreadsheets. Keyword searching in Excel or Google Sheets is painful because text data is displayed awkwardly and because keywords miss circumlocutions, typos, unexpected wording and foreign-language data. Semantic search solves all of that.
 
 Meaningfully works best for *semi-structured* data, where you have thousands of instances of a type and want to find certain instances.
 
