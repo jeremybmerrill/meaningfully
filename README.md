@@ -24,6 +24,10 @@ It's a middle-ground between AI chatbot search and keyword search. It uses the s
 
 Try [Semantra](https://github.com/freedmand/semantra).
 
+## Is Meaningfully ready to use?
+
+Not really, but you can try it! It is kind of the minimum viable semantic search app. If people like it, I hope to sand down the rough edges and build extra features. Right now, I make zero promises about whether it will work.
+
 ## Is Meaningfully free?
 
 Mostly. Semantic search requires "embedding" snippets of your document into numbers. You can do this on your computer, but it's very slow, but free (but for your electric bill). I recommend you get an OpenAI API key, put it into Meaningfully, and use that; you'll be responsible for the OpenAI charges, but Meaningfully doesn't cost any extra on top of that. (And it's generally very cheap. Most spreadsheets, even with tens of thousands of rows, will cost a few pennies.)
