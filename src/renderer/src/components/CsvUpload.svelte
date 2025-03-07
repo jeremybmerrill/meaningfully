@@ -336,7 +336,7 @@
         {#key tokenCount}
           {#if tokenCount > 0 && costEstimate > 0}
             <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens </p>
-            <p>Disclaimer TK; price and model name TK</p>
+            <p>Disclaimer: You are responsible for all costs. The estimate might be wrong. Price and model name TK</p>
           {/if}
         {/key}
       {/key}
