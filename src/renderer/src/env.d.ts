@@ -58,6 +58,7 @@ interface Window {
         n_results: number;
         filters?: Record<string, string>;
       }) => Promise<SearchResult[]>;
+      getDocument: (documentSetId: number, documentId: string) => Promise<{ text: string, metadata: Record<string, any> }>;
       getSettings: () => Promise<Settings>;
       setSettings: (settings: Settings) => Promise<{success: boolean}>;
       deleteDocumentSet: (documentSetId: number) => Promise<void>;
