@@ -14,8 +14,7 @@ import {
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
-import { encodingForModel } from "js-tiktoken";
-import { TiktokenModel } from "js-tiktoken";
+import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
 import * as fs from 'fs';
