@@ -1,5 +1,5 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter } from "../types";
+import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, getExistingDocStore } from "../services/embeddings";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter} from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
 
@@ -73,6 +73,10 @@ export async function previewResults(
     };
   }
 } 
+
+export async function getDocStore(config: EmbeddingConfig) {
+  return await getExistingDocStore(config);
+}
 
 export async function getIndex(config: EmbeddingConfig, settings: Settings) {
   return await getExistingVectorStoreIndex(config, settings);
