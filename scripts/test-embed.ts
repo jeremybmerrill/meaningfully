@@ -28,7 +28,15 @@ async function main() {
             sploderMaxSize: 100,
             vectorStoreType: 'simple',
             projectName: projectName,
-            storagePath: storagePath // relative to where the script is run from
+            storagePath: storagePath, // relative to where the script is run from
+            splitIntoSentences: true,
+            chunkSize: 100,
+            chunkOverlap: 10,
+            modelProvider: 'openai',
+          }, {
+            openAIKey: null,
+            oLlamaModelType: null,
+            oLlamaBaseURL: null
           });
         console.log('Embeddings result:', result);
         console.log('Document set ID:', documentSetId);
