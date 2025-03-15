@@ -6,7 +6,7 @@ import { DocumentService } from './DocumentSetService'
 import { writeFileSync, readFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
-import { DocumentSetParams } from './types';
+import { DocumentSetParams, MetadataFilter } from './types';
 
 type HasFilePathAndName =  { file: { path: string, name: string }};
 type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
@@ -88,11 +88,11 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number}) => {
+  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number, filters?: MetadataFilter[]}) => {
     try {
-      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results);
+      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results, params.filters);
     } catch (error) {
-      console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results);
+      console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results, params.filters);
       throw error;  
     }
   });

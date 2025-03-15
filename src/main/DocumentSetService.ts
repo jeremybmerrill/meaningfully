@@ -3,7 +3,7 @@ import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults } from './api/embedding';
 import { app } from 'electron';
 import { join } from 'path';
-import { DocumentSetParams, Settings } from './types';
+import { DocumentSetParams, Settings, MetadataFilter } from './types';
 import fs from 'fs';
 
 type HasFilePath = {filePath: string};
@@ -114,7 +114,7 @@ export class DocumentService {
   }
 
 
-  async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10) {
+  async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10,   filters?: MetadataFilter[]  ) {
     const documentSet = await this.manager.getDocumentSet(documentSetId);
     const settings = await this.manager.getSettings();
     if (!documentSet) {
@@ -132,7 +132,7 @@ export class DocumentService {
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     }, settings);
-    const results = await search(index, query, n_results);
+    const results = await search(index, query, n_results, filters);
     return results;
   }   
 

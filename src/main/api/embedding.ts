@@ -1,5 +1,5 @@
 import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings } from "../types";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter } from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
 
@@ -70,12 +70,13 @@ export async function getIndex(config: EmbeddingConfig, settings: Settings) {
 export async function search(
   index: any,
   query: string,
-  numResults: number = 10
+  numResults: number = 10,
+  filters?: MetadataFilter[]
 ): Promise<SearchResult[]> {
-  const results = await searchDocuments(index, query, numResults); //  (await searchDocuments(index, query, numResults)) as TextNode[];
+  const results = await searchDocuments(index, query, numResults, filters);
   return results.map((result) => ({
     text: result.node.getContent(MetadataMode.NONE),
-    score: result.score ?? 0, 
+    score: result.score ?? 0,
     metadata: result.node.metadata,
   }));
 }

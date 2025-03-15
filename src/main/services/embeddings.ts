@@ -7,6 +7,7 @@ import {
   TransformComponent,
   TextNode,
   ModalityType,
+  MetadataFilters,
   PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
@@ -16,7 +17,7 @@ import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { encodingForModel } from "js-tiktoken";
 import { TiktokenModel } from "js-tiktoken";
 import { join } from "path";
-import { EmbeddingConfig, Settings  } from "../types";
+import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
 import * as fs from 'fs';
 
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
@@ -215,9 +216,15 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
 export async function searchDocuments(
   index: VectorStoreIndex,
   query: string,
-  numResults: number = 10
+  numResults: number = 10,
+  filters?: MetadataFilter[]
 ) {
-  const retriever = index.asRetriever({ similarityTopK: numResults });
-  const results = await retriever.retrieve(query);
+  // const metadataFilters: MetadataFilters | undefined = filters ? {filters: filters} : undefined;
+  const metadataFilters: MetadataFilters = {
+    filters: filters ? filters : [],
+  };
+  const retriever = index.asRetriever({ similarityTopK: numResults, filters: metadataFilters });
+
+  const results = await retriever.retrieve(query );
   return results;
-} 
+}
