@@ -19,7 +19,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:linux": "npm run build && electron-builder --linux",
+    "test": "vitest"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
@@ -28,7 +29,7 @@
     "csv-parse": "^5.5.3",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
-    "llamaindex": "^0.8.36",
+    "llamaindex": "^0.8.37",
     "natural": "^8.0.1",
     "svelte-routing": "^2.13.0"
   },
@@ -52,6 +53,8 @@
     "tailwindcss": "^4.0.6",
     "tslib": "^2.6.3",
     "typescript": "^5.7.3",
-    "vite": "^5.3.1"
+    "vite": "^5.3.1",
+    "vite-node": "^3.0.8",
+    "vitest": "^3.0.8"
   }
 }
