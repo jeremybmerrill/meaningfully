@@ -10,6 +10,12 @@ the resulting split sentences are about 10 tokens long -- as opposed to the spec
 This modified SentenceSplitter adds a `include_metadata_in_chunksize` flag that disables the above behavior,
 ignoring metadata when calculating chunksize (i.e. only including the size of the text datga when calculating chunksize.)
 
+Additionally, splitTextMetadataAware does some bizarre stuff where it will split sentences at abbreviations -- even if the 
+underlying tokenizer knows about the abbreviations, I think due to some weird sub-sentence splitting. It also sews sentence
+chunks back together in a way that eliminates spaces, e.g. `JPMorgan Chase & Co.elected Mark Weinberger` and  `Mr.Weinberger was Global Chairman`.
+
+I gave up and made SentenceSplitter just ... split on sentences.
+
 */
 // TODO: make this configurable
 const INCLUDE_METADATA_IN_CHUNKSIZE = false;
@@ -28,15 +34,20 @@ SentenceSplitter.prototype.splitTextMetadataAware = function(text: string, metad
   return this._splitText(text, effectiveChunkSize);
 }
 
+const default_abbreviations= ['dr. ', 'vs. ', 'mr. ', 'ms. ', 'mx. ', 'mrs. ', 'prof. ', 'inc. ', 'corp. ', 'co. ', 'llc. ', 'ltd. ', 'etc.'];
 export class CustomSentenceSplitter extends SentenceSplitter {
-  constructor(options: { chunkSize?: number; chunkOverlap?: number } = {}) {
+  constructor(options: { chunkSize?: number; chunkOverlap?: number; abbreviations?: string[] } = {}) {
     super(options);
     // Create custom tokenizer with abbreviations
-    const abbreviations = ['dr. ', 'vs. ', 'mr. ', 'ms. ', 'mx. ', 'mrs. ', 'prof. ', 'inc. ', 'corp. ', 'co. ', 'llc. ', 'ltd. ', 'etc.'];
+    const abbreviations = options.abbreviations || default_abbreviations;
     const tokenizer = new natural.SentenceTokenizer(abbreviations);
     // Override the default split_text method
     this.splitText = (text: string): string[] => {
       return tokenizer.tokenize(text);
     };
+    /* tslint:disable:no-unused-variable */
+    this.splitTextMetadataAware = (text: string, metadata: string): string[] => {
+      return tokenizer.tokenize(text);
+    }
   }
 } 
