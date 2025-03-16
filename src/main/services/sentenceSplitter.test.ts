@@ -55,6 +55,8 @@ let noAbbrevsCustomSentenceSplitterPipeline = new IngestionPipeline({
     });
 });
 
+// this is only a problem on branch fix/sentence-splitter-spaces
+// where the chunker is eliminated entirely in favor of just splitting by sentences with natural.
 // test("original sentenceSplitter splits in silly places, like Mr", () => {
 //     noAbbrevsCustomSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
 //         expect(nodes.map((node) => node["text"])).toContainEqual("Mr.");
