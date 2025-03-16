@@ -1,5 +1,5 @@
 import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings } from "../types";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter } from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
 
@@ -11,6 +11,12 @@ export async function createEmbeddings(
 ): Promise<EmbeddingResult> {
   try {
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
+    if (documents.length === 0) {
+      return {
+        success: false,
+        error: "That CSV does not appear to contain any documents. Please check the file and try again.",
+      };
+    }
     const nodes = await embedDocuments(documents, config, settings);
     const index = await persistNodes(nodes, config, settings);
     return {
@@ -33,7 +39,12 @@ export async function previewResults(
 ): Promise<PreviewResult> {
   try {
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
-
+    if (documents.length === 0) {
+      return {
+        success: false,
+        error: "That CSV does not appear to contain any documents. Please check the file and try again.",
+      };
+    }
     // Take 10 rows from the middle of the dataset for preview
     // we take a consistent 10 so that the results of the preview are consistent (i.e. with a larger chunk size, you have fewer, longer results, but more shorter ones if you adjust it)
     // and we take from the middle because the initial rows may be idiosyncratic.
@@ -70,12 +81,13 @@ export async function getIndex(config: EmbeddingConfig, settings: Settings) {
 export async function search(
   index: any,
   query: string,
-  numResults: number = 10
+  numResults: number = 10,
+  filters?: MetadataFilter[]
 ): Promise<SearchResult[]> {
-  const results = await searchDocuments(index, query, numResults); //  (await searchDocuments(index, query, numResults)) as TextNode[];
+  const results = await searchDocuments(index, query, numResults, filters);
   return results.map((result) => ({
     text: result.node.getContent(MetadataMode.NONE),
-    score: result.score ?? 0, 
+    score: result.score ?? 0,
     metadata: result.node.metadata,
   }));
 }

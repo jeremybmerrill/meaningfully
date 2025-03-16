@@ -56,7 +56,12 @@ declare global {
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;
-        filters?: Record<string, string>;
+        n_results: number;
+        filters?: { 
+          key: string, 
+          operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
+          value: any 
+        }[];
       }) => Promise<SearchResult[]>,
       getSettings: () => Promise<Settings>, 
       setSettings: (settings: Settings) => Promise<void>,

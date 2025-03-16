@@ -60,6 +60,19 @@ test("original sentenceSplitter splits in silly places, like Mr", () => {
         expect(nodes.map((node) => node["text"])).toContainEqual("Mr.");
     });
 });
-// test('adds 1 + 2 to equal 3', () => {
-//   expect(sum(1, 2)).toBe(3)
-// })
+
+const testcases = [
+    ["USA v. 4227 JENIFER STREET N.W. WASHINGTON, D.C., AND ELECTRONIC DEVICES THEREIN UNDER RULE 41", "USA v. 4227 JENIFER STREET N.W. WASHINGTON, D.C., AND ELECTRONIC DEVICES THEREIN UNDER RULE 41"],
+    ["JPMorgan Chase & Co. elected Mark Weinberger as a director, effective January 16, 2024, and the Board of Directors appointed him as a member of the Audit Committee.", "JPMorgan Chase & Co. elected Mark Weinberger as a director, effective January 16, 2024, and the Board of Directors appointed him as a member of the Audit Committee."],
+    ["Mr. Weinberger was Global Chairman and Chief Executive Officer of Ernst & Young from 2013 to 2019.", "Mr. Weinberger was Global Chairman and Chief Executive Officer of Ernst & Young from 2013 to 2019."],
+    ["He was also elected a director of JPMorgan Chase Bank, N.A. and a manager of JPMorgan Chase Holdings LLC, and may be elected a director of such other subsidiary or subsidiaries as may be determined from time to time.", "He was also elected a director of JPMorgan Chase Bank, N.A. and a manager of JPMorgan Chase Holdings LLC, and may be elected a director of such other subsidiary or subsidiaries as may be determined from time to time."],
+
+];
+testcases.forEach(([testcase_input, testcase_expected_output]) => {
+    test(`my sentenceSplitter correctly handles short sentence ${testcase_input}`, () => {
+        customSentenceSplitterPipeline.run({documents: [new Document({text: testcase_input})]}).then((nodes) => {
+            expect(nodes.length).toEqual(1);
+            expect(nodes[0]["text"]).toEqual(testcase_expected_output);
+        });
+    })
+});
