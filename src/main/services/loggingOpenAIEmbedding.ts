@@ -24,6 +24,8 @@ export class LoggingOpenAIEmbedding extends OpenAIEmbedding {
     (this as any).getOpenAIEmbedding = async function(input: string[]): Promise<number[][]> {
       // TODO: ensure this for every sub class by calling it in the base class
       input = this.truncateMaxTokens(input);
+
+      console.log("LoggingOpenAIEmbedding input", input);
     
       const { data } = await (
         await this.session

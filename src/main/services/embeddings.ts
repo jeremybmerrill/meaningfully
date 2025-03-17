@@ -132,6 +132,9 @@ export async function embedDocuments(
   config: EmbeddingConfig,
   settings: Settings
 ) {
+  console.time("embedDocuments Run Time");
+
+
   const embedModel = getEmbedModel(config, settings);
   // Create embedding model
   // use the same transformations as previewNodes
@@ -144,9 +147,12 @@ export async function embedDocuments(
   for (const document of documents) {
     document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
   }
+  console.time("embedDocuments transformDocuments Run Time");
 
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
+  console.timeEnd("embedDocuments transformDocuments Run Time");
+  console.timeEnd("embedDocuments Run Time");  
   return nodes;
 }
 
@@ -161,6 +167,7 @@ export async function getStorageContext(config: EmbeddingConfig, settings: Setti
 
 export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
+  console.time("persistNodes Run Time");
   const storageContext = await getStorageContext(config, settings);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
@@ -181,6 +188,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   } else {
     throw new Error("Vector store is undefined");
   }
+  console.timeEnd("persistNodes Run Time");
   return index;
 }
 

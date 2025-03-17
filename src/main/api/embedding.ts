@@ -10,6 +10,8 @@ export async function createEmbeddings(
   settings: Settings
 ): Promise<EmbeddingResult> {
   try {
+    console.time("createEmbeddings Run Time");
+
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
     if (documents.length === 0) {
       return {
@@ -19,6 +21,7 @@ export async function createEmbeddings(
     }
     const nodes = await embedDocuments(documents, config, settings);
     const index = await persistNodes(nodes, config, settings);
+    console.timeEnd("createEmbeddings Run Time");
     return {
       success: true,
       index,
