@@ -11,6 +11,7 @@ import {
   PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
+  StorageContext
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
@@ -149,28 +150,41 @@ export async function embedDocuments(
   return nodes;
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
-  // Create and configure vector store based on type
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings): Promise<StorageContext> {
   const vectorStore = await createVectorStore(config, settings);
-
   fs.mkdirSync(config.storagePath, { recursive: true }); 
-  const storageContext = await storageContextFromDefaults({
+  return await storageContextFromDefaults({
     persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
     vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
+}
 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
+  // Create and configure vector store based on type
+  const storageContext = await getStorageContext(config, settings);
+  const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
+    logProgress: true
   });
-  // I'm not sure this why is necessary. 
+  // I'm not sure why this explicit call to persist is necessary. 
   // storageContext should handle this, but it doesn't.
-  await  vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"))
+  // all the if statements are just type-checking boilerplate.
+  if (vectorStore) {
+    if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
+      await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
+    } else {
+      throw new Error("Vector store does not support persist method");
+    }
+  } else {
+    throw new Error("Vector store is undefined");
+  }
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings): Promise<PGVectorStore | SimpleVectorStore> {
   const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
@@ -187,7 +201,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
         tableName: sanitizeProjectName(config.projectName),
         dimensions: MODEL_DIMENSIONS[config.modelName],
-        embeddingModel: embeddingModel 
+        embeddingModel: embeddingModel
       });
 
     case "simple":
