@@ -11,6 +11,7 @@ import {
   PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
+  StorageContext
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
@@ -168,13 +169,31 @@ export async function embedDocuments(
   return nodes;
 }
 
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings): Promise<StorageContext> {
+  const vectorStore = await createVectorStore(config, settings);
+  fs.mkdirSync(config.storagePath, { recursive: true }); 
+  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+  return await storageContextFromDefaults({
+    persistDir: persistDir,
+    vectorStores: {[ModalityType.TEXT]: vectorStore}
+  });
+}
+
+export async function persistDocuments(documents: Document[], config: EmbeddingConfig, settings: Settings): Promise<void> {
+  console.time("persistNodes Run Time");
+  const storageContext = await getStorageContext(config, settings);
+  storageContext.docStore.addDocuments(documents, true);
+  console.timeEnd("persistNodes Run Time");
+}
+
 export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
   const vectorStore = await createVectorStore(config, settings);
 
   fs.mkdirSync(config.storagePath, { recursive: true }); 
+  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
   const storageContext = await storageContextFromDefaults({
-    persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
+    persistDir: persistDir,
     vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
 

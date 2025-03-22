@@ -1,4 +1,4 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, getExistingDocStore } from "../services/embeddings";
+import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
 import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter} from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
@@ -19,6 +19,7 @@ export async function createEmbeddings(
     }
     const nodes = await embedDocuments(documents, config, settings);
     const index = await persistNodes(nodes, config, settings);
+    await persistDocuments(documents, config, settings);
     return {
       success: true,
       index,
