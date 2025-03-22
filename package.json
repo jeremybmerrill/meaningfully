@@ -26,7 +26,6 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "better-sqlite3": "^11.8.1",
-    "csv-parse": "^5.5.3",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
     "llamaindex": "^0.8.37",

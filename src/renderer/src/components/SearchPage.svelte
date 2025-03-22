@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { navigate } from 'svelte-routing'
-
-//   import { onMount } from 'svelte';
+  import { navigate } from 'svelte-routing';
   import type { DocumentSet } from '../main';
   import Results from './Results.svelte';
 
@@ -11,14 +9,13 @@
   let documentSet: DocumentSet | null = null;
   let documentSetLoading = true;
   let metadataColumns: string[] = [];
-  let textColumn: string = ''
+  let textColumn: string = '';
   let loading = false;
   let hasResults = false;
 
   const blankSearchQuery = '';
-  let searchQuery = blankSearchQuery
-  const emptyMetadataFilters: Record<string, string>  = {};
-  let metadataFilters: Record<string, string> = emptyMetadataFilters;
+  let searchQuery = blankSearchQuery;
+  let metadataFilters: Array<{ key: string, operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", value: any }> = [];
 
   let results: Array<Record<string, any>> = [];
   let error: string | null = null;
@@ -30,11 +27,8 @@
     documentSetLoading = false;
   }).catch(error => {
     console.error('Error fetching document set:', error);
-    // You might want to redirect or show an error message
-    navigate('/');
-    // Handle the error, e.g., show an error message or redirect
-  });
-
+        navigate('/');
+      });
 
   const placeholderQueries = [
     "The CEO got fired",
@@ -43,19 +37,19 @@
     "Our company's stock price could plummet if we don't address the recent scandal involving our CEO",
     "Don't tell anyone that I was the one who leaked the confidential information about our competitor's new product launch",
     "I can't believe I got fired for accidentally sending a company-wide email with a meme instead of the quarterly report",
-  ]
-  const placeholderQuery = placeholderQueries[Math.floor(Math.random()*placeholderQueries.length)];
+  ];
+  const placeholderQuery = placeholderQueries[Math.floor(Math.random() * placeholderQueries.length)];
+
   async function handleSearch() {
     if (!searchQuery.trim()) return;
     hasResults = true;
     loading = true;
     try {
-      // Mock API call - replace with actual API call later
       const searchResults = await window.api.searchDocumentSet({
         documentSetId: documentSet.documentSetId,
         query: searchQuery,
-        n_results: 100, // selector not yet implemented
-        filters: metadataFilters // not yet implemented
+        n_results: 100,
+        filters: metadataFilters
       });
       results = searchResults.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
         ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
@@ -66,10 +60,17 @@
     } catch (error_) {
       console.error('Search failed:', error_);
       error = error_;
-      // You might want to show an error message to the user
-    } finally {
+          } finally {
       loading = false;
     }
+  }
+
+  function addFilter() {
+    metadataFilters = [...metadataFilters, { key: '', operator: '==', value: '' }];
+  }
+
+  function removeFilter(index: number) {
+    metadataFilters = metadataFilters.filter((_, i) => i !== index);
   }
 </script>
 
@@ -127,30 +128,52 @@
       </div>
 
       <!-- Metadata Filters -->
-      {#if metadataColumns}  
+      {#if metadataColumns.length > 0}  
       <div class="space-y-2">
         <p class="block text-sm font-medium text-gray-700">
-          Metadata Filters
+          Search only records that match...
         </p>
-        <div class="grid grid-cols-2 gap-4">
-          {#each metadataColumns as field}
-            <div>
-              <label class="block text-sm text-gray-600" for={field}>
-                {field}
-              </label>
+        <div class="space-y-4">
+          {#each metadataFilters as filter, index}
+            <div class="flex space-x-2 items-center">
+              <select bind:value={filter.key} class="px-2 py-1 border border-gray-300 rounded-md">
+                <option value="" disabled>Select column</option>
+                {#each metadataColumns as column}
+                  <option value={column}>{column}</option>
+                {/each}
+              </select>
+              <select bind:value={filter.operator} class="px-2 py-1 border border-gray-300 rounded-md">
+                <option value="==">==</option>
+                <option value="in">in</option>
+                <option value=">">&gt;</option>
+                <option value="<">&lt;</option>
+                <option value="!=">!=</option>
+                <option value=">=">&gt;=</option>
+                <option value="<=">&lt;=</option>
+                <option value="nin">not in</option>
+                <option value="any">any</option>
+                <option value="all">all</option>
+                <option value="text_match">text matches</option>
+                <option value="contains">contains</option>
+                <option value="is_empty">is empty</option>
+              </select>
               <input
-                id={field}
-                type="text"
-                bind:value={metadataFilters[field]}
-                placeholder={`Filter by ${field}...`}
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                type="text"
+                bind:value={filter.value}
+                placeholder="Value"
+                class="flex-1 px-2 py-1 border border-gray-300 rounded-md"
               />
+              <button on:click={() => removeFilter(index)} class="text-red-500 hover:text-red-600">
+                Remove
+              </button>
             </div>
           {/each}
+          <button on:click={addFilter} class="text-blue-500 hover:text-blue-600">
+            Add Filter
+          </button>
         </div>
       </div>
-      <!-- keyword filters TK -->
-      {/if}
+            {/if}
     </div>
 
     <!-- Results -->
@@ -159,7 +182,7 @@
         {error}
       </div>
     {/if}
-    {#if (searchQuery != blankSearchQuery || metadataFilters != emptyMetadataFilters) && hasResults}
+    {#if (searchQuery != blankSearchQuery || metadataFilters.length > 0) && hasResults}
       <Results
         {results}
         {loading}
@@ -167,5 +190,5 @@
         {metadataColumns}
       />
     {/if}
-  {/if} <!--  documentSetLoading -->
+  {/if}
 </div> 

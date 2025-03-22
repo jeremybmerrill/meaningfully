@@ -7,6 +7,7 @@ import {
   TransformComponent,
   TextNode,
   ModalityType,
+  MetadataFilters,
   PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
@@ -14,10 +15,9 @@ import {
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
-import { encodingForModel } from "js-tiktoken";
-import { TiktokenModel } from "js-tiktoken";
+import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
-import { EmbeddingConfig, Settings  } from "../types";
+import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
 import * as fs from 'fs';
 
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
@@ -188,27 +188,30 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
 
 export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
-  const vectorStore = await createVectorStore(config, settings);
-
-  fs.mkdirSync(config.storagePath, { recursive: true }); 
-  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
-  const storageContext = await storageContextFromDefaults({
-    persistDir: persistDir,
-    vectorStores: {[ModalityType.TEXT]: vectorStore}
-  });
-
+  const storageContext = await getStorageContext(config, settings);
+  const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
+    logProgress: true
   });
-  // I'm not sure this why is necessary. 
+  // I'm not sure why this explicit call to persist is necessary. 
   // storageContext should handle this, but it doesn't.
-  await  vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"))
+  // all the if statements are just type-checking boilerplate.
+  if (vectorStore) {
+    if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
+      await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
+    } else {
+      throw new Error("Vector store does not support persist method");
+    }
+  } else {
+    throw new Error("Vector store is undefined");
+  }
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings): Promise<PGVectorStore | SimpleVectorStore> {
   const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
@@ -225,7 +228,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
         tableName: sanitizeProjectName(config.projectName),
         dimensions: MODEL_DIMENSIONS[config.modelName],
-        embeddingModel: embeddingModel 
+        embeddingModel: embeddingModel
       });
 
     case "simple":
@@ -253,9 +256,15 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
 export async function searchDocuments(
   index: VectorStoreIndex,
   query: string,
-  numResults: number = 10
+  numResults: number = 10,
+  filters?: MetadataFilter[]
 ) {
-  const retriever = index.asRetriever({ similarityTopK: numResults });
-  const results = await retriever.retrieve(query);
+  // const metadataFilters: MetadataFilters | undefined = filters ? {filters: filters} : undefined;
+  const metadataFilters: MetadataFilters = {
+    filters: filters ? filters : [],
+  };
+  const retriever = index.asRetriever({ similarityTopK: numResults, filters: metadataFilters });
+
+  const results = await retriever.retrieve(query );
   return results;
-} 
+}

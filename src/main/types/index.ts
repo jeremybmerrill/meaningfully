@@ -65,3 +65,9 @@ export interface Settings {
   oLlamaModelType: string | null;
   oLlamaBaseURL: string | null;
 }
+
+export interface MetadataFilter{ 
+  key: string, 
+  operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
+  value: any 
+}

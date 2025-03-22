@@ -56,7 +56,11 @@ interface Window {
         documentSetId: number;
         query: string;
         n_results: number;
-        filters?: Record<string, string>;
+        filters?: { 
+          key: string, 
+          operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
+          value: any 
+        }[];
       }) => Promise<SearchResult[]>;
       getDocument: (documentSetId: number, documentId: string) => Promise<{ text: string, metadata: Record<string, any> }>;
       getSettings: () => Promise<Settings>;

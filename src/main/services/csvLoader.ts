@@ -1,15 +1,15 @@
 import { Document } from "llamaindex";
-import { parse } from "csv-parse/sync";
 import { readFileSync } from "fs";
+import Papa from "papaparse";
 
 export async function loadDocumentsFromCsv(
   filePath: string,
   textColumnName: string
 ): Promise<Document[]> {
   const fileContent = readFileSync(filePath, "utf-8");
-  const records = parse(fileContent, {
-    columns: true,
-    skip_empty_lines: true,
+  const { data: records } = Papa.parse(fileContent, {
+    header: true,
+    skipEmptyLines: true,
   });
 
   return records.map((record: any) => {
@@ -21,4 +21,4 @@ export async function loadDocumentsFromCsv(
       ),
     });
   });
-} 
+}
