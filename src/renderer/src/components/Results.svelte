@@ -37,6 +37,8 @@
         {textColumn}
         {metadataColumns}
         showSimilarity={true}
+        showShowOriginal={true}
+        on:originalDocumentClick
       />
     </div>
     

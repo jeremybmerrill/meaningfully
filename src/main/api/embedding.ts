@@ -94,5 +94,7 @@ export async function search(
     text: result.node.getContent(MetadataMode.NONE),
     score: result.score ?? 0,
     metadata: result.node.metadata,
+    //  @ts-ignore
+    sourceNodeId: result.node.relationships?.SOURCE?.nodeId
   }));
 }
