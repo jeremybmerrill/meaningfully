@@ -180,14 +180,16 @@ export async function getStorageContext(config: EmbeddingConfig, settings: Setti
 }
 
 export async function persistDocuments(documents: Document[], config: EmbeddingConfig, settings: Settings): Promise<void> {
-  console.time("persistNodes Run Time");
+  console.time("persistDocuments Run Time");
   const storageContext = await getStorageContext(config, settings);
-  storageContext.docStore.addDocuments(documents, true);
-  console.timeEnd("persistNodes Run Time");
+  await storageContext.docStore.addDocuments(documents, true);
+  console.timeEnd("persistDocuments Run Time");
 }
 
 export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
+  console.time("persistNodes Run Time");
+
   const storageContext = await getStorageContext(config, settings);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
@@ -208,6 +210,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   } else {
     throw new Error("Vector store is undefined");
   }
+  console.timeEnd("persistNodes Run Time");
   return index;
 }
 
