@@ -164,6 +164,10 @@ export async function embedDocuments(
     document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
   }
 
+  // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
+  // that might not ultimately be the right solution. 
+  documents = documents.filter((document_) => document_.text.length > 0);
+
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
   return nodes;
