@@ -213,11 +213,29 @@
   {/if}
 </div>
 
+<!-- modal for showing a whole document -->
 {#if showModal && modalContent}
   <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
+    <div class="bg-white text-black p-6 rounded-lg shadow-lg max-w-xl w-full max-h-screen overflow-y-auto">
       <h2 class="text-xl font-semibold mb-4">Original Document</h2>
-      <pre class="whitespace-pre-wrap">{JSON.stringify(modalContent, null, 2)}</pre>
+      <table>
+        <thead>
+          <tr>
+          </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td class="px-4 py-2 text-left border-b text-black">original text</td>
+          <td class="px-4 py-2 border-b text-black">{modalContent.text}</td>
+        </tr>
+        {#each metadataColumns as key}
+          <tr>
+            <td class="px-4 py-2 text-left border-b text-black">{key}</td>
+            <td class="px-4 py-2 border-b text-black">{modalContent.metadata[key]}</td>
+          </tr>
+          {/each}
+        </tbody>
+      </table>
       <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" on:click={closeModal}>Close</button>
     </div>
   </div>
