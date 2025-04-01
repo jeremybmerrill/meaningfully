@@ -15,6 +15,7 @@ import {
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
+import { MockEmbedding } from "./mockEmbedding";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
@@ -131,7 +132,7 @@ export async function getExistingDocStore(config: EmbeddingConfig) {
 
 
 
-function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
+export function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
   let embedModel; 
   if (config.modelProvider === "openai" ){
     embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
@@ -139,11 +140,14 @@ function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
     embedModel = new OllamaEmbedding({ model: config.modelName,     config: {
       host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
     }, }); 
+  } else if (config.modelProvider === "mock") {
+    embedModel = new MockEmbedding();
   } else {
     throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
   }
   return embedModel;
 }
+
 
 // TODO: rename this to be parallel to createPreviewNodes
 export async function embedDocuments(
@@ -151,6 +155,7 @@ export async function embedDocuments(
   config: EmbeddingConfig,
   settings: Settings
 ) {
+  console.log(documents, "documents")
   const embedModel = getEmbedModel(config, settings);
   // Create embedding model
   // use the same transformations as previewNodes
@@ -166,7 +171,7 @@ export async function embedDocuments(
 
   // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
   // that might not ultimately be the right solution. 
-  documents = documents.filter((document_) => document_.text.length > 0);
+  documents = documents.filter((document_) => document_.text && document_.text.length > 0);
 
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
