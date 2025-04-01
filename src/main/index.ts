@@ -97,6 +97,15 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('get-document', async (_, params: { documentSetId: number, documentId: string}) => {
+    try {
+      return await docService.getDocument(params.documentSetId, params.documentId);
+    } catch (error) {
+      console.error('Error searching document set:', error, params.documentSetId, params.documentId);
+      throw error;  
+    }
+  });
+
   ipcMain.handle('upload-csv', async (_, formData: DocumentSetParamsFileAndPath) => {
     try {
       // For files from renderer, we need to handle the Buffer data

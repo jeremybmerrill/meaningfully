@@ -1,6 +1,6 @@
 import { DocumentSetManager } from './DocumentSetManager';
 import { loadDocumentsFromCsv } from './services/csvLoader';
-import { createEmbeddings, getIndex, search, previewResults } from './api/embedding';
+import { createEmbeddings, getIndex, search, previewResults, getDocStore } from './api/embedding';
 import { app } from 'electron';
 import { join } from 'path';
 import { DocumentSetParams, Settings, MetadataFilter } from './types';
@@ -136,10 +136,36 @@ export class DocumentService {
     return results;
   }   
 
+  async getDocument(documentSetId: number, documentNodeId: string){
+    const documentSet = await this.manager.getDocumentSet(documentSetId);
+    if (!documentSet) {
+      throw new Error('Document set not found');
+    } 
+    const docStore = await getDocStore({
+      modelName: documentSet.parameters.modelName as string,
+      modelProvider: documentSet.parameters.modelProvider as string,
+      splitIntoSentences: documentSet.parameters.splitIntoSentences as boolean,
+      combineSentencesIntoChunks: documentSet.parameters.combineSentencesIntoChunks as boolean,
+      sploderMaxSize: 100,
+      vectorStoreType: 'simple',
+      projectName: documentSet.name,
+      storagePath: join(app.getPath('userData'), 'simple_vector_store'),
+      chunkSize: 1024, // not actually used, we just re-use a config object that has this option
+      chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
+    });
+    const document = await docStore.getNode(documentNodeId);
+    if (!document) {
+      throw new Error('Document not found');
+    }
+    return document;
+  }
+
+
   async getSettings() {
     return this.manager.getSettings();
   }
   async setSettings(settings: Settings) {
     return this.manager.setSettings(settings);
   } 
+
 }

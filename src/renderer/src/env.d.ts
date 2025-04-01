@@ -11,6 +11,7 @@ interface SearchResult {
   content: string;
   similarity: number;
   [key: string]: any; // For metadata fields
+  sourceNodeId: string | undefined;
 } 
 
 interface Window {
@@ -62,6 +63,7 @@ interface Window {
           value: any 
         }[];
       }) => Promise<SearchResult[]>;
+      getDocument: (params: {documentSetId: number, documentId: string}) => Promise<{ text: string, metadata: Record<string, any> }>;
       getSettings: () => Promise<Settings>;
       setSettings: (settings: Settings) => Promise<{success: boolean}>;
       deleteDocumentSet: (documentSetId: number) => Promise<void>;

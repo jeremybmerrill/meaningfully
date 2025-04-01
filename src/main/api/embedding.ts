@@ -1,5 +1,5 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes } from "../services/embeddings";
-import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter } from "../types";
+import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
+import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter} from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
 
@@ -10,6 +10,8 @@ export async function createEmbeddings(
   settings: Settings
 ): Promise<EmbeddingResult> {
   try {
+    console.time("createEmbeddings Run Time");
+
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
     if (documents.length === 0) {
       return {
@@ -19,6 +21,8 @@ export async function createEmbeddings(
     }
     const nodes = await embedDocuments(documents, config, settings);
     const index = await persistNodes(nodes, config, settings);
+    await persistDocuments(documents, config, settings);
+    console.timeEnd("createEmbeddings Run Time");
     return {
       success: true,
       index,
@@ -74,6 +78,10 @@ export async function previewResults(
   }
 } 
 
+export async function getDocStore(config: EmbeddingConfig) {
+  return await getExistingDocStore(config);
+}
+
 export async function getIndex(config: EmbeddingConfig, settings: Settings) {
   return await getExistingVectorStoreIndex(config, settings);
 }
@@ -89,5 +97,7 @@ export async function search(
     text: result.node.getContent(MetadataMode.NONE),
     score: result.score ?? 0,
     metadata: result.node.metadata,
+    //  @ts-ignore
+    sourceNodeId: result.node.relationships?.SOURCE?.nodeId
   }));
 }

@@ -59,6 +59,12 @@ contextBridge.exposeInMainWorld('api', {
     n_results: number;
     filters?: Record<string, any>;
   }) => ipcRenderer.invoke('search-document-set', params),
+  
+  getDocument: (params: {
+    documentSetId: number;
+    documentId: string;
+  }) => ipcRenderer.invoke('get-document', params),
+
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: {  openAIKey: string;
     oLlamaModelType: string;

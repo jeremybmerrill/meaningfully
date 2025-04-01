@@ -11,9 +11,11 @@ import {
   PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
+  StorageContext
 } from "llamaindex";
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
+import { MockEmbedding } from "./mockEmbedding";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
@@ -111,7 +113,26 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
   }
 }
 
-function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
+export async function getExistingDocStore(config: EmbeddingConfig) {
+  switch (config.vectorStoreType) {
+    case "simple":
+      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+      const storageContext = await storageContextFromDefaults({
+        persistDir: persistDir,
+      });
+      return storageContext.docStore;
+
+    case "postgres":
+      throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
+      // return await createVectorStore(config);
+    default:
+      throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
+  }
+}
+
+
+
+export function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
   let embedModel; 
   if (config.modelProvider === "openai" ){
     embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
@@ -119,11 +140,14 @@ function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
     embedModel = new OllamaEmbedding({ model: config.modelName,     config: {
       host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
     }, }); 
+  } else if (config.modelProvider === "mock") {
+    embedModel = new MockEmbedding();
   } else {
     throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
   }
   return embedModel;
 }
+
 
 // TODO: rename this to be parallel to createPreviewNodes
 export async function embedDocuments(
@@ -131,6 +155,7 @@ export async function embedDocuments(
   config: EmbeddingConfig,
   settings: Settings
 ) {
+  console.log(documents, "documents")
   const embedModel = getEmbedModel(config, settings);
   // Create embedding model
   // use the same transformations as previewNodes
@@ -144,33 +169,61 @@ export async function embedDocuments(
     document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
   }
 
+  // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
+  // that might not ultimately be the right solution. 
+  documents = documents.filter((document_) => document_.text && document_.text.length > 0);
+
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
   return nodes;
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
-  // Create and configure vector store based on type
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings): Promise<StorageContext> {
   const vectorStore = await createVectorStore(config, settings);
-
   fs.mkdirSync(config.storagePath, { recursive: true }); 
-  const storageContext = await storageContextFromDefaults({
-    persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
+  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+  return await storageContextFromDefaults({
+    persistDir: persistDir,
     vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
+}
 
+export async function persistDocuments(documents: Document[], config: EmbeddingConfig, settings: Settings): Promise<void> {
+  console.time("persistDocuments Run Time");
+  const storageContext = await getStorageContext(config, settings);
+  await storageContext.docStore.addDocuments(documents, true);
+  console.timeEnd("persistDocuments Run Time");
+}
+
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
+  // Create and configure vector store based on type
+  console.time("persistNodes Run Time");
+
+  const storageContext = await getStorageContext(config, settings);
+  const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
+    logProgress: true
   });
-  // I'm not sure this why is necessary. 
+  // I'm not sure why this explicit call to persist is necessary. 
   // storageContext should handle this, but it doesn't.
-  await  vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"))
+  // all the if statements are just type-checking boilerplate.
+  if (vectorStore) {
+    if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
+      await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
+    } else {
+      throw new Error("Vector store does not support persist method");
+    }
+  } else {
+    throw new Error("Vector store is undefined");
+  }
+  console.timeEnd("persistNodes Run Time");
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings): Promise<PGVectorStore | SimpleVectorStore> {
   const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
@@ -187,7 +240,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings) {
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
         tableName: sanitizeProjectName(config.projectName),
         dimensions: MODEL_DIMENSIONS[config.modelName],
-        embeddingModel: embeddingModel 
+        embeddingModel: embeddingModel
       });
 
     case "simple":

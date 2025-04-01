@@ -63,6 +63,10 @@ declare global {
           value: any 
         }[];
       }) => Promise<SearchResult[]>,
+      getDocument(params: {
+        documentSetId: number;
+        documentId: string;
+      }): Promise<{ text: string, metadata: Record<string, any> }>,
       getSettings: () => Promise<Settings>, 
       setSettings: (settings: Settings) => Promise<void>,
       generatePreviewData: (formData: {
