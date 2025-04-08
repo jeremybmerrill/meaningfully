@@ -30,6 +30,7 @@
   let costEstimate: number;
   let tokenCount: number;
   let isCollapsed = true;
+  let generatePreviewCallId = 0; // Counter to track the most recent call
 
   $: {
     if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
@@ -59,8 +60,7 @@
     files = input.files;
   };
 
-  const generatePreview = async () => {
-
+  const generatePreview = () => {
     if (!files?.[0]) {
       error = 'Please select a file';
       return;
@@ -69,45 +69,57 @@
       error = 'Please select a text column';
       return;
     }
-    try {
-      uploading = true;
-      generatingPreview = true;
-      error = '';
-      
-      const response = await window.api.generatePreviewData({
-        file: files[0],
-        datasetName,
-        description: 'TK',
-        textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns,
-        splitIntoSentences: splitIntoSentences,
-        combineSentencesIntoChunks: combineSentencesIntoChunks,
-        sploderMaxSize: 100,
-        modelName,
-        modelProvider,
-        chunkSize,
-        chunkOverlap
+
+    const currentCallId = ++generatePreviewCallId; // Increment and store the current call ID
+    uploading = true;
+    generatingPreview = true;
+    error = '';
+
+    window.api.generatePreviewData({
+      file: files[0],
+      datasetName,
+      description: 'TK',
+      textColumns: [selectedTextColumn],
+      metadataColumns: selectedMetadataColumns,
+      splitIntoSentences: splitIntoSentences,
+      combineSentencesIntoChunks: combineSentencesIntoChunks,
+      sploderMaxSize: 100,
+      modelName,
+      modelProvider,
+      chunkSize,
+      chunkOverlap
+    })
+      .then((response) => {
+        if (currentCallId !== generatePreviewCallId) {
+          // Ignore this response if it's not the most recent call
+          return;
+        }
+
+        if (response.success) {
+          costEstimate = response.estimatedPrice; // TODO rename to costEstimate
+          tokenCount = response.tokenCount;
+          previewData = response.nodes.map(result => ({
+            ...result.metadata, // Flatten the metadata so that this object is the same shape as a CSV row
+            [selectedTextColumn]: result.text
+          }));
+
+          showPreview = true;
+          generatingPreview = false;
+        } else {
+          error = 'Upload failed';
+          generatingPreview = false;
+        }
+      })
+      .catch((e) => {
+        if (currentCallId === generatePreviewCallId) {
+          error = e.message;
+        }
+      })
+      .finally(() => {
+        if (currentCallId === generatePreviewCallId) {
+          uploading = false;
+        }
       });
-
-      if (response.success) {
-        costEstimate = response.estimatedPrice; // TODO rename to costEstimate
-        tokenCount = response.tokenCount;
-        previewData = response.nodes.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
-          ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
-          [selectedTextColumn]: result.text
-        })); 
-
-        showPreview = true;
-        generatingPreview = false;
-      } else {
-        error =  'Upload failed';
-        generatingPreview = false;
-      }
-    } catch (e) {
-      error = e.message;
-    } finally {
-      uploading = false;
-    }
   };
 
   const handleUpload = async () => {
