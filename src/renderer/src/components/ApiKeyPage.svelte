@@ -1,19 +1,21 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
     import { navigate } from 'svelte-routing'
-
-    const dispatch = createEventDispatcher();
 
     const maskKey = (key: string, n: number = 20): string => {
         return (key && key.length > (n*2)) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
     };
 
-    export let settings : Settings;  // TODO: replace with $props call in Svelte5 
+    interface Props {
+        settings: Settings;
+        settingsUpdated: () => void;
+    }
+
+    let { settings, settingsUpdated }: Props = $props();
     console.log("apikeypage settings", settings);
     let realOpenAIKey: string = settings.openAIKey;
-    let displayedOpenAIKey: string = maskKey(settings.openAIKey);
-    let oLlamaModelType: string = settings.oLlamaModelType;
-    let oLlamaBaseURL: string = settings.oLlamaBaseURL;
+    let displayedOpenAIKey: string = $state(maskKey(settings.openAIKey));
+    let oLlamaModelType: string = $state(settings.oLlamaModelType);
+    let oLlamaBaseURL: string = $state(settings.oLlamaBaseURL);
 
     const saveSettings = async () => {
         if (displayedOpenAIKey != maskKey(realOpenAIKey)) {
@@ -33,7 +35,7 @@
             if (!response.success) {
                 throw new Error('Failed to save settings');
             }
-            dispatch('SettingsUpdated');
+            settingsUpdated();
             navigate("/");
         } catch (error) {
             console.error(error);
@@ -59,7 +61,7 @@
         <input type="text" placeholder="http://localhost:11434" bind:value={oLlamaBaseURL} />
     </div>
 
-    <button on:click={saveSettings}>Save</button>
+    <button onclick={saveSettings}>Save</button>
 
 </div>
 

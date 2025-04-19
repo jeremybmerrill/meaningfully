@@ -1,14 +1,25 @@
 <script lang="ts">
   import Table from './Table.svelte';
   
-  export let results: Array<Record<string, any>> = [];
-  export let textColumn: string;
-  export let metadataColumns: string[] = [];
-  export let loading = false;
+  interface Props {
+    results?: Array<Record<string, any>>;
+    textColumn: string;
+    metadataColumns?: string[];
+    loading?: boolean;
+    originalDocumentClick?: (sourceNodeId: string) => void;
+  }
+
+  let {
+    results = [],
+    textColumn,
+    metadataColumns = [],
+    loading = false,
+    originalDocumentClick = () => {},
+  }: Props = $props();
 
   // Initial number of results to display
   const initialDisplayCount = 10;
-  let displayCount = initialDisplayCount;
+  let displayCount = $state(initialDisplayCount);
 
   // Function to load more results
   const showMore = () => {
@@ -16,7 +27,7 @@
   };
 
   // Computed property for visible results
-  $: visibleResults = results.slice(0, displayCount);
+  let visibleResults = $derived(results.slice(0, displayCount));
 </script>
 
 <div class="space-y-4">
@@ -38,14 +49,14 @@
         {metadataColumns}
         showSimilarity={true}
         showShowOriginal={true}
-        on:originalDocumentClick
+        originalDocumentClick={originalDocumentClick}
       />
     </div>
     
     {#if displayCount < results.length}
       <div class="flex justify-center mt-4">
         <button
-          on:click={showMore}
+          onclick={showMore}
           class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
         >
           Show More

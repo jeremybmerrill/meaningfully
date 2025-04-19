@@ -1,10 +1,19 @@
 <script lang="ts">
   import Table from './Table.svelte';
   
-  export let previewData: Array<Record<string, any>> = [];
-  export let textColumn: string;
-  export let metadataColumns: string[] = [];
-  export let loading: boolean = false;
+  interface Props {
+    previewData?: Array<Record<string, any>>;
+    textColumn: string;
+    metadataColumns?: string[];
+    loading?: boolean;
+  }
+
+  let {
+    previewData = [],
+    textColumn,
+    metadataColumns = [],
+    loading = false
+  }: Props = $props();
 </script>
 
 {#if loading}

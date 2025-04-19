@@ -1,19 +1,25 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  export let data: Array<Record<string, any>> = [];
-  export let textColumn: string;
-  export let metadataColumns: string[] = [];
-  export let showSimilarity: boolean = false;
-  export let showShowOriginal: boolean = false;
-  const dispatch = createEventDispatcher();
+  interface Props {
+    data?: Array<Record<string, any>>;
+    textColumn: string;
+    metadataColumns?: string[];
+    showSimilarity?: boolean;
+    showShowOriginal?: boolean;
+    originalDocumentClick?: (sourceNodeId: string) => void;
+  }
+
+  let {
+    data = [],
+    textColumn,
+    metadataColumns = [],
+    showSimilarity = false,
+    showShowOriginal = false,
+    originalDocumentClick = () => {},
+  }: Props = $props();
 
   // Combine all columns in display order: metadata, similarity
   // text column is always called text internally, but we rename just the header.
-  $: columns = [textColumn, ...metadataColumns, ...(showSimilarity ? ['similarity'] : [])];
-
-  function handleOriginalDocumentClick(documentId: string) {
-    dispatch('originalDocumentClick', { documentId });
-  }
+  let columns = $derived([textColumn, ...metadataColumns, ...(showSimilarity ? ['similarity'] : [])]);
 </script>
 
 <div class="w-full overflow-x-auto">
@@ -42,7 +48,7 @@
           {/each}
           {#if showShowOriginal}
             <td class="px-4 py-2">
-              <button class="text-blue-500 hover:text-blue-700" on:click={() => handleOriginalDocumentClick(row.sourceNodeId)}>Original Document</button>
+              <button class="text-blue-500 hover:text-blue-700" onclick={() => originalDocumentClick(row.sourceNodeId)}>Original Document</button>
             </td>
           {/if}
         </tr>

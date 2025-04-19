@@ -1,11 +1,15 @@
 <script lang="ts">
     import { Link } from 'svelte-routing'
-    export let settings : Settings; // TODO: replace with $props call in Svelte5 
-    export let validApiKeysSet: boolean;
+    interface Props {
+        settings: Settings; // TODO: replace with $props call in Svelte5 
+        validApiKeysSet: boolean;
+    }
+
+    let { settings, validApiKeysSet }: Props = $props();
     console.log("apikeystatus settings", settings);
 </script>
 
-{#if !validApiKeysSet }
+{#if !validApiKeysSet}
     <div class="alert alert-warning">
         <p>No OpenAI API key is set. Please <Link to="/settings" class="text-blue text-decoration-line"><span class="text-blue text-decoration-line">add one</span></Link> (or details for another provider) in order to use Meaningfully.</p>
     </div>
