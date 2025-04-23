@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { BaseEmbedding } from "llamaindex";
 
 export class MockEmbedding extends BaseEmbedding {

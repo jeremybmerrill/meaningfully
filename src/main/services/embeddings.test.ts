@@ -1,3 +1,4 @@
+//@ts-nocheck
 /*
 
 This needs some human brain attentino to make it not ACTUALLY embed the documents

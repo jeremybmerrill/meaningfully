@@ -11,9 +11,10 @@ type DocumentSetParamsFilePath = DocumentSetParams & HasFilePath;
 
 export class DocumentService {
   private manager: DocumentSetManager;
-
-  constructor() {
-    this.manager = new DocumentSetManager(app.getPath('userData'))
+  private storagePath: string;
+  constructor({ storagePath }: { storagePath?: string } = {}) {
+    this.storagePath = storagePath || app.getPath('userData');
+    this.manager = new DocumentSetManager(this.storagePath);
   }
 
   async listDocumentSets() {
@@ -30,7 +31,7 @@ export class DocumentService {
       // Delete the document set from the database
       await this.manager.deleteDocumentSet(documentSetId);
       // Delete the associated files from the filesystem
-      fs.rmSync(join(app.getPath('userData'), 'simple_vector_store', result.name), { recursive: true, force: true });
+      fs.rmSync(join(this.storagePath, 'simple_vector_store', result.name), { recursive: true, force: true });
     }
     return { success: true };
   }
@@ -46,7 +47,7 @@ export class DocumentService {
         sploderMaxSize: 100,
         vectorStoreType: 'simple',
         projectName: data.datasetName,
-        storagePath: join(app.getPath('userData'), 'simple_vector_store'),
+        storagePath: join(this.storagePath, 'simple_vector_store'),
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap
     });
@@ -96,7 +97,7 @@ export class DocumentService {
           vectorStoreType: "simple",
           projectName: data.datasetName,
                         // via https://medium.com/cameron-nokes/how-to-store-user-data-in-electron-3ba6bf66bc1e
-          storagePath:  join(app.getPath('userData'), 'simple_vector_store'),
+          storagePath:  join(this.storagePath, 'simple_vector_store'),
           chunkSize: data.chunkSize,
           chunkOverlap: data.chunkOverlap,
         }, embedSettings);
@@ -128,7 +129,7 @@ export class DocumentService {
       sploderMaxSize: 100,
       vectorStoreType: 'simple',
       projectName: documentSet.name,
-      storagePath: join(app.getPath('userData'), 'simple_vector_store'),
+      storagePath: join(this.storagePath, 'simple_vector_store'),
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     }, settings);
@@ -149,7 +150,7 @@ export class DocumentService {
       sploderMaxSize: 100,
       vectorStoreType: 'simple',
       projectName: documentSet.name,
-      storagePath: join(app.getPath('userData'), 'simple_vector_store'),
+      storagePath: join(this.storagePath, 'simple_vector_store'),
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     });

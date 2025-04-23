@@ -8,6 +8,11 @@
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
 //  import electronLogo from './assets/electron.svg'
 
+  export let url = "";
+  // const basepath = /^\/?[a-zA-Z]+:/.test(window.location.pathname)
+  //   ? window.location.pathname
+  //   : "/"  
+
   let settings: Settings | null = null;
 
   const getSettings = async () => {
@@ -27,7 +32,7 @@
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
 
-<Router>
+<Router url={url} >
   <Link to="/">
     <h1 class="text-2xl font-bold">
       Meaningfully
@@ -43,7 +48,7 @@
   {/if}
 
   <main class="container mx-auto px-4 py-8">
-    <Route path="/">
+    <Route path="">
       <FrontPage validApiKeysSet={validApiKeysSet} />
     </Route>
     <Route path="/search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
@@ -56,7 +61,7 @@
   </main>
 
   <nav class="navbar">
-    <Link to="/" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
+    <Link to="" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
     <Link to="/help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
     <Link to="/settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
     <span class="nav-link">Built with ✨ by Jeremy</span>

@@ -6,6 +6,7 @@ export class DocumentSetManager {
 
   constructor(storagePath: string) {
     // Initialize SQLite database for document set metadata
+    console.log("sqliteDb path: ", join(storagePath, 'metadata.db'));
     this.sqliteDb = new Database(join(storagePath, 'metadata.db'));
     
     // Initialize the collection
