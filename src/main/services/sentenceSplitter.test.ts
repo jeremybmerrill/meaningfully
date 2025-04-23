@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { expect, test } from 'vitest'
 import { CustomSentenceSplitter } from './sentenceSplitter'
 import { SentenceSplitter, IngestionPipeline, Document } from "llamaindex";

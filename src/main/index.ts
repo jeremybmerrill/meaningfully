@@ -11,8 +11,9 @@ import { DocumentSetParams, MetadataFilter } from './types';
 type HasFilePathAndName =  { file: { path: string, name: string }};
 type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
 
-
-const docService = new DocumentService()
+const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
+const storagePath = storageArg ? storageArg.split('=')[1] : undefined;
+const docService = storagePath ? new DocumentService({ storagePath }) : new DocumentService();
 
 function createWindow(): void {
   // Create the browser window.
@@ -29,7 +30,8 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow.maximize();
+    mainWindow.show();
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
