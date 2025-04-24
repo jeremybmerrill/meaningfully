@@ -170,7 +170,7 @@
   };
 </script>
 
-<div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10" data-testid="upload-spreadsheet">
+<div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10" data-testid="upload-a-spreadsheet">
   <h2 class="text-xl font-semibold">Upload A Spreadsheet</h2>
   
   <label class="block">
