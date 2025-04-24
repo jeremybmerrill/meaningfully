@@ -12,3 +12,4 @@ dist
 out
 .DS_Store
 *.log*
+e2e/test-storage/metadata.db
