@@ -1,40 +1,55 @@
 import { Given, When, Then } from '@wdio/cucumber-framework';
 import { expect, $$, $ } from '@wdio/globals';
 import { execSync } from 'child_process';
+import path from 'path';
 
 // // --- Selectors ---
 const DATASET_ROW_SELECTOR = '[data-testid="existing-spreadsheet-row"]'; // Selector for a single dataset row/item
 
-execSync('sqlite3  ./e2e/test-storage/metadata.db "CREATE TABLE IF NOT EXISTS meaningfully_settings (settings_id INTEGER PRIMARY KEY AUTOINCREMENT,  settings TEXT NOT NULL );" "CREATE TABLE IF NOT EXISTS document_sets ( set_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, upload_date TEXT NOT NULL, parameters TEXT NOT NULL, total_documents INTEGER NOT NULL DEFAULT 0);"');
-// // --- Steps ---
-
-// Given("the application has started", async () => {
-//     // WebdriverIO Electron service typically handles app launch automatically.
-//     // You might add a small wait here if needed for the UI to stabilize.
-//     await browser.pause(500); // Optional: Adjust as needed
-// });
+// execSync('sqlite3  ./e2e/test-storage/metadata.db "CREATE TABLE IF NOT EXISTS meaningfully_settings (settings_id INTEGER PRIMARY KEY AUTOINCREMENT,  settings TEXT NOT NULL );" "CREATE TABLE IF NOT EXISTS document_sets ( set_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, upload_date TEXT NOT NULL, parameters TEXT NOT NULL, total_documents INTEGER NOT NULL DEFAULT 0);"');
 
 Given("the metadata store is empty", async () => {
-    execSync('sqlite3  ./e2e/test-storage/metadata.db "DELETE FROM document_sets"');
+    // execSync('sqlite3  ./e2e/test-storage/metadata.db "DELETE FROM document_sets"');
+    // starts empty!
+    1+1
 });
 Given("the metadata store contains {int} entries", async (count: number) => {
-    console.warn(`Step 'the metadata store contains ${count} entries' requires implementation.`);
-    execSync('sqlite3  ./e2e/test-storage/metadata.db "DELETE FROM document_sets"');
+    // Resolve the local path for the CSV you want to upload.
+    const localFilePath = path.resolve(process.cwd(), 'e2e/test-storage/constellation-test.csv');
+    // Upload the file to the Selenium/Electron server.
+    const remoteFilePath = await browser.uploadFile(localFilePath);
+    
     for (let i = 0; i < count; i++) {
-        execSync(`sqlite3  ./e2e/test-storage/metadata.db "INSERT INTO document_sets (name, upload_date, parameters, total_documents) VALUES ('Test ${i+1}', date('now'), '{}', 0)"`);
+        // Pass the remote file path into browser.execute.
+        await browser.execute((index, remotePath) => {
+            // In the browser context, use fetch to retrieve the uploaded file as a blob.
+            fetch(remotePath)
+                .then(response => response.blob())
+                .then(blob => {
+                    const file = new File([blob], 'constellation-test.csv', { type: "text/csv" });
+                    // Use your app’s API to simulate the upload.
+                    if (window.api && window.api.uploadCsv) {
+                        window.api.uploadCsv({
+                            file: file,
+                            datasetName: `Test ${index + 1}`,
+                            description: "",
+                            textColumns: ["paragraph"],
+                            metadataColumns: ["cik", "classification"],
+                            splitIntoSentences: true,
+                            combineSentencesIntoChunks: true,
+                            sploderMaxSize: 500,
+                            chunkSize: 100,
+                            chunkOverlap: 20,
+                            modelName: "text-embedding-3-small",
+                            modelProvider: "mock"
+                        });
+                    }
+                });
+        }, i, remoteFilePath);
     }
-    // Add a small pause if data loading is asynchronous
-    await browser.pause(200);
+    // Pause a bit to let the uploads process.
+    await browser.pause(500);
 });
-// TODO DRY 
-// Given("the page has been reloaded", async () => {
-//     // Reload the current page  
-//     // await browser.reloadSession();
-//     const currentUrl = await browser.getUrl();
-//     await browser.url(currentUrl);
-// });
-
-// TODO DRY 
 
 Then("no datasets should be listed", async () => {
     const datasets = await $$(DATASET_ROW_SELECTOR);
