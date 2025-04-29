@@ -112,7 +112,7 @@
     <p>Document set not found. {documentSetId}</p>
   {:else}
     <div class="space-y-2">
-      <h1 class="text-2xl font-bold">Search: {documentSet.name}</h1>
+      <h1 class="text-2xl font-bold" data-testid="document-set-name">{documentSet.name}</h1>
       <p class="text-gray-600">
         {documentSet.totalDocuments} documents • Uploaded {documentSet.uploadDate.toLocaleDateString()}
       </p>
@@ -134,11 +134,13 @@
             type="text"
             bind:value={searchQuery}
             placeholder={placeholderQuery}
+            data-testid="search-bar"
             class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             on:click={handleSearch}
             disabled={loading || !validApiKeysSet}
+            data-testid="search-button"
             class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Searching...' : 'Search'}
@@ -202,20 +204,23 @@
       </div>
     {/if}
     {#if (searchQuery != blankSearchQuery || metadataFilters.length > 0) && hasResults}
-      <Results
-        {results}
-        {loading}
-        {textColumn}
-        {metadataColumns}
-        on:originalDocumentClick={handleOriginalDocumentClick}
-      />
+      <!-- Wrap Results component for easier selection -->
+      <div data-testid="results">
+        <Results
+          {results}
+          {loading}
+          {textColumn}
+          {metadataColumns}
+          on:originalDocumentClick={handleOriginalDocumentClick}
+        />
+      </div>
     {/if}
   {/if}
 </div>
 
 <!-- modal for showing a whole document -->
 {#if showModal && modalContent}
-  <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+  <div data-testid="details" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white text-black p-6 rounded-lg shadow-lg max-w-xl w-full max-h-screen overflow-y-auto">
       <h2 class="text-xl font-semibold mb-4">Original Document</h2>
       <table>
@@ -224,15 +229,15 @@
           </tr>
         </thead>
         <tbody>
-        <tr>
-          <td class="px-4 py-2 text-left border-b text-black">original text</td>
-          <td class="px-4 py-2 border-b text-black">{modalContent.text}</td>
-        </tr>
-        {#each metadataColumns as key}
           <tr>
-            <td class="px-4 py-2 text-left border-b text-black">{key}</td>
-            <td class="px-4 py-2 border-b text-black">{modalContent.metadata[key]}</td>
+            <td class="px-4 py-2 text-left border-b text-black">Original text</td>
+            <td class="px-4 py-2 border-b text-black">{modalContent.text}</td>
           </tr>
+          {#each metadataColumns as key}
+            <tr>
+              <td class="px-4 py-2 text-left border-b text-black">{key}</td>
+              <td class="px-4 py-2 border-b text-black">{modalContent.metadata[key]}</td>
+            </tr>
           {/each}
         </tbody>
       </table>

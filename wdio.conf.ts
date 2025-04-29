@@ -25,9 +25,9 @@ export const config: WebdriverIO.Config = {
     // The path of the spec files will be resolved relative from the directory of
     // of the config file unless it's absolute.
     //
-    specs: [
-        './e2e/features/**/*.feature' // Point to your feature files
-    ],
+    specs: process.env.CUCUMBER_TEST_ONLY_FEATURE 
+        ? [`./e2e/features/${process.env.CUCUMBER_TEST_ONLY_FEATURE}.feature`] 
+        : ['./e2e/features/**/*.feature'], // Point to your feature files
     // Patterns to exclude.
     exclude: [
         // 'path/to/excluded/files'
@@ -62,7 +62,7 @@ export const config: WebdriverIO.Config = {
         // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
         'wdio:electronServiceOptions': {
             // custom application args
-            appArgs: ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
+            appArgs: [],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
         }
     }],
 

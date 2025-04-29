@@ -51,9 +51,9 @@
     <Route path="">
       <FrontPage validApiKeysSet={validApiKeysSet} />
     </Route>
-    <Route path="/search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
-    <Route path="/help" component={HelpPage} />
-    <Route path="/settings">
+    <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
+    <Route path="help" component={HelpPage} />
+    <Route path="settings">
       {#if settings}
         <ApiKeyPage settings={settings} on:SettingsUpdated={() => getSettings() } />
       {/if}
@@ -62,8 +62,8 @@
 
   <nav class="navbar">
     <Link to="" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
-    <Link to="/help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
-    <Link to="/settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
+    <Link to="help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
+    <Link to="settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
     <span class="nav-link">Built with ✨ by Jeremy</span>
     <span class="nav-link">© 2025</span>
   </nav>

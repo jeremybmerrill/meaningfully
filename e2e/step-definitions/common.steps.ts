@@ -7,7 +7,6 @@ Given("the application has started", async () => {
     await browser.pause(500); // Optional: Adjust as needed
 });
 
-// TODO DRY 
 Given("the page has been reloaded", async () => {
     // Reload the current page  
     // await browser.reloadSession();
@@ -15,6 +14,10 @@ Given("the page has been reloaded", async () => {
     await browser.url(currentUrl);
 });
 
+
+// These depend on the idea that the Feature file specifies a name that,
+// by convention, is the same as the data-testid attribute in the component
+// subject to lowercasing and spaces-to-dashes.
 Then("the {string} component should be visible", async (componentName: string) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const component = await $(selector);
@@ -25,4 +28,13 @@ Then("the {string} component should not be visible", async (componentName: strin
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const component = await $(selector);
     await expect(component).not.toBeDisplayed();
+});
+
+// Navigation step: go to the search page.
+// Adjust the URL as needed for your Electron app.
+Given("the app is navigated to the {string} link", async (linkText: string) => {
+    // Example: navigate to a search page with a document set id of 1.
+    const settingsLink = await $('.navbar').$(`a*=${linkText}`);
+    await settingsLink.click();
+    // Wait for the search bar to be displayed as indicator of page load.
 });
