@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld('api', {
     chunkOverlap: number,
   }) => {
     // Convert File object to a format that can be sent over IPC
+    if (process.env.NODE_ENV === 'test') {
+      formData["modelProvider"] = "mock"; // Ensure modelProvider is set to "mock" so we don't hit a paid API.
+    }
     const { file, ...rest } = formData;
     return ipcRenderer.invoke('upload-csv', {
       ...rest,

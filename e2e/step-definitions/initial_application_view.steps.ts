@@ -13,6 +13,73 @@ Given("the metadata store is empty", async () => {
     // starts empty!
     1+1
 });
+
+Given("the uploadCsv function has been mocked", async () => {
+    // This step is to ensure that the uploadCsv function is mocked in the browser context.
+    // It might be set up in your test environment or application code.
+    return browser.execute(() => {
+        // @ts-ignore
+        if (window.testHooks && window.testHooks.overrideUploadCsv) {
+            const originalUploadCsv = window.api.uploadCsv;
+            window.testHooks.overrideUploadCsv(async (formData: {
+                    file: File,
+                    datasetName: string,
+                    description: string,
+                    textColumns: string[],
+                    metadataColumns: string[],
+                    splitIntoSentences: boolean,
+                    combineSentencesIntoChunks: boolean,
+                    sploderMaxSize: number,
+                    chunkSize: number,
+                    chunkOverlap: number,
+                    modelName: string,
+                    modelProvider: string
+                  }) => {
+                // Mock implementation of uploadCsv
+                console.log("Mock uploadCsv called with:", formData);
+                formData["modelProvider"] = "mock"; // Ensure modelProvider is set to "mock" so we don't hit a paid API.
+                return originalUploadCsv(formData);
+            });
+                     
+        }
+    });
+});
+// And a dataset "Test Dataset 1" has been uploaded
+// And a dataset "Test Dataset 2" has been uploaded
+// Given("a dataset {string} has been uploaded", async (datasetName: string) => {
+//     const localFilePath = path.resolve(process.cwd(), 'e2e/test-storage/constellation-test.csv');
+//     // Upload the file to the Selenium/Electron server.
+//     const remoteFilePath = await browser.uploadFile(localFilePath);
+
+//     await browser.execute((index, remotePath) => {
+//         // In the browser context, use fetch to retrieve the uploaded file as a blob.
+//         fetch(remotePath)
+//             .then(response => response.blob())
+//             .then(blob => {
+//                 const file = new File([blob], 'constellation-test.csv', { type: "text/csv" });
+//                 // Use your app’s API to simulate the upload.
+//                 if (window.api && window.api.uploadCsv) {
+//                     window.api.uploadCsv({
+//                         file: file,
+//                         datasetName: datasetName,
+//                         description: "",
+//                         textColumns: ["paragraph"],
+//                         metadataColumns: ["cik", "classification"],
+//                         splitIntoSentences: true,
+//                         combineSentencesIntoChunks: true,
+//                         sploderMaxSize: 500,
+//                         chunkSize: 100,
+//                         chunkOverlap: 20,
+//                         modelName: "text-embedding-3-small",
+//                         modelProvider: "mock"
+//                     });
+//                 }
+//             });
+//     }, remoteFilePath, datasetName);
+//     await browser.pause(500);
+// });
+
+
 Given("the metadata store contains {int} entries", async (count: number) => {
     // Resolve the local path for the CSV you want to upload.
     const localFilePath = path.resolve(process.cwd(), 'e2e/test-storage/constellation-test.csv');
@@ -59,6 +126,11 @@ Then("no datasets should be listed", async () => {
 Then("{int} datasets should be listed", async (expectedCount: number) => {
     const datasets = await $$(DATASET_ROW_SELECTOR);
     await expect(datasets).toBeElementsArrayOfSize(expectedCount);
+});
+
+Then("the dataset {string} should be listed", async (datasetName: string) => {
+    const datasetNames = await $$(DATASET_ROW_SELECTOR).map((datasetRow) => datasetRow.$$('td')[0].getText());
+    expect(datasetNames).toContain(datasetName);
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,17 @@ Given("the page has been reloaded", async () => {
 });
 
 
+// Step: Simulate clicking the Save button.
+When('the {string} component has been clicked', async (componentName: string) => {
+    let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
+    const btn = await $(selector);
+    await btn.waitForDisplayed({ timeout: 5000 });
+    await btn.click();
+    await browser.pause(500);
+});
+
+
+
 // These depend on the idea that the Feature file specifies a name that,
 // by convention, is the same as the data-testid attribute in the component
 // subject to lowercasing and spaces-to-dashes.
@@ -38,3 +49,33 @@ Given("the app is navigated to the {string} link", async (linkText: string) => {
     await settingsLink.click();
     // Wait for the search bar to be displayed as indicator of page load.
 });
+
+const DATASET_ROW_SELECTOR = '[data-testid="existing-spreadsheet-row"]'; // Selector for a single dataset row/item
+Given("the app is navigated to the {string} dataset link", async (linkText: string) => {
+    // Example: navigate to a search page with a document set id of 1.
+    //const settingsLink =  await (await $$(DATASET_ROW_SELECTOR).filter((elem) => !!elem.$(`a*=${linkText}`))).map((row) => row.$(`a*=${linkText}`) )[0];
+    //const datasetLink = await $(`a*=${linkText}`);
+    const anchorElement = await $(`a=${linkText}`);    
+    await anchorElement.click();
+    // const datasetRow = await $$(DATASET_ROW_SELECTOR);
+    // const filteredRows = await datasetRow.filter((elem) => !!elem.$(`a*="${linkText}"`));
+    // if (filteredRows.length === 0) {
+    //     throw new Error(`No link found with text: ${linkText}`);
+    // }
+    // const link = await filteredRows[0].$(`a*=${linkText}`);
+    // await link.waitForDisplayed({ timeout: 5000 });
+    // await link.click();
+    // Wait for the search bar to be displayed as indicator of page load.
+});
+
+When("the {string} component has been set to {string}", async (componentName: string, val: string) => {
+    let selector = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
+    const input = await $(selector);
+    await input.waitForDisplayed({ timeout: 5000 });
+    // Clear existing value and set a new one.
+    await input.clearValue();
+    // Provide a new key value.
+    await input.setValue(val);
+    await browser.pause(500);
+});
+
