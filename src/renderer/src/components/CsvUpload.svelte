@@ -198,6 +198,7 @@
           Give the spreadsheet a name:
           <input
             type="text"
+            data-testid="dataset-name-input"
             bind:value={datasetName}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
           />
@@ -348,7 +349,7 @@
         {#key previewData}
           {#key selectedTextColumn}
             {#key selectedMetadataColumns}
-              {#if previewData.length > 0 || generatingPreview}
+              {#if (previewData.length > 0 || generatingPreview) && selectedTextColumn}
                 <Preview
                   loading={generatingPreview}
                   previewData={previewData}
@@ -362,6 +363,7 @@
 
         <button
           on:click={handleUpload}
+          data-testid="upload-button"
           disabled={!selectedTextColumn || uploading || !validApiKeysSet}
           class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >

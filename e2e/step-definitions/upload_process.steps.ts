@@ -45,6 +45,12 @@ When("the column {string} has been selected as column to embed", async (columnNa
     await selectElem.selectByVisibleText(columnName); // Replace with the actual index of the column you want to embed.
     await browser.pause(500);
 });
+When("no column has been selected as column to embed", async () => {
+    const selectSelector = `${CSV_UPLOAD_PAGE_SELECTOR} select[data-testid="column-to-embed-select"]`;
+    // Select the default empty option, assuming it has an empty value.
+    await $(selectSelector).selectByAttribute('value', '');
+    await browser.pause(500);
+});
 
 // Step: Simulate selecting two metadata columns.
 When("the metadata column with name {string} has been selected", async (columnName: string) => {
@@ -69,5 +75,31 @@ Then(
         await headerRow.waitForDisplayed({ timeout: 5000 });
         const headerText = await headerRow.getText();
         expect(headerText).toContain(columnName);
+    }
+);
+
+Then(
+    'the {string} component should be disabled',
+    async (componentName: string) => {
+        // Assumes the Preview component renders a table with a <thead> row.
+        const selector = `[data-testid="${componentName
+            .toLowerCase()
+            .replace(/ /g, '-')}"]`;
+        const component = await $(selector);
+        await component.waitForDisplayed({ timeout: 5000 });
+        expect(component).toBeDisabled();
+    }
+);
+
+Then(
+    'the {string} component should be enabled',
+    async (componentName: string) => {
+        // Assumes the Preview component renders a table with a <thead> row.
+        const selector = `[data-testid="${componentName
+            .toLowerCase()
+            .replace(/ /g, '-')}"]`;
+        const component = await $(selector);
+        await component.waitForDisplayed({ timeout: 5000 });
+        expect(component).toBeEnabled();
     }
 );

@@ -155,7 +155,6 @@ export async function embedDocuments(
   config: EmbeddingConfig,
   settings: Settings
 ) {
-  console.log(documents, "documents")
   const embedModel = getEmbedModel(config, settings);
   // Create embedding model
   // use the same transformations as previewNodes

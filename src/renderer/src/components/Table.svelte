@@ -42,7 +42,7 @@
           {/each}
           {#if showShowOriginal}
             <td class="px-4 py-2">
-              <button class="text-blue-500 hover:text-blue-700" on:click={() => handleOriginalDocumentClick(row.sourceNodeId)}>Original Document</button>
+              <button data-testid="result-modal-button" class="text-blue-500 hover:text-blue-700" on:click={() => handleOriginalDocumentClick(row.sourceNodeId)}>Original Document</button>
             </td>
           {/if}
         </tr>

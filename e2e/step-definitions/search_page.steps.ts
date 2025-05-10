@@ -1,16 +1,6 @@
 import { Given, When, Then } from '@wdio/cucumber-framework';
 import { expect, $, $$ } from '@wdio/globals';
 
-// Navigation step: go to the search page.
-// Adjust the URL as needed for your Electron app.
-Given("the app is navigated to a search page", async () => {
-    // Example: navigate to a search page with a document set id of 1.
-    const searchPageUrl = `http://localhost:3000/search/1`;
-    await browser.url(searchPageUrl);
-    // Wait for the search bar to be displayed as indicator of page load.
-    const searchBar = await $('[data-testid="search-bar"]');
-    await searchBar.waitForDisplayed({ timeout: 5000 });
-});
 
 // Step: Enter a search query.
 When("a search query has been entered", async () => {
@@ -20,6 +10,15 @@ When("a search query has been entered", async () => {
     await searchInput.setValue("test search query");
     await browser.pause(500);
 });
+
+When("no search query has been entered", async () => {
+    const searchInput = await $('[data-testid="search-bar"]');
+    await searchInput.waitForDisplayed({ timeout: 5000 });
+    // Enter a sample query.
+    await searchInput.clearValue();
+    await browser.pause(500);
+});
+
 
 // Step: Verify search button state.
 Then("the search button is {string}", async (state: string) => {
@@ -36,7 +35,7 @@ Then("the search button is {string}", async (state: string) => {
 });
 
 // Step: Click the search button.
-When("the saerch button has been clicked", async () => {
+When("the search button has been clicked", async () => {
     const searchButton = await $('[data-testid="search-button"]');
     await searchButton.waitForDisplayed({ timeout: 5000 });
     await searchButton.click();
@@ -63,12 +62,12 @@ Then("the {string} component should have multiple rows shown", async (componentN
 // Step: Click a result row modal button.
 When("a result row modal button has been clicked", async () => {
     // In your Results component, assume each row has a button to open the modal with data-testid="result-modal-button".
-    const modalButtons = await await $$('[data-testid="result-modal-button"]');
-    if (modalButtons.length === 0) {
-        throw new Error("No modal button found in results.");
-    }
+    const modalButtons = await $('[data-testid="result-modal-button"]');
+    // if (modalButtons.length === 0) {
+    //     throw new Error("No modal button found in results.");
+    // }
     // Click the first result modal button.
-    await modalButtons[0].click();
+    await modalButtons.click();
     await browser.pause(1000);
 });
 
