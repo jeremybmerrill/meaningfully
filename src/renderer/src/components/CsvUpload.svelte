@@ -1,46 +1,44 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { run } from 'svelte/legacy';
+
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
   import Preview from './Preview.svelte';
 
-  export let validApiKeysSet: boolean;
 
-  const dispatch = createEventDispatcher();
-
+  let {
+    validApiKeysSet,
+    fileSelected,
+    uploadComplete
+  } = $props();
   let files: FileList;
-  let uploading = false;
-  let error = '';
-  let availableColumns: string[] = [];
-  let selectedTextColumn = '';
-  let selectedMetadataColumns: string[] = [];
-  let showUploadSettings = false; // don't show upload settings until the user has selected a text column and a file.
-  let generatingPreview = false; // loading state for the preview data.
-  let datasetName = '';
+  let uploading = $state(false);
+  let error = $state('');
+  let availableColumns: string[] = $state([]);
+  let selectedTextColumn = $state('');
+  let selectedMetadataColumns: string[] = $state([]);
+  let showUploadSettings = $state(false); // don't show upload settings until the user has selected a text column and a file.
+  let generatingPreview = $state(false); // loading state for the preview data.
+  let datasetName = $state('');
   const defaultChunkSize = 100
   const defaultChunkOverlap = 20;
-  let chunkSize = defaultChunkSize;
-  let chunkOverlap = defaultChunkOverlap;
+  let chunkSize = $state(defaultChunkSize);
+  let chunkOverlap = $state(defaultChunkOverlap);
   const availableModelNames = ["text-embedding-3-small", "text-embedding-3-large"] // TODO: add Llama support, get this from the backend.
-  let modelName = "text-embedding-3-small";
+  let modelName = $state("text-embedding-3-small");
   let modelProvider = "openai"; // TODO: make configurable
-  let splitIntoSentences = true;
-  let combineSentencesIntoChunks = true; // aka combineSentencesIntoChunks
-  let previewData: Array<Record<string, any>> = []; // processed data from 'backend'
-  let costEstimate: number;
-  let tokenCount: number;
-  let isCollapsed = true;
+  let splitIntoSentences = $state(true);
+  let combineSentencesIntoChunks = $state(true); // aka combineSentencesIntoChunks
+  let previewData: Array<Record<string, any>> = $state([]); // processed data from 'backend'
+  let costEstimate: number = $state();
+  let tokenCount: number = $state();
+  let isCollapsed = $state(true);
 
-  $: {
-    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
-      generatePreview();
-    }
-  }
 
   const handleFileSelect = async (event: Event) => {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    dispatch('file-selected');
+    fileSelected();
 
     const file = input.files[0];
     showUploadSettings = false;
@@ -73,13 +71,13 @@
       uploading = true;
       generatingPreview = true;
       error = '';
-      
+    
       const response = await window.api.generatePreviewData({
         file: files[0],
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns,
+        metadataColumns: selectedMetadataColumns.map(c => c), // de-proxy
         splitIntoSentences: splitIntoSentences,
         combineSentencesIntoChunks: combineSentencesIntoChunks,
         sploderMaxSize: 100,
@@ -129,7 +127,7 @@
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns,
+        metadataColumns: selectedMetadataColumns.map(c => c), // de-proxy
         splitIntoSentences: splitIntoSentences,
         combineSentencesIntoChunks: combineSentencesIntoChunks,
         sploderMaxSize: 100,
@@ -140,7 +138,7 @@
       });
 
       if (response.success) {
-        dispatch('upload-complete');
+        uploadComplete();
         navigate("/search/" + response.documentSetId);
         showUploadSettings = false;
         files = null;
@@ -168,6 +166,11 @@
   const toggleTextHandlingSectionCollapse = () => {
     isCollapsed = !isCollapsed;
   };
+  run(() => {
+    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
+      generatePreview();
+    }
+  });
 </script>
 
 <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10" data-testid="upload-a-spreadsheet">
@@ -178,7 +181,7 @@
     <input
       type="file"
       accept=".csv"
-      on:change={handleFileSelect}
+      onchange={handleFileSelect}
       class="block w-full text-sm text-slate-500
         file:mr-4 file:py-2 file:px-4
         file:rounded-full file:border-0
@@ -190,7 +193,7 @@
   </label>
 </div>
 
-  {#if showUploadSettings && availableColumns.length > 0}
+{#if showUploadSettings && availableColumns.length > 0}
   <div data-testid="csv-upload-settings">
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       <div class="space-y-2">
@@ -223,9 +226,9 @@
         </p>
       </div>
     </div>
-
+  
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-      <h3>Column Configuation</h3>
+      <h3>Column Configuration</h3>
       <div class="space-y-4">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">
@@ -259,7 +262,7 @@
                   id={`metadata-${column}`}
                   checked={selectedMetadataColumns.includes(column)}
                   disabled={column === selectedTextColumn}
-                  on:change={() => toggleMetadataColumn(column)}
+                  onchange={() => toggleMetadataColumn(column)}
                   class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-500 focus:ring-violet-500"
                 />
                 <span class="ml-2 text-sm text-gray-700">{column}</span>
@@ -267,11 +270,10 @@
             {/each}
           </div>
         </div>
-      </div>
+      </div>    
     </div>
-    
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-      <h3><button on:click={toggleTextHandlingSectionCollapse}>Text Handling Options {isCollapsed ? '›' : '⌄'}</button></h3>
+      <h3><button onclick={toggleTextHandlingSectionCollapse}>Text Handling Options {isCollapsed ? '›' : '⌄'}</button></h3>
 
       {#if !isCollapsed}
         <div class="space-y-6">
@@ -334,48 +336,47 @@
         </div>
       {/if}
     </div>
-      <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
-        {#key costEstimate}
-          {#key tokenCount}
-            {#if tokenCount > 0 && costEstimate > 0}
-              <div data-testid="cost-estimate">
-                <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens </p>
-                <p>Disclaimer: You are responsible for all costs. The estimate might be wrong. Price and model name TK</p>
-              </div>
+    <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+      {#key costEstimate}
+        {#key tokenCount}
+          {#if tokenCount > 0 && costEstimate > 0}
+            <div data-testid="cost-estimate">
+              <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens </p>
+              <p>Disclaimer: You are responsible for all costs. The estimate might be wrong. Price and model name TK</p>
+            </div>
+          {/if}
+        {/key}
+      {/key}
+      
+      {#key previewData}
+        {#key selectedTextColumn}
+          {#key selectedMetadataColumns}
+            {#if (previewData.length > 0 || generatingPreview) && selectedTextColumn}
+              <Preview
+                loading={generatingPreview}
+                previewData={previewData}
+                textColumn={selectedTextColumn}
+                metadataColumns={selectedMetadataColumns}
+              />
             {/if}
           {/key}
         {/key}
-        
-        {#key previewData}
-          {#key selectedTextColumn}
-            {#key selectedMetadataColumns}
-              {#if (previewData.length > 0 || generatingPreview) && selectedTextColumn}
-                <Preview
-                  loading={generatingPreview}
-                  previewData={previewData}
-                  textColumn={selectedTextColumn}
-                  metadataColumns={selectedMetadataColumns}
-                />
-              {/if}
-            {/key}
-          {/key}
-        {/key}
 
-        <button
-          on:click={handleUpload}
-          data-testid="upload-button"
-          disabled={!selectedTextColumn || uploading || !validApiKeysSet}
-          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {uploading ? 'Uploading...' : 'Upload Spreadsheet'}
-        </button>
-        {#if uploading }
-          <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
-        {/if }
-      </div>
+      <button
+        onclick={handleUpload}
+        data-testid="upload-button"
+        disabled={!selectedTextColumn || uploading || !validApiKeysSet}
+        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {uploading ? 'Uploading...' : 'Upload Spreadsheet'}
+      </button>
+      {#if uploading}
+        <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
+      {/if }
     </div>
-  {/if}
+  </div>
+{/if}
 
-  {#if error}
-    <div class="mt-4 text-red-600">{error}</div>
-  {/if}
+{#if error}
+  <div class="mt-4 text-red-600">{error}</div>
+{/if}

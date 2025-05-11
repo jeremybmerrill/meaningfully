@@ -7,13 +7,8 @@
   import HelpPage from './components/HelpPage.svelte'
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
 //  import electronLogo from './assets/electron.svg'
-
-  export let url = "";
-  // const basepath = /^\/?[a-zA-Z]+:/.test(window.location.pathname)
-  //   ? window.location.pathname
-  //   : "/"  
-
-  let settings: Settings | null = null;
+  let url = $state("");
+  let settings: Settings | null = $state(null);
 
   const getSettings = async () => {
     console.log("getSettings")
@@ -24,7 +19,7 @@
           console.error('Error fetching settings:', error);
       }
   };
-  $: validApiKeysSet = settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL));
+  let validApiKeysSet = $derived(settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL)));
 
   onMount(getSettings);
 
@@ -55,7 +50,7 @@
     <Route path="help" component={HelpPage} />
     <Route path="settings">
       {#if settings}
-        <ApiKeyPage settings={settings} on:SettingsUpdated={() => getSettings() } />
+        <ApiKeyPage settings={settings} settingsUpdated={() => getSettings() } />
       {/if}
     </Route>
   </main>

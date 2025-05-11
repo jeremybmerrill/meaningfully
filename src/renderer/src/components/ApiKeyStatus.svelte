@@ -1,7 +1,11 @@
 <script lang="ts">
     import { Link } from 'svelte-routing'
-    export let settings : Settings; // TODO: replace with $props call in Svelte5 
-    export let validApiKeysSet: boolean;
+    interface Props {
+        settings: Settings; // TODO: replace with $props call in Svelte5 
+        validApiKeysSet: boolean;
+    }
+
+    let { settings, validApiKeysSet }: Props = $props();
     console.log("apikeystatus settings", settings);
 </script>
 

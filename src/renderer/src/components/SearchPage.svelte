@@ -3,24 +3,28 @@
   import type { DocumentSet } from '../main';
   import Results from './Results.svelte';
 
-  export let validApiKeysSet: boolean;
+  interface Props {
+    validApiKeysSet: boolean;
+  }
+
+  let { validApiKeysSet }: Props = $props();
 
   let documentSetId = parseInt(window.location.href.split("?")[0].split('/').pop());
-  let documentSet: DocumentSet | null = null;
-  let documentSetLoading = true;
-  let metadataColumns: string[] = [];
-  let textColumn: string = '';
-  let loading = false;
-  let hasResults = false;
-  let showModal = false;
-  let modalContent: Record<string, any> | null = null;
+  let documentSet: DocumentSet | null = $state(null);
+  let documentSetLoading = $state(true);
+  let metadataColumns: string[] = $state([]);
+  let textColumn: string = $state('');
+  let loading = $state(false);
+  let hasResults = $state(false);
+  let showModal = $state(false);
+  let modalContent: Record<string, any> | null = $state(null);
 
   const blankSearchQuery = '';
-  let searchQuery = blankSearchQuery;
-  let metadataFilters: Array<{ key: string, operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", value: any }> = [];
+  let searchQuery = $state(blankSearchQuery);
+  let metadataFilters: Array<{ key: string, operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", value: any }> = $state([]);
 
-  let results: Array<Record<string, any>> = [];
-  let error: string | null = null;
+  let results: Array<Record<string, any>> = $state([]);
+  let error: string | null = $state(null);
 
   window.api.getDocumentSet(documentSetId).then(receivedDocumentSet => {
     documentSet = receivedDocumentSet;
@@ -51,7 +55,11 @@
         documentSetId: documentSet.documentSetId,
         query: searchQuery,
         n_results: 100,
-        filters: metadataFilters
+        filters: metadataFilters.map(filter => ({
+          key: filter.key,
+          operator: filter.operator,
+          value: filter.value
+        }))
       });
       results = searchResults.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
         ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
@@ -76,8 +84,7 @@
     metadataFilters = metadataFilters.filter((_, i) => i !== index);
   }
 
-  async function handleOriginalDocumentClick(event: CustomEvent) {
-    const { documentId } = event.detail;
+  async function handleOriginalDocumentClick( documentId: string) {
     try {
       const documentData = await window.api.getDocument({ documentSetId, documentId });
       modalContent = documentData;
@@ -97,7 +104,7 @@
   <div class="flex items-center space-x-4">
     <button 
       class="text-blue-500 hover:text-blue-600 flex items-center space-x-1"
-      on:click={() => history.back()}
+      onclick={() => history.back()}
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -138,7 +145,7 @@
             class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
           <button
-            on:click={handleSearch}
+            onclick={handleSearch}
             disabled={loading || !validApiKeysSet}
             data-testid="search-button"
             class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -184,12 +191,12 @@
                 placeholder="Value"
                 class="flex-1 px-2 py-1 border border-gray-300 rounded-md"
               />
-              <button on:click={() => removeFilter(index)} class="text-red-500 hover:text-red-600">
+              <button onclick={() => removeFilter(index)} class="text-red-500 hover:text-red-600">
                 Remove
               </button>
             </div>
           {/each}
-          <button on:click={addFilter} class="text-blue-500 hover:text-blue-600">
+          <button onclick={addFilter} class="text-blue-500 hover:text-blue-600">
             Add Filter
           </button>
         </div>
@@ -211,8 +218,8 @@
           {loading}
           {textColumn}
           {metadataColumns}
-          on:originalDocumentClick={handleOriginalDocumentClick}
-        />
+          originalDocumentClick={handleOriginalDocumentClick}
+          />
       </div>
     {/if}
   {/if}
@@ -241,7 +248,7 @@
           {/each}
         </tbody>
       </table>
-      <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" on:click={closeModal}>Close</button>
+      <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" onclick={closeModal}>Close</button>
     </div>
   </div>
 {/if}

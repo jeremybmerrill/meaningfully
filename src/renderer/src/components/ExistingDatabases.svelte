@@ -1,14 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { DocumentSet } from '../main';
-  // import { createEventDispatcher } from 'svelte';
   import { Link } from 'svelte-routing';
 
-//   const dispatch = createEventDispatcher();
-  let documentSets: DocumentSet[] = [];
-  let loading = true;
-  let error: string | null = null;
-  let hidden = false;
+  let documentSets: DocumentSet[] = $state([]);
+  let loading = $state(true);
+  let error: string | null = $state(null);
+  let hidden = $state(false);
 
   export function hide() {
     hidden = true;
