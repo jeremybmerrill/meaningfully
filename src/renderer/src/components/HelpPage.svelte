@@ -34,20 +34,20 @@
             computer. If you choose a remote embedding API -- like OpenAI's text-embedding-small or text-embedding-large --
             then the entries in your column will be sent
             to that service; if you choose a local one, then the data will not leave your computer.
-        <p/>
+        </p>
         <p>
             Meaningfully provides additional options:
-            <ul>
-              <li>Split long text into sentences. When a single row contains many ideas, splitting it by sentence helps the search surface 
-                  results that match a single idea.
-              </li>
-              <li>Combine short sentences into chunks. You can adjust how large the chunks are and how much overlap exists between chunks.</li>
-            </ul>
-        <p/>
+        </p>
+        <ul>
+            <li>Split long text into sentences. When a single row contains many ideas, splitting it by sentence helps the search surface 
+                results that match a single idea.
+            </li>
+            <li>Combine short sentences into chunks. You can adjust how large the chunks are and how much overlap exists between chunks.</li>
+        </ul>
         <p>
             Embedding can take a while, especially for large CSVs with 10,000 or more rows. Once it finishes, you'll
             be able to search your CSV.
-        <p/>
+        </p>
     </section>
     <section>
         <h2>How should I write my search query?</h2>
