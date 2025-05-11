@@ -6,6 +6,7 @@ sample-data/
 python-prototype/chroma/
 __pycache__
 js/meaningfully/storage
+e2e/test-storage/metadata.db
 .vscode/
 node_modules
 dist

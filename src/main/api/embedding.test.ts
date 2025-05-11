@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { describe, it, expect, vi } from 'vitest';
 import { createEmbeddings, previewResults, getDocStore, getIndex, search } from './embedding';
 import { loadDocumentsFromCsv } from '../services/csvLoader';

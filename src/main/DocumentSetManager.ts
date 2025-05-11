@@ -6,6 +6,7 @@ export class DocumentSetManager {
 
   constructor(storagePath: string) {
     // Initialize SQLite database for document set metadata
+    console.log("sqliteDb path: ", join(storagePath, 'metadata.db'));
     this.sqliteDb = new Database(join(storagePath, 'metadata.db'));
     
     // Initialize the collection
@@ -111,7 +112,12 @@ export class DocumentSetManager {
     const row = stmt.get();
     let settings;
     if (row){
-      settings = JSON.parse(row.settings) as Settings;
+      try {
+        settings = JSON.parse(row.settings) as Settings;
+      } catch (error) {
+        console.error("Error parsing settings JSON:", error);
+        settings = DEFAULT_SETTINGS;
+      }
     }else{
       settings = DEFAULT_SETTINGS;
     }
@@ -127,7 +133,6 @@ export class DocumentSetManager {
     
     stmt.run(JSON.stringify(settings));
     return Object.assign(settings, {"success": true});
-
   }
 
   close() {
