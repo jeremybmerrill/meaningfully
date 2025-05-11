@@ -361,6 +361,7 @@
             {/if}
           {/key}
         {/key}
+      {/key}
 
       <button
         onclick={handleUpload}
