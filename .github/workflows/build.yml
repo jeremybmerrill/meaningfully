@@ -38,17 +38,17 @@ jobs:
           # APPLEID: ${{ secrets.APPLEID }}
           # APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
         run: npm run build:mac
-      - name: Create zip file
-        run: |
-          cd dist/mac
-          ditto -c -k --keepParent meaningfully.app meaningfully.app.zip
+      # - name: Create zip file # commented out by Jeremy; our build script already zips the app.
+      #   run: |
+      #     cd dist/mac
+      #     ditto -c -k --keepParent meaningfully.app meaningfully.app.zip
       - name: And a README (to work around GitHub double-zips)
         run: |
-          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/mac/README.txt
+          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: meaningfully-macOS
           path: |
-            dist/mac/meaningfully.app.zip
-            dist/mac/README.txt
+            dist/meaningfully-0.0.1-mac.zip
+            dist/README.txt
