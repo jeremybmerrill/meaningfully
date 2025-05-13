@@ -1,0 +1,54 @@
+name: Build mac # via https://til.simonwillison.net/electron/sign-notarize-electron-macos
+on: push
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure Node caching
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      # - uses: actions/cache@v2
+      #   name: Configure pip caching
+      #   with:
+      #     path: ~/.cache/pip
+      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pip-
+      - name: Install Node dependencies
+        run: npm install
+      # - name: Download standalone Python
+      #   run: |
+      #     ./download-python.sh
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+      - name: Build distribution
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          # APPLEID: ${{ secrets.APPLEID }}
+          # APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+        run: npm run build:mac
+      - name: Create zip file
+        run: |
+          cd dist/mac
+          ditto -c -k --keepParent meaningfully.app meaningfully.app.zip
+      - name: And a README (to work around GitHub double-zips)
+        run: |
+          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/mac/README.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: meaningfully-macOS
+          path: |
+            dist/mac/meaningfully.app.zip
+            dist/mac/README.txt
