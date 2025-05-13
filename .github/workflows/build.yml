@@ -50,5 +50,5 @@ jobs:
         with:
           name: meaningfully-macOS
           path: |
-            dist/meaningfully-0.0.1-mac.zip
+            dist/meaningfully-0.0.1.dmg
             dist/README.txt
