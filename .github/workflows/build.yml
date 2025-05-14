@@ -1,54 +1,164 @@
-name: Build mac # via https://til.simonwillison.net/electron/sign-notarize-electron-macos
-on: push
+name: Build Distributions
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
 jobs:
-  test:
+  build-apple:
+    name: Build macOS (Apple Silicon)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Configure Node caching
         uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      # - uses: actions/cache@v4
-      #   name: Configure pip caching
-      #   with:
-      #     path: ~/.cache/pip
-      #     key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-pip-
-      - name: Install Node dependencies
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install dependencies
         run: npm install
-      # - name: Download standalone Python
-      #   run: |
-      #     ./download-python.sh
+
       - name: Run tests
         run: npm test
         timeout-minutes: 5
-      - name: Build distribution
+
+      - name: Build distribution (macOS Apple Silicon)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          # APPLEID: ${{ secrets.APPLEID }}
-          # APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
-        run: npm run build:mac
-      # - name: Create zip file # commented out by Jeremy; our build script already zips the app.
-      #   run: |
-      #     cd dist/mac
-      #     ditto -c -k --keepParent meaningfully.app meaningfully.app.zip
-      - name: And a README (to work around GitHub double-zips)
-        run: |
-          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
-      - name: Upload artifact
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm run build:mac -- --publish always
+
+      - name: Create README
+        run: echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
+
+      - name: Upload artifact (macOS Apple Silicon)
         uses: actions/upload-artifact@v4
         with:
           name: meaningfully-macOS
           path: |
-            dist/meaningfully-0.0.1.dmg
+            dist/meaningfully-${{ github.ref_name }}.dmg
+            dist/README.txt
+
+  build-intel:
+    name: Build macOS (Intel)
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (macOS Intel)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm run build:mac -- --publish always
+
+      - name: Create README
+        run: echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
+
+      - name: Upload artifact (macOS Intel)
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-macOS-intel
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.intel.dmg
+            dist/README.txt
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          # On Windows, adjust the cache path according to your Node setup.
+          path: ~\AppData\Local\npm-cache
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (Windows)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm run build:win -- --publish always
+
+      - name: Create README
+        run: echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist\README.txt
+
+      - name: Upload artifact (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-windows
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.exe
+            dist/meaningfully-${{ github.ref_name }}-portable.exe
+            dist\README.txt
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (Linux)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npm run build:linux -- --publish always
+
+      - name: Create README
+        run: echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
+
+      - name: Upload artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-linux
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.deb
+            dist/meaningfully-${{ github.ref_name }}.snap
+            dist/meaningfully-${{ github.ref_name }}.AppImage
             dist/README.txt
