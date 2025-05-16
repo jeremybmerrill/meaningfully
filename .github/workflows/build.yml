@@ -149,9 +149,6 @@ jobs:
       - name: Install dependencies
         run: npm install
     
-      - name: Fix electron-builder permissions
-        run: chmod +x ./node_modules/app-builder-bin/linux/x64/app-builder
-
       - name: Run tests
         run: npm test
         timeout-minutes: 5
