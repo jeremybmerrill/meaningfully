@@ -137,9 +137,18 @@ jobs:
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm-
 
-      - name: Install dependencies
-        run: sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev && npm install
+      - name: Install Linux Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libasound2 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
+          # Add any libraries identified by ldd as missing
 
+      - name: Fix electron-builder permissions
+        run: chmod +x ./node_modules/app-builder-bin/linux/x64/app-builder
+
+      - name: Install dependencies
+        run: npm install
+    
       - name: Run tests
         run: npm test
         timeout-minutes: 5
