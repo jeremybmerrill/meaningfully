@@ -253,6 +253,7 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS (Apple Silicon) DMG
         uses: actions/upload-release-asset@v1
@@ -263,6 +264,7 @@ jobs:
           asset_path: ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
           asset_name: meaningfully-${{ github.ref_name }}.dmg
           asset_content_type: application/x-apple-diskimage
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS (Intel) DMG
         uses: actions/upload-release-asset@v1
@@ -273,6 +275,7 @@ jobs:
           asset_path: ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.intel.dmg
           asset_name: meaningfully-${{ github.ref_name }}-intel.dmg
           asset_content_type: application/x-apple-diskimage
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Upload Windows NSIS Installer
       #   uses: actions/upload-release-asset@v1
@@ -303,6 +306,7 @@ jobs:
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
           asset_name: meaningfully-${{ github.ref_name }}.deb
           asset_content_type: application/vnd.debian.binary-package
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Upload Linux Snap
       #   uses: actions/upload-release-asset@v1
@@ -323,3 +327,4 @@ jobs:
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
           asset_name: meaningfully-${{ github.ref_name }}.AppImage
           asset_content_type: application/vnd.appimage
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
