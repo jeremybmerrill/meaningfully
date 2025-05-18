@@ -10,6 +10,7 @@ jobs:
   build-apple:
     name: Build macOS (Apple Silicon)
     runs-on: macos-latest
+    environment: "mac build"  # THIS WAS MISSING    
     outputs:
       artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
     steps:
@@ -52,6 +53,7 @@ jobs:
   build-intel:
     name: Build macOS (Intel)
     runs-on: macos-13
+    environment: "mac build"  # THIS WAS MISSING    
     steps:
       - uses: actions/checkout@v4
 
@@ -93,6 +95,7 @@ jobs:
   # build-windows:
   #   name: Build Windows
   #   runs-on: windows-latest
+  #   environment: "mac build"  # THIS WAS MISSING    
   #   steps:
   #     - uses: actions/checkout@v4
 
@@ -154,6 +157,7 @@ jobs:
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
+    environment: "mac build"  # THIS WAS MISSING    
     steps:
       - uses: actions/checkout@v4
 
@@ -211,6 +215,7 @@ jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    environment: "mac build"  # THIS WAS MISSING    
     needs:
       - build-apple
       - build-intel
@@ -253,7 +258,6 @@ jobs:
           release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS (Apple Silicon) DMG
         uses: actions/upload-release-asset@v1
@@ -264,7 +268,6 @@ jobs:
           asset_path: ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
           asset_name: meaningfully-${{ github.ref_name }}.dmg
           asset_content_type: application/x-apple-diskimage
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload macOS (Intel) DMG
         uses: actions/upload-release-asset@v1
@@ -275,7 +278,6 @@ jobs:
           asset_path: ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.intel.dmg
           asset_name: meaningfully-${{ github.ref_name }}-intel.dmg
           asset_content_type: application/x-apple-diskimage
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Upload Windows NSIS Installer
       #   uses: actions/upload-release-asset@v1
@@ -306,7 +308,6 @@ jobs:
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
           asset_name: meaningfully-${{ github.ref_name }}.deb
           asset_content_type: application/vnd.debian.binary-package
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Upload Linux Snap
       #   uses: actions/upload-release-asset@v1
@@ -327,4 +328,3 @@ jobs:
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
           asset_name: meaningfully-${{ github.ref_name }}.AppImage
           asset_content_type: application/vnd.appimage
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
