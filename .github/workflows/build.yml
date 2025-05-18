@@ -107,9 +107,10 @@ jobs:
         run: choco install msys2 -y --no-progress
 
       - name: Install GTK3 development dependencies via MSYS2
+        shell: pwsh
         run: |
-          "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -Syu --noconfirm"
-          "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -S mingw-w64-x86_64-gtk3 --noconfirm"
+          & "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -Syu --noconfirm"
+          & "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -S --noconfirm mingw-w64-x86_64-gtk3"
 
       - name: Install dependencies
         run: npm install
