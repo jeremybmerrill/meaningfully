@@ -33,7 +33,7 @@ jobs:
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:mac -- --publish always
 
       - name: Create README
@@ -76,7 +76,7 @@ jobs:
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:mac -- --publish always
 
       - name: Create README
@@ -136,7 +136,7 @@ jobs:
   #       env:
   #         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
   #         CSC_LINK: ${{ secrets.CSC_LINK }}
-  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #       run: npm run build:win -- --publish always
 
   #     - name: Create README
@@ -181,7 +181,7 @@ jobs:
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: |
           echo $SNAPCRAFT_STORE_CREDENTIALS
@@ -190,7 +190,7 @@ jobs:
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: npm run build:linux -- --publish always
 
@@ -247,7 +247,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
@@ -258,7 +258,7 @@ jobs:
       - name: Upload macOS (Apple Silicon) DMG
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
@@ -269,7 +269,7 @@ jobs:
       - name: Upload macOS (Intel) DMG
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.intel.dmg
@@ -280,7 +280,7 @@ jobs:
       # - name: Upload Windows NSIS Installer
       #   uses: actions/upload-release-asset@v1
       #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   with:
       #     upload_url: ${{ steps.create_release.outputs.upload_url }}
       #     asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe
@@ -290,7 +290,7 @@ jobs:
       # - name: Upload Windows Portable Executable
       #   uses: actions/upload-release-asset@v1
       #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   with:
       #     upload_url: ${{ steps.create_release.outputs.upload_url }}
       #     asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}-portable.exe
@@ -300,7 +300,7 @@ jobs:
       - name: Upload Linux DEB
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
@@ -311,7 +311,7 @@ jobs:
       # - name: Upload Linux Snap
       #   uses: actions/upload-release-asset@v1
       #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   with:
       #     upload_url: ${{ steps.create_release.outputs.upload_url }}
       #     asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
@@ -321,7 +321,7 @@ jobs:
       - name: Upload Linux AppImage
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
