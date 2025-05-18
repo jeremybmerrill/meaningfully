@@ -39,7 +39,7 @@ mac:
   cscLink: ${CSC_LINK}
   cscKeyPassword: "${CSC_KEY_PASSWORD}"
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}${arch === 'x64' ? '.intel' : ''}.${ext}
   sign: false
 linux:
   target:
