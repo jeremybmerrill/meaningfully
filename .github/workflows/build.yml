@@ -99,13 +99,17 @@ jobs:
       - name: Configure Node caching
         uses: actions/cache@v4
         with:
-          # On Windows, adjust the cache path according to your Node setup.
           path: ~\AppData\Local\npm-cache
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-npm-
 
-      - name: Install GTK dependencies
-        run: choco install gtk-runtime -y --no-progress
+      - name: Install MSYS2
+        run: choco install msys2 -y --no-progress
+
+      - name: Install GTK3 development dependencies via MSYS2
+        run: |
+          "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -Syu --noconfirm"
+          "C:\tools\msys64\usr\bin\bash.exe" -c "pacman -S mingw-w64-x86_64-gtk3 --noconfirm"
 
       - name: Install dependencies
         run: npm install
