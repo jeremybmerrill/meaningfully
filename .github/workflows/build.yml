@@ -154,7 +154,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
-          sudo snap install snapcraft --classic
+          # sudo snap install snapcraft --classic
 
       - name: Install dependencies
         run: npm install
@@ -178,12 +178,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: meaningfully-linux
+          # add back once fixed dist/meaningfully-${{ github.ref_name }}.snap
+
           path: |
             dist/meaningfully-${{ github.ref_name }}.deb
-            dist/meaningfully-${{ github.ref_name }}.snap
             dist/meaningfully-${{ github.ref_name }}.AppImage
             dist/README.txt
-
+    
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
@@ -280,15 +281,15 @@ jobs:
           asset_name: meaningfully-${{ github.ref_name }}.deb
           asset_content_type: application/vnd.debian.binary-package
 
-      - name: Upload Linux Snap
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
-          asset_name: meaningfully-${{ github.ref_name }}.snap
-          asset_content_type: application/octet-stream
+      # - name: Upload Linux Snap
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
+      #     asset_name: meaningfully-${{ github.ref_name }}.snap
+      #     asset_content_type: application/octet-stream
 
       - name: Upload Linux AppImage
         uses: actions/upload-release-asset@v1
