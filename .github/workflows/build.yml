@@ -90,66 +90,66 @@ jobs:
             dist/meaningfully-${{ github.ref_name }}.intel.dmg
             dist/README.txt
 
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
+  # build-windows:
+  #   name: Build Windows
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Configure Node caching
-        uses: actions/cache@v4
-        with:
-          path: ~\AppData\Local\npm-cache
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
+  #     - name: Configure Node caching
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: ~\AppData\Local\npm-cache
+  #         key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+  #         restore-keys: ${{ runner.os }}-npm-
 
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: >-
-            mingw-w64-x86_64-gtk3
-            mingw-w64-x86_64-pkg-config
-            mingw-w64-x86_64-cairo
-            mingw-w64-x86_64-pango
-            mingw-w64-x86_64-libjpeg-turbo
-            mingw-w64-x86_64-giflib
-            mingw-w64-x86_64-librsvg
-            base-devel
-            gcc
+  #     - name: Setup MSYS2
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         msystem: MINGW64
+  #         update: true
+  #         install: >-
+  #           mingw-w64-x86_64-gtk3
+  #           mingw-w64-x86_64-pkg-config
+  #           mingw-w64-x86_64-cairo
+  #           mingw-w64-x86_64-pango
+  #           mingw-w64-x86_64-libjpeg-turbo
+  #           mingw-w64-x86_64-giflib
+  #           mingw-w64-x86_64-librsvg
+  #           base-devel
+  #           gcc
 
-      - name: Add MSYS2 to PATH
-        shell: pwsh
-        run: |
-          echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+  #     - name: Add MSYS2 to PATH
+  #       shell: pwsh
+  #       run: |
+  #         echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+  #         echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Install dependencies
-        run: npm install
+  #     - name: Install dependencies
+  #       run: npm install
 
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
+  #     - name: Run tests
+  #       run: npm test
+  #       timeout-minutes: 5
 
-      - name: Build distribution (Windows)
-        env:
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm run build:win -- --publish always
+  #     - name: Build distribution (Windows)
+  #       env:
+  #         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+  #         CSC_LINK: ${{ secrets.CSC_LINK }}
+  #         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  #       run: npm run build:win -- --publish always
 
-      - name: Create README
-        run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist\README.txt'
+  #     - name: Create README
+  #       run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist\README.txt'
 
-      - name: Upload artifact (Windows)
-        uses: actions/upload-artifact@v4
-        with:
-          name: meaningfully-windows
-          path: |
-            dist/meaningfully-${{ github.ref_name }}.exe
-            dist/meaningfully-${{ github.ref_name }}-portable.exe
-            dist\README.txt
+  #     - name: Upload artifact (Windows)
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: meaningfully-windows
+  #         path: |
+  #           dist/meaningfully-${{ github.ref_name }}.exe
+  #           dist/meaningfully-${{ github.ref_name }}-portable.exe
+  #           dist\README.txt
 
   build-linux:
     name: Build Linux
@@ -178,8 +178,14 @@ jobs:
         timeout-minutes: 5
 
       - name: TEMP, is snapcraft var available?
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: |
           env | awk -F= '{print $1}'
+          echo ${#SNAPCRAFT_STORE_CREDENTIALS}
 
       - name: Build distribution (Linux)
         env:
@@ -209,7 +215,7 @@ jobs:
     needs:
       - build-apple
       - build-intel
-      - build-windows
+      # - build-windows
       - build-linux
     steps:
       - uses: actions/checkout@v4
@@ -226,11 +232,11 @@ jobs:
           name: meaningfully-macOS-intel
           path: ./artifacts/macOS-intel
 
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: meaningfully-windows
-          path: ./artifacts/windows
+      # - name: Download Windows artifact
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: meaningfully-windows
+      #     path: ./artifacts/windows
 
       - name: Download Linux artifact
         uses: actions/download-artifact@v2
@@ -269,25 +275,25 @@ jobs:
           asset_name: meaningfully-${{ github.ref_name }}-intel.dmg
           asset_content_type: application/x-apple-diskimage
 
-      - name: Upload Windows NSIS Installer
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe
-          asset_name: meaningfully-${{ github.ref_name }}.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+      # - name: Upload Windows NSIS Installer
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe
+      #     asset_name: meaningfully-${{ github.ref_name }}.exe
+      #     asset_content_type: application/vnd.microsoft.portable-executable
 
-      - name: Upload Windows Portable Executable
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}-portable.exe
-          asset_name: meaningfully-${{ github.ref_name }}-portable.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+      # - name: Upload Windows Portable Executable
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./artifacts/windows/meaningfully-${{ github.ref_name }}-portable.exe
+      #     asset_name: meaningfully-${{ github.ref_name }}-portable.exe
+      #     asset_content_type: application/vnd.microsoft.portable-executable
 
       - name: Upload Linux DEB
         uses: actions/upload-release-asset@v1
