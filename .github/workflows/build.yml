@@ -47,13 +47,13 @@ jobs:
         with:
           name: meaningfully-macOS
           path: |
-            dist/meaningfully-${{ github.ref_name }}.dmg
+            dist/meaningfully-${{ github.ref_name }}.arm64.dmg
             dist/README.txt
 
   build-intel:
     name: Build macOS (Intel)
-    runs-on: macos-latest
-    environment: "mac build" 
+    runs-on: macos-13
+    environment: "mac build"
     outputs:
       artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
     steps:
@@ -90,7 +90,7 @@ jobs:
         with:
           name: meaningfully-macOS-intel
           path: |
-            dist/meaningfully-${{ github.ref_name }}.x86.dmg
+            dist/meaningfully-${{ github.ref_name }}.x64.dmg
             dist/README.txt
 
   build-linux:
@@ -185,5 +185,5 @@ jobs:
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
-            ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x86.dmg
-            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
+            ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
+            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
