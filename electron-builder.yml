@@ -44,7 +44,7 @@ dmg:
 linux:
   target:
     - AppImage
-    # - snap
+    - snap
     - deb
   maintainer: electronjs.org
   category: Utility

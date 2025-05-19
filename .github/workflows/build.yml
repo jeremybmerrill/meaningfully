@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-apple:
-    name: Build macOS
+    name: Build macOS (Apple Silicon)
     runs-on: macos-latest
     environment: "mac build" 
     outputs:
@@ -30,12 +30,12 @@ jobs:
         run: npm test
         timeout-minutes: 5
 
-      - name: Build distribution (macOS)
+      - name: Build distribution (macOS ARM)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:mac -- --publish always
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:mac
 
       - name: Create README
         run: |
@@ -50,67 +50,48 @@ jobs:
             dist/meaningfully-${{ github.ref_name }}.dmg
             dist/README.txt
 
-  # build-windows:
-  #   name: Build Windows
-  #   runs-on: windows-latest
-  #   environment: "mac build" 
-  #   steps:
-  #     - uses: actions/checkout@v4
+  build-intel:
+    name: Build macOS (Intel)
+    runs-on: macos-latest
+    environment: "mac build" 
+    outputs:
+      artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Configure Node caching
-  #       uses: actions/cache@v4
-  #       with:
-  #         path: ~\AppData\Local\npm-cache
-  #         key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: ${{ runner.os }}-npm-
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
 
-  #     - name: Setup MSYS2
-  #       uses: msys2/setup-msys2@v2
-  #       with:
-  #         msystem: MINGW64
-  #         update: true
-  #         install: >-
-  #           mingw-w64-x86_64-gtk3
-  #           mingw-w64-x86_64-pkg-config
-  #           mingw-w64-x86_64-cairo
-  #           mingw-w64-x86_64-pango
-  #           mingw-w64-x86_64-libjpeg-turbo
-  #           mingw-w64-x86_64-giflib
-  #           mingw-w64-x86_64-librsvg
-  #           base-devel
-  #           gcc
+      - name: Install dependencies
+        run: npm install
 
-  #     - name: Add MSYS2 to PATH
-  #       shell: pwsh
-  #       run: |
-  #         echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-  #         echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
 
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Build distribution (macOS Intel)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:mac-intel
 
-  #     - name: Run tests
-  #       run: npm test
-  #       timeout-minutes: 5
+      - name: Create README
+        run: |
+          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
 
-  #     - name: Build distribution (Windows)
-  #       env:
-  #         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-  #         CSC_LINK: ${{ secrets.CSC_LINK }}
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       run: npm run build:win -- --publish always
-
-  #     - name: Create README
-  #       run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist\README.txt'
-
-  #     - name: Upload artifact (Windows)
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: meaningfully-windows
-  #         path: |
-  #           dist/meaningfully-${{ github.ref_name }}.exe
-  #           dist/meaningfully-${{ github.ref_name }}-portable.exe
-  #           dist\README.txt
+      - name: Upload artifact (macOS Intel)
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-macOS-intel
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.x86.dmg
+            dist/README.txt
 
   build-linux:
     name: Build Linux
@@ -130,7 +111,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
-          # sudo snap install snapcraft --classic
+          sudo snap install snapcraft --classic
 
       - name: Install dependencies
         run: npm install
@@ -138,15 +119,6 @@ jobs:
       - name: Run tests
         run: npm test
         timeout-minutes: 5
-
-      - name: TEMP, is snapcraft var available?
-        env:
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
-        run: |
-          echo $SNAPCRAFT_STORE_CREDENTIALS
 
       - name: Build distribution (Linux)
         env:
@@ -163,11 +135,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: meaningfully-linux
-          # add back once fixed dist/meaningfully-${{ github.ref_name }}.snap
 
           path: |
             dist/meaningfully-${{ github.ref_name }}.deb
             dist/meaningfully-${{ github.ref_name }}.AppImage
+            dist/meaningfully-${{ github.ref_name }}.snap
             dist/README.txt
     
   release:
@@ -176,7 +148,7 @@ jobs:
     environment: "mac build"
     needs:
       - build-apple
-      # - build-intel
+      - build-intel
       # - build-windows
       - build-linux
     steps:
@@ -188,11 +160,11 @@ jobs:
           name: meaningfully-macOS
           path: ./artifacts/macOS
 
-      # - name: Download macOS (Intel) artifact
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: meaningfully-macOS-intel
-      #     path: ./artifacts/macOS-intel
+      - name: Download macOS (Intel) artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meaningfully-macOS-intel
+          path: ./artifacts/macOS-intel
 
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
@@ -210,8 +182,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
+            ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
-          #  ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x86.dmg
-          
+            ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x86.dmg
+            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.dmg
