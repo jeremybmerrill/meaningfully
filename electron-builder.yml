@@ -50,6 +50,22 @@ linux:
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
+deb: 
+  artifactName: ${name}-${version}.${ext}
+  depends:
+    - libappindicator1
+    - libgconf-2-4
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libx11-xcb1
+    - libxss1
+    - libasound2
+    - libgbm-dev
+    - gconf-service-backend
+  priority: optional
+  description: "Meaningfully is a semantic search tool for text data in spreadsheets."
+  homepage: https://www.github.com/jeremybmerrill/meaningfully
 npmRebuild: false
 publish:
   provider: generic
