@@ -65,7 +65,6 @@ deb:
     - gconf-service-backend
   priority: optional
   description: "Meaningfully is a semantic search tool for text data in spreadsheets."
-  homepage: https://www.github.com/jeremybmerrill/meaningfully
 npmRebuild: false
 publish:
   provider: generic
