@@ -140,7 +140,7 @@ jobs:
 
           # add back later under path.  dist/meaningfully-${{ github.ref_name }}.snap
           path: |
-            dist/meaningfully-${{ github.ref_name }}.x64.deb
+            dist/meaningfully-${{ github.ref_name }}.deb
             dist/meaningfully-${{ github.ref_name }}.AppImage
             dist/README.txt
     
@@ -185,7 +185,7 @@ jobs:
           prerelease: false
           # add back later under files:              ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
           files: |
-            ./artifacts/linux/meaningfully-${{ github.ref_name }}.x64.deb
+            ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
             ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
             ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
