@@ -111,7 +111,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
-          sudo snap install snapcraft --classic
+          # sudo snap install snapcraft --classic
 
       - name: Install dependencies
         run: npm install
@@ -125,7 +125,7 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
+          # SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: npm run build:linux -- --publish always
 
       - name: Create README
@@ -136,10 +136,10 @@ jobs:
         with:
           name: meaningfully-linux
 
+          # add back later under path.  dist/meaningfully-${{ github.ref_name }}.snap
           path: |
             dist/meaningfully-${{ github.ref_name }}.deb
             dist/meaningfully-${{ github.ref_name }}.AppImage
-            dist/meaningfully-${{ github.ref_name }}.snap
             dist/README.txt
     
   release:
@@ -181,9 +181,9 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
+          # add back later under files:              ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
           files: |
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
-            ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
             ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
             ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
