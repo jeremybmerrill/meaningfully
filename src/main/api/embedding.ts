@@ -14,6 +14,7 @@ export async function createEmbeddings(
 
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
     if (documents.length === 0) {
+      console.timeEnd("createEmbeddings Run Time");
       return {
         success: false,
         error: "That CSV does not appear to contain any documents. Please check the file and try again.",
