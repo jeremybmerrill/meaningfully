@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
+  import { debounce } from 'lodash';
 
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
@@ -58,7 +58,6 @@
   };
 
   const generatePreview = async () => {
-
     if (!files?.[0]) {
       error = 'Please select a file';
       return;
@@ -67,17 +66,20 @@
       error = 'Please select a text column';
       return;
     }
+
     try {
-      uploading = true;
-      generatingPreview = true;
       error = '';
+      generatingPreview = true;
+      
+      // Keep UI responsive by not setting uploading=true
+      // uploading = true; // Remove this line
     
       const response = await window.api.generatePreviewData({
         file: files[0],
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns.map(c => c), // de-proxy
+        metadataColumns: selectedMetadataColumns.map(c => c),
         splitIntoSentences: splitIntoSentences,
         combineSentencesIntoChunks: combineSentencesIntoChunks,
         sploderMaxSize: 100,
@@ -88,23 +90,21 @@
       });
 
       if (response.success) {
-        costEstimate = response.estimatedPrice; // TODO rename to costEstimate
+        costEstimate = response.estimatedPrice;
         tokenCount = response.tokenCount;
-        previewData = response.nodes.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
-          ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
+        previewData = response.nodes.map(result => ({
+          ...result.metadata,
           [selectedTextColumn]: result.text
-        })); 
-
+        }));
         showUploadSettings = true;
-        generatingPreview = false;
       } else {
-        error =  'Upload failed';
-        generatingPreview = false;
+        error = 'Preview generation failed';
       }
     } catch (e) {
       error = e.message;
     } finally {
-      uploading = false;
+      generatingPreview = false;
+      // uploading = false; // Remove this line
     }
   };
 
@@ -166,9 +166,11 @@
   const toggleTextHandlingSectionCollapse = () => {
     isCollapsed = !isCollapsed;
   };
-  run(() => {
+  const debouncedGeneratePreview = debounce(generatePreview, 1000);
+
+  $effect(() => {
     if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
-      generatePreview();
+      debouncedGeneratePreview();
     }
   });
 </script>

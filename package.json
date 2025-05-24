@@ -30,6 +30,7 @@
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
     "llamaindex": "^0.8.37",
+    "lodash": "^4.17.21",
     "natural": "^8.0.1",
     "svelte-routing": "^2.13.0"
   },
@@ -40,6 +41,7 @@
     "@sveltejs/vite-plugin-svelte": "^4.0.4",
     "@tailwindcss/vite": "^4.0.6",
     "@testing-library/webdriverio": "^3.2.1",
+    "@types/lodash": "^4.17.17",
     "@types/natural": "^5.1.5",
     "@types/node": "^20.14.8",
     "@wdio/cli": "^9.12.6",
