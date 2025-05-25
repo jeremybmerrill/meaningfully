@@ -1,10 +1,6 @@
 <script lang="ts">
     import { navigate } from 'svelte-routing'
 
-    const maskKey = (key: string, n: number = 20): string => {
-        return (key && key.length > (n*2)) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
-    };
-
     interface Props {
         settings: Settings;
         settingsUpdated: () => void;
@@ -12,18 +8,13 @@
 
     let { settings, settingsUpdated }: Props = $props();
     console.log("apikeypage settings", settings);
-    let realOpenAIKey: string = settings.openAIKey;
-    let displayedOpenAIKey: string = $state(maskKey(settings.openAIKey));
+    let openAIKey: string = $state(settings.openAIKey);
     let oLlamaModelType: string = $state(settings.oLlamaModelType);
     let oLlamaBaseURL: string = $state(settings.oLlamaBaseURL);
 
     const saveSettings = async () => {
-        if (displayedOpenAIKey != maskKey(realOpenAIKey)) {
-            // The displayed key was changed so update the real key.
-            realOpenAIKey = displayedOpenAIKey;
-        }
         const newSettings = {
-            openAIKey: realOpenAIKey,
+            openAIKey,
             oLlamaModelType,
             oLlamaBaseURL
         };
@@ -48,7 +39,7 @@
     <div class="settings-section">
         <h2>OpenAI</h2>
         <p>OpenAI provides embeddings at a (generally very cheap) cost.</p>
-        <input type="text" data-testid="openai-api-key-input" placeholder="sk-proj-test-1234567890" bind:value={displayedOpenAIKey} />
+        <input type="text" data-testid="openai-api-key-input" placeholder="sk-proj-test-1234567890" bind:value={openAIKey} />
     </div>
     <div class="settings-section">
         <h2>OLlama</h2>

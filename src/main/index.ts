@@ -140,7 +140,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-settings', async () => {   
     try {
-      return await docService.getSettings();
+      return await docService.getMaskedSettings();
     } catch (error) {
       console.error('Error getting settings:', error);
       throw error;
@@ -150,7 +150,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('set-settings', async (_, settings) => {
     try {
-      return await docService.setSettings(settings);
+      return await docService.setMaskedSettings(settings);
     } catch (error) {
       console.error('Error setting settings:', error);
       throw error;

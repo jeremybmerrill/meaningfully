@@ -9,6 +9,11 @@ import fs from 'fs';
 type HasFilePath = {filePath: string};
 type DocumentSetParamsFilePath = DocumentSetParams & HasFilePath;
 
+const maskKey = (key: string, n: number = 20): string => {
+  return (key && key.length > (n*2)) ? key.slice(0, n) + "*******" + key.slice(key.length - n) : key;
+};
+
+
 export class DocumentService {
   private manager: DocumentSetManager;
   private storagePath: string;
@@ -168,5 +173,22 @@ export class DocumentService {
   async setSettings(settings: Settings) {
     return this.manager.setSettings(settings);
   } 
+
+  async getMaskedSettings() {
+    const settings = await this.manager.getSettings();
+    return {
+      openAIKey: maskKey(settings.openAIKey),
+      oLlamaModelType: settings.oLlamaModelType,
+      oLlamaBaseURL: settings.oLlamaBaseURL
+    };
+  }
+  async setMaskedSettings(newSettings: Settings) { 
+    const oldSettings = await this.manager.getSettings();
+    const settings = {
+      ...newSettings,
+      openAIKey: newSettings.openAIKey == maskKey(oldSettings.openAIKey) ? oldSettings.openAIKey : newSettings.openAIKey
+    };
+    return this.manager.setSettings(settings);
+  }
 
 }
