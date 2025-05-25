@@ -20,6 +20,20 @@
   // Combine all columns in display order: metadata, similarity
   // text column is always called text internally, but we rename just the header.
   let columns = $derived([textColumn, ...metadataColumns, ...(showSimilarity ? ['similarity'] : [])]);
+
+  function sanitizeAndFormatText(text: string): string {
+    // First escape special characters
+    const escaped = text.replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+    
+    // Then convert newlines to <br> tags
+    return escaped.replace(/\n/g, '<br>');
+  }
 </script>
 
 <div class="w-full overflow-x-auto">
@@ -41,6 +55,8 @@
             <td class="px-4 py-2">
               {#if column === 'similarity' && row[column] !== undefined}
                 {(row[column] * 100).toFixed(1)}%
+              {:else if column === textColumn}
+                {@html sanitizeAndFormatText(row[column] || '')}
               {:else}
                 {(row[column]) || ''}
               {/if}
