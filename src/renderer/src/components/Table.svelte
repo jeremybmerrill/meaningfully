@@ -22,6 +22,7 @@
   let columns = $derived([textColumn, ...metadataColumns, ...(showSimilarity ? ['similarity'] : [])]);
 
   function sanitizeAndFormatText(text: string): string {
+    text = text.trim().replace(/^\\n/, '').replace(/\\n$/, '');
     // First escape special characters
     const escaped = text.replace(/[&<>"']/g, char => ({
       '&': '&amp;',
@@ -32,7 +33,7 @@
     }[char]));
     
     // Then convert newlines to <br> tags
-    return escaped.replace(/\n/g, '<br>');
+    return escaped.replace(/\\n/g, '<br>');
   }
 </script>
 
