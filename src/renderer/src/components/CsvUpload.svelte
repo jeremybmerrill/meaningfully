@@ -32,6 +32,7 @@
   let previewData: Array<Record<string, any>> = $state([]); // processed data from 'backend'
   let costEstimate: number = $state();
   let tokenCount: number = $state();
+  let pricePer1M: number = $state();
   let isCollapsed = $state(true);
 
 
@@ -92,6 +93,7 @@
       if (response.success) {
         costEstimate = response.estimatedPrice;
         tokenCount = response.tokenCount;
+        pricePer1M = response.pricePer1M;
         previewData = response.nodes.map(result => ({
           ...result.metadata,
           [selectedTextColumn]: result.text
@@ -358,12 +360,14 @@
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       {#key costEstimate}
         {#key tokenCount}
-          {#if tokenCount > 0 && costEstimate > 0}
-            <div data-testid="cost-estimate">
-              <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens </p>
-              <p>Disclaimer: You are responsible for all costs. The estimate might be wrong. Price and model name TK</p>
-            </div>
-          {/if}
+          {#key pricePer1M }
+            {#if tokenCount > 0 && costEstimate > 0}
+              <div data-testid="cost-estimate">
+                <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens (@{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(pricePer1M)}/1M tokens)</p>
+                <p>Disclaimer: You are responsible for all costs. The estimate might be wrong.</p>
+              </div>
+            {/if}
+          {/key}
         {/key}
       {/key}
       

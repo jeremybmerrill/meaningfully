@@ -60,7 +60,7 @@ export async function previewResults(
 
     const previewNodes = await createPreviewNodes(documents, config);
     const previewSubsetNodes = await createPreviewNodes(previewDocumentsSubset, config);
-    const { estimatedPrice, tokenCount } = estimateCost(previewNodes, config.modelName);
+    const { estimatedPrice, tokenCount, pricePer1M } = estimateCost(previewNodes, config.modelName);
 
     return {
       success: true,
@@ -69,7 +69,8 @@ export async function previewResults(
         metadata: node.metadata
       })),
       estimatedPrice,
-      tokenCount
+      tokenCount,
+      pricePer1M
     };
   } catch (error) {
     return {

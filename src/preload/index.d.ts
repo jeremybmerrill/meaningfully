@@ -23,6 +23,7 @@ export interface PreviewResult {
   }>;
   estimatedPrice?: number;
   tokenCount?: number;
+  pricePer1M?: number;
 } 
 
 export interface DocumentSetMetadata {

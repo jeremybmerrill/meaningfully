@@ -52,7 +52,7 @@ interface Window {
         chunkOverlap: number,
         modelName: string,
         modelProvider: string
-      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number, pricePer1M: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;

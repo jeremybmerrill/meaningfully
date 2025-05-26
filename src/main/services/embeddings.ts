@@ -76,6 +76,7 @@ export async function createPreviewNodes(
 export function estimateCost(nodes: TextNode[], modelName: string): {
   estimatedPrice: number;
   tokenCount: number;
+  pricePer1M: number;
 } {
   const tokenizer = encodingForModel(modelName as TiktokenModel);
   
@@ -87,7 +88,8 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
 
   return {
     estimatedPrice,
-    tokenCount
+    tokenCount,
+    pricePer1M: PRICE_PER_1M[modelName]
   };
 }
 
