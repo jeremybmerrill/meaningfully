@@ -14,6 +14,7 @@ Feature: Upload page
     And the "Preview" component should be visible
     And the "Cost Estimate" component should be visible
     And the "Preview" component should contain a header row with name "paragraph"
+    And the "Preview" component should contain HTML linebreaks not unescaped newlines
 
   Scenario: Verify metadata columns are shown if metadata columns are selected
     Given the application has started

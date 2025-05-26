@@ -7,7 +7,7 @@ const UPLOAD_COMPONENT_SELECTOR = '[data-testid="upload-a-spreadsheet"]';
 const CSV_UPLOAD_PAGE_SELECTOR = '[data-testid="csv-upload-settings"]';
 const PREVIEW_COMPONENT_SELECTOR = '[data-testid="preview"]';
 
-const TEST_CSV_FILE_NAME = "constellation-test.csv"; // The name of the test CSV file to use.
+const TEST_CSV_FILE_NAME = "newline-test.csv"; // The name of the test CSV file to use.
 const INDEX_OF_COLUMN_TO_EMBED = 4; 
 
 // Step: Simulate file selection using the test CSV file.
@@ -77,7 +77,23 @@ Then(
         expect(headerText).toContain(columnName);
     }
 );
-
+Then ('the "Preview" component should contain HTML linebreaks not unescaped newlines', async () => {
+        // Assumes the Preview component renders a table with a <thead> row.
+        let selector = `${PREVIEW_COMPONENT_SELECTOR} table td`;
+        const dataRows = await $$(selector);
+        await dataRows[0].waitForDisplayed({ timeout: 5000 });
+        const cellText = await dataRows[0].getText(); 
+        const cellHTML = await dataRows[0].getHTML(); // TIGHT-COUPLING: This assumes that the first cell of newline-test.csv contains text with linebreaks (with a \n in the CSV, which should be a <br> in the component under test).
+        console.log('cellText: ', cellText);
+        console.log('cellText length: ', await dataRows[0].getHTML());
+        // Check if the text contains HTML linebreaks
+        const hasLineBreaks = cellHTML.includes('<br />');
+        // Check if the text does not contain unescaped newlines
+        const hasUnescapedNewlines = cellText.includes('\\n');
+        expect(hasLineBreaks).toBe(true);
+        expect(hasUnescapedNewlines).toBe(false);
+    }
+);
 Then(
     'the {string} component should be disabled',
     async (componentName: string) => {
