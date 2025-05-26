@@ -65,21 +65,21 @@ Install `meaningfully-<version>.arm64.dmg` (with `arm64`) if your Mac has Apple 
 I haven't yet set up code-signing for this app, so once you install the app, you might get an error message that says ""meaningfully" cannot be opened because the developer cannot be verified." (picture below).
 
 ![a screenshot of a warning that meaningfully cannot be opened because the developer cannot be verified.](
-https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-errormessage.png)
+https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-errormessage.png | width=300)
 
 ##### Here are the steps to work around this error
 
 1. Install the app as usual, by copying it from the disk image (dmg) to your Applications folder.
 
-![a screenshot of a Finder folder with the meaningfully icon and the Applications folder](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-install.png)
+![a screenshot of a Finder folder with the meaningfully icon and the Applications folder](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-install.png | width=300)
 
 2. Right-click (or command-click) the app, then click open.
 
-![a screenshot of the right-click menu you get when you right-click on the meaningfully app, with the Open option](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-rightclick-menu.png)
+![a screenshot of the right-click menu you get when you right-click on the meaningfully app, with the Open option](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-rightclick-menu.png | width=300)
 
 3. Then click "Open" on the pop-up dialog that says "macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it?"
 
-![a dialog that says macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-approval-dialog.png)
+![a dialog that says macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it](https://github.com/jeremybmerrill/meaningfully/blob/main/docs/img/mac-codesigning-approval-dialog.png | width=300)
 
 Sometimes you might have to try several times. But once it works, it should stay working until you update the app. If you'd like to eliminate this obstacle, please consider sponsoring this project -- as the code-signing workflow for Macs costs like $100, and I don't want to spend that until I'm sure that this project benefits people.
 
@@ -101,6 +101,9 @@ npm run dev
 
 There's a weird bug where sometimes I think the storage directory isn't created right. If you get weird errors like `Error searching document set: Error: ENOENT: no such file or directory`, maybe try running `mkdir ~/Library/Application\ Support/meaningfully/simple_vector_store/` and trying again. I'm trying to fix it. :D
 
+### Testing:
+
+Run the unit tests for the backend with `npm test`. Run the integration tests for the frontend by building (`npm run build:<platform>`) with `npm run wdio`; specify a specific file with `CUCUMBER_TEST_ONLY_FEATURE=upload-process npm run wdio`.
 
 ## My documents are PDFs, not spreadsheets. Can I use Meaningfully?
 
