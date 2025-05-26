@@ -169,7 +169,18 @@
   const debouncedGeneratePreview = debounce(generatePreview, 1000);
 
   $effect(() => {
-    if (selectedTextColumn || selectedMetadataColumns.length || chunkSize != defaultChunkSize || chunkOverlap != defaultChunkOverlap) {
+    // Synchronously read all values to establish dependencies
+    const params = {
+      chunkSize,
+      chunkOverlap,
+      splitIntoSentences,
+      combineSentencesIntoChunks,
+      selectedTextColumn,
+      selectedMetadataColumns
+    };
+
+    // Only trigger preview if we have required values
+    if (params.selectedTextColumn || params.selectedMetadataColumns.length) {
       debouncedGeneratePreview();
     }
   });
@@ -305,13 +316,16 @@
               <div class="inline-flex max-w-md p-2">
                 <label class="block text-sm font-medium text-gray-700">
                   Chunk Size (in tokens):
-                  <input
-                    type="range"
-                    bind:value={chunkSize}
-                    min="10"
-                    max="500"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="range"
+                      bind:value={chunkSize}
+                      min="10"
+                      max="500"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                    />
+                    <span class="text-sm text-gray-600">{chunkSize}</span>
+                  </div>
                 </label>
                 <p class="text-xs text-gray-500">
                   Split each text into chunks of about this many words.
@@ -321,13 +335,16 @@
               <div class="inline-flex max-w-md p-2">
                 <label class="block text-sm font-medium text-gray-700">
                   Chunk Overlap (in tokens):
-                  <input
-                    type="range" 
-                    bind:value={chunkOverlap}
-                    min="0"
-                    max="500"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-                  />
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="range" 
+                      bind:value={chunkOverlap}
+                      min="0"
+                      max="500"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                    />
+                    <span class="text-sm text-gray-600">{chunkOverlap}</span>
+                  </div>
                 </label>  
                 <p class="text-xs text-gray-500">
                   If a text is split into multiple chunks, about this many words between chunks will overlap.
