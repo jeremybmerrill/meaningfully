@@ -178,7 +178,9 @@
       splitIntoSentences,
       combineSentencesIntoChunks,
       selectedTextColumn,
-      selectedMetadataColumns
+      selectedMetadataColumns,
+      modelName,
+      modelProvider,
     };
 
     // Only trigger preview if we have required values
