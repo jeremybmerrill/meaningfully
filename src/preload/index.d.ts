@@ -44,7 +44,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      listDocumentSets: () => Promise<DocumentSetMetadata[]>,
+      listDocumentSets: () => Promise<{documents: DocumentSetMetadata[], total: number}> ,
       getDocumentSet: (documentSetId: number) => Promise<DocumentSetMetadata>,
       uploadCsv: (formData: {
         file: File,

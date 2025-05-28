@@ -79,9 +79,9 @@ app.whenReady().then(() => {
 
   // IPC test
   //ipc stuff could go in its own file.
-  ipcMain.handle('list-document-sets', async () => {
+  ipcMain.handle('list-document-sets', async (_, page: number = 1, pageSize: number = 10) => {
     try {
-      return await docService.listDocumentSets();
+      return await docService.listDocumentSets(page, pageSize);
     } catch (error) {
       console.error('Error listing document sets:', error);
       throw error;

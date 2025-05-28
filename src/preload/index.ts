@@ -3,7 +3,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('api', {
-  listDocumentSets: () => ipcRenderer.invoke('list-document-sets'),
+  listDocumentSets: (page?: number, pageSize?: number) => 
+    ipcRenderer.invoke('list-document-sets', page, pageSize),
   getDocumentSet: (documentSetId: number) => ipcRenderer.invoke('get-document-set', documentSetId),
   deleteDocumentSet: (documentSetId: number) => ipcRenderer.invoke('delete-document-set', documentSetId),
   uploadCsv: (formData: {

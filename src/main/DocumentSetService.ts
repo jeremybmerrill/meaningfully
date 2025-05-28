@@ -35,8 +35,8 @@ export class DocumentService {
     return this.clients;
   }
 
-  async listDocumentSets() {
-    return await this.manager.getDocumentSets();
+  async listDocumentSets(page: number = 1, pageSize: number = 10) {
+    return await this.manager.getDocumentSets(page, pageSize);
   }
 
   async getDocumentSet(documentSetId: number) {

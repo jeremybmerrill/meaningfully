@@ -7,6 +7,10 @@
   let loading = $state(true);
   let error: string | null = $state(null);
   let hidden = $state(false);
+  let currentPage = $state(1);
+  let totalPages = $state(1);
+  let totalDocuments = $state(0);
+  const pageSize = 10;
 
   export function hide() {
     hidden = true;
@@ -16,14 +20,16 @@
     hidden = false;
   }
 
-  export async function loadDocumentSets() {
+  export async function loadDocumentSets(page: number = 1) {
     try {
       loading = true;
-      const sets = await window.api.listDocumentSets();
-      documentSets = sets.map(set => ({
+      const result = await window.api.listDocumentSets(page, pageSize);
+      documentSets = result.documents.map(set => ({
         ...set,
         uploadDate: new Date(set.uploadDate)
       }));
+      totalDocuments = result.total;
+      totalPages = Math.ceil(totalDocuments / pageSize);
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to load document sets';
     } finally {
@@ -35,14 +41,30 @@
     if (confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) {
       try {
         await window.api.deleteDocumentSet(documentSetId);
-        await loadDocumentSets(); // Refresh the list
+        await loadDocumentSets(currentPage); // Reload current page
       } catch (e) {
         error = e instanceof Error ? e.message : 'Failed to delete document set';
       }
     }
   }
 
-  onMount(loadDocumentSets);
+  function nextPage(e: Event) {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadDocumentSets(currentPage);
+    }
+  }
+
+  function previousPage(e: Event) {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      loadDocumentSets(currentPage);
+    }
+  }
+
+  onMount(() => loadDocumentSets(1));
 </script>
 
 {#if hidden}
@@ -116,6 +138,29 @@
             {/each}
           </tbody>
         </table>
+        
+        <!-- Add pagination controls -->
+        <div class="mt-4 flex items-center justify-between px-4">
+          <div class="text-sm text-gray-700">
+            Showing page {currentPage} of {totalPages}
+          </div>
+          <div class="flex gap-2">
+            <button
+              class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onclick={previousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <button
+              class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              onclick={nextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     {/if}
   </div>
