@@ -32,7 +32,10 @@
     "llamaindex": "^0.8.37",
     "lodash": "^4.17.21",
     "natural": "^8.0.1",
-    "svelte-routing": "^2.13.0"
+    "svelte-routing": "^2.13.0",
+    "@llamaindex/weaviate": "^0.0.20",
+    "weaviate-client": "^3.5.3",
+    "weaviate-ts-embedded": "git://github.com/jeremybmerrill/typescript-embedded.git"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
