@@ -46,7 +46,6 @@ declare global {
     api: {
       listDocumentSets: () => Promise<DocumentSetMetadata[]>,
       getDocumentSet: (documentSetId: number) => Promise<DocumentSetMetadata>,
-      deleteDocumentSet: (documentSetId: number) => Promise<void>,
       uploadCsv: (formData: {
         file: File,
         datasetName: string,
@@ -70,6 +69,7 @@ declare global {
       }): Promise<{ text: string, metadata: Record<string, any> }>,
       getSettings: () => Promise<Settings>, 
       setSettings: (settings: Settings) => Promise<void>,
+      deleteDocumentSet: (documentSetId: number) => Promise<{ success: boolean }>,
       generatePreviewData: (formData: {
         file: File,
         datasetName: string,

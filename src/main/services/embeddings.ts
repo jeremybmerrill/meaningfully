@@ -20,6 +20,7 @@ import { MockEmbedding } from "./mockEmbedding";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
+import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
 
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
@@ -36,12 +37,6 @@ const PRICE_PER_1M = {
   "text-embedding-3-large": 0.13
 };
 
-function sanitizeProjectName(projectName: string) {
-  return projectName.replace(/[^a-zA-Z0-9]/g, "_");
-}
-function capitalizeFirstLetter(val) {
-  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-}
 
 /* all transformations except the embedding step (which costs money) */
 function getBaseTransformations(config: EmbeddingConfig){

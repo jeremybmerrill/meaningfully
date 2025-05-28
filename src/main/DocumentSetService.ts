@@ -1,6 +1,7 @@
 import { DocumentSetManager } from './DocumentSetManager';
 import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults, getDocStore } from './api/embedding';
+import { capitalizeFirstLetter } from './utils';
 import { join } from 'path';
 import { DocumentSetParams, Settings, MetadataFilter, Clients } from './types';
 import fs from 'fs';
@@ -49,6 +50,7 @@ export class DocumentService {
       await this.manager.deleteDocumentSet(documentSetId);
       // Delete the associated files from the filesystem
       fs.rmSync(join(this.storagePath, 'simple_vector_store', result.name), { recursive: true, force: true });
+      fs.rmSync(join(this.storagePath, 'weaviate_data', capitalizeFirstLetter(result.name)), { recursive: true, force: true });
     }
     return { success: true };
   }
