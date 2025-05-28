@@ -197,6 +197,7 @@ app.on('before-quit', async (event) => {
   if (docService.getClients().weaviateClient) {
     event.preventDefault() // Prevent quitting until cleanup is done
     await teardown_weaviate_database(docService.getClients().weaviateClient);
+    docService.setClients({weaviateClient: null, postgresClient: null}); // Clear clients
     app.quit() // Now actually quit
   }
 })
