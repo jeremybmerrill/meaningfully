@@ -37,11 +37,12 @@
     }
   }
 
-  async function handleDelete(documentSetId: number, name: string) {
+  async function handleDelete(documentSetId: number, name: string, e: Event) {
+    e.preventDefault();
     if (confirm(`Are you sure you want to delete "${name}"? This cannot be undone.`)) {
       try {
         await window.api.deleteDocumentSet(documentSetId);
-        await loadDocumentSets(currentPage); // Reload current page
+        await loadDocumentSets(currentPage);
       } catch (e) {
         error = e instanceof Error ? e.message : 'Failed to delete document set';
       }
@@ -127,7 +128,7 @@
                     class="text-gray-500 hover:text-red-600 transition-colors"
                     aria-label="Delete {set.name}"
                     title="Delete {set.name}"
-                    onclick={() => handleDelete(set.documentSetId, set.name)}
+                    onclick={(e) => handleDelete(set.documentSetId, set.name, e)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
