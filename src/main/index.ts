@@ -22,9 +22,6 @@ const docService = new DocumentService({
 
 create_weaviate_database(storagePath).then((weaviateClient) => {
   docService.setClients({ weaviateClient, postgresClient: null });
-  weaviateClient.collections.listAll().then((res) => console.log(res)).catch((error) => {
-    console.error('Error listing Weaviate collections:', error);
-  });
 }).catch((error) => {
   console.error('Error creating Weaviate database:', error);
   // fall back to not using weaviate (using SimpleVectorstore)

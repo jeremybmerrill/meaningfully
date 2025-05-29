@@ -139,20 +139,20 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
 }
 
 export async function getExistingDocStore(config: EmbeddingConfig) {
-  switch (config.vectorStoreType) {
-    case "simple":
+  // switch (config.vectorStoreType) {
+  //   case "simple":
       const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
       const storageContext = await storageContextFromDefaults({
         persistDir: persistDir,
       });
       return storageContext.docStore;
 
-    case "postgres":
-      throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
-      // return await createVectorStore(config);
-    default:
-      throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
-  }
+  //   case "postgres":
+  //     throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
+  //     // return await createVectorStore(config);
+  //   default:
+  //     throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
+  // }
 }
 
 
