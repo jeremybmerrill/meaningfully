@@ -131,6 +131,15 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
         weaviateClient: clients.weaviateClient,
         embeddingModel: embedModel
       });
+
+      // WeaviateVectorStore's getNodeSimilarity method looks for distance, but current weaviate provides score
+      // (WeaviateVectorStore would get `score` if we were doing hybrid search)
+      // Overwrite the private getNodeSimilarity method to use 'score' from metadata
+      // @ts-ignore
+      weaviateStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
+        return  entry.metadata.score;
+      }
+
       return await VectorStoreIndex.fromVectorStore(weaviateStore)
 
     default:
@@ -288,6 +297,15 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
         weaviateClient: clients.weaviateClient, 
         embeddingModel: embeddingModel 
       });
+
+      // WeaviateVectorStore's getNodeSimilarity method looks for distance, but current weaviate provides score
+      // (WeaviateVectorStore would get `score` if we were doing hybrid search)
+      // Overwrite the private getNodeSimilarity method to use 'score' from metadata
+      // @ts-ignore
+      weaviateStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
+        return  entry.metadata.score;
+      }
+
       return vectorStore;
     default:
       throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
