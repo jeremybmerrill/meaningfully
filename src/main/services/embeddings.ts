@@ -208,7 +208,6 @@ export async function embedDocuments(
   // that might not ultimately be the right solution. 
   documents = documents.filter((document_) => document_.text && document_.text.length > 0);
 
-  console.log("documents after escaping metadata keys:", documents);
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
   return nodes;
@@ -302,7 +301,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       // (WeaviateVectorStore would get `score` if we were doing hybrid search)
       // Overwrite the private getNodeSimilarity method to use 'score' from metadata
       // @ts-ignore
-      weaviateStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
+      vectorStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
         return  entry.metadata.score;
       }
 
