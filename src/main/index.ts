@@ -22,6 +22,9 @@ const docService = new DocumentService({
 
 create_weaviate_database(storagePath).then((weaviateClient) => {
   docService.setClients({ weaviateClient, postgresClient: null });
+  // weaviateClient.collections.listAll().then((res) => console.log(res)).catch((error) => {
+  //   console.error('Error listing Weaviate collections:', error);
+  // });
 }).catch((error) => {
   console.error('Error creating Weaviate database:', error);
   // fall back to not using weaviate (using SimpleVectorstore)
@@ -181,9 +184,12 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-
 app.on('window-all-closed', async () => {
-  await teardown_weaviate_database(docService.getClients().weaviateClient);
+  if (docService.getClients().weaviateClient) {
+    console.log('All windows closed, cleaning up Weaviate database...');  
+    await teardown_weaviate_database(docService.getClients().weaviateClient);
+    docService.setClients({weaviateClient: null, postgresClient: null}); // Clear clients
+  }
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -193,7 +199,9 @@ app.on('window-all-closed', async () => {
 app.on('before-quit', async (event) => {
   if (docService.getClients().weaviateClient) {
     event.preventDefault() // Prevent quitting until cleanup is done
+    console.log('Cleaning up Weaviate database before quitting...');
     await teardown_weaviate_database(docService.getClients().weaviateClient);
+    console.log('Weaviate database cleaned up.');
     docService.setClients({weaviateClient: null, postgresClient: null}); // Clear clients
     app.quit() // Now actually quit
   }
