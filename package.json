@@ -26,6 +26,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
+    "@llamaindex/weaviate": "^0.0.20",
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
@@ -33,9 +34,8 @@
     "lodash": "^4.17.21",
     "natural": "^8.0.1",
     "svelte-routing": "^2.13.0",
-    "@llamaindex/weaviate": "^0.0.20",
     "weaviate-client": "^3.5.3",
-    "weaviate-ts-embedded": "git://github.com/jeremybmerrill/typescript-embedded.git"
+    "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
