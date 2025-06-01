@@ -7,7 +7,6 @@
     }
 
     let { settings, settingsUpdated }: Props = $props();
-    console.log("apikeypage settings", settings);
     let openAIKey: string = $state(settings.openAIKey);
     let oLlamaModelType: string = $state(settings.oLlamaModelType);
     let oLlamaBaseURL: string = $state(settings.oLlamaBaseURL);

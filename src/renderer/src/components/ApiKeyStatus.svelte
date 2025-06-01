@@ -5,8 +5,7 @@
         validApiKeysSet: boolean;
     }
 
-    let { settings, validApiKeysSet }: Props = $props();
-    console.log("apikeystatus settings", settings);
+    let {  validApiKeysSet }: Props = $props();
 </script>
 
 {#if !validApiKeysSet }
