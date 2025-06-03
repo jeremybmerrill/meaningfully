@@ -60,12 +60,14 @@ export const config: WebdriverIO.Config = {
         browserName: 'electron',
         // Electron service options
         // see https://webdriver.io/docs/desktop-testing/electron/configuration/#service-options
-        'wdio:electronServiceOptions': {
+        'wdio:electronServiceOptions':  (process.env.WDIO_DEV) ? {         // to run without building, https://stackoverflow.com/questions/77992121/how-to-run-wdio-for-electron-test-without-build
+            appBinaryPath: process.platform == "darwin" ? "node_modules/electron/dist/Electron.app/Contents/MacOS/Electron" : "node_modules/electron/dist/electron",
+            appArgs: ["app=./out/main/index.js"] ,
+        } :{
             // custom application args
             appArgs: [],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
         }
     }],
-
     //
     // ===================
     // Test Configurations
