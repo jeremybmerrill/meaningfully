@@ -140,28 +140,30 @@
           </tbody>
         </table>
         
-        <!-- Add pagination controls -->
-        <div class="mt-4 flex items-center justify-between px-4">
-          <div class="text-sm text-gray-700">
-            Showing page {currentPage} of {totalPages}
+        {#if totalPages > 1}
+          <!-- Add pagination controls -->
+          <div class="mt-4 flex items-center justify-between px-4">
+            <div class="text-sm text-gray-700">
+              Showing page {currentPage} of {totalPages}
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick={previousPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <button
+                class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                onclick={nextPage}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button
-              class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              onclick={previousPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            <button
-              class="px-4 py-2 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              onclick={nextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        {/if}
       </div>
     {/if}
   </div>
