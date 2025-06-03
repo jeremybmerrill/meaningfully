@@ -1,9 +1,9 @@
 import { DocumentSetManager } from './DocumentSetManager';
 import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults, getDocStore } from './api/embedding';
-import { app } from 'electron';
+import { capitalizeFirstLetter, unescapeNodeMetadataKeys } from './utils';
 import { join } from 'path';
-import { DocumentSetParams, Settings, MetadataFilter } from './types';
+import { DocumentSetParams, Settings, MetadataFilter, Clients } from './types';
 import fs from 'fs';
 
 type HasFilePath = {filePath: string};
@@ -17,13 +17,26 @@ const maskKey = (key: string, n: number = 20): string => {
 export class DocumentService {
   private manager: DocumentSetManager;
   private storagePath: string;
-  constructor({ storagePath }: { storagePath?: string } = {}) {
-    this.storagePath = storagePath || app.getPath('userData');
+  private clients: Clients;
+
+  constructor({ storagePath, weaviateClient }: { storagePath: string, weaviateClient?: any }) {
+    this.storagePath = storagePath;
     this.manager = new DocumentSetManager(this.storagePath);
+    this.clients = {
+      weaviateClient: weaviateClient,
+      postgresClient: null
+    };
   }
 
-  async listDocumentSets() {
-    return await this.manager.getDocumentSets();
+  setClients(clients: Clients) {
+    this.clients = { ...this.clients, ...clients };
+  }
+  getClients() {
+    return this.clients;
+  }
+
+  async listDocumentSets(page: number = 1, pageSize: number = 10) {
+    return await this.manager.getDocumentSets(page, pageSize);
   }
 
   async getDocumentSet(documentSetId: number) {
@@ -37,12 +50,17 @@ export class DocumentService {
       await this.manager.deleteDocumentSet(documentSetId);
       // Delete the associated files from the filesystem
       fs.rmSync(join(this.storagePath, 'simple_vector_store', result.name), { recursive: true, force: true });
+      fs.rmSync(join(this.storagePath, 'weaviate_data', capitalizeFirstLetter(result.name)), { recursive: true, force: true });
     }
     return { success: true };
   }
 
+  getVectorStoreType() {
+    return this.clients.weaviateClient ? 'weaviate' : 'simple';
+  }
 
   async generatePreviewData(data: DocumentSetParamsFilePath) {
+    const vectorStoreType = this.getVectorStoreType();
     try {
       return await previewResults(data.filePath, data.textColumns[0], {
         modelName: data.modelName, // needed to tokenize, estimate costs
@@ -50,9 +68,9 @@ export class DocumentService {
         splitIntoSentences: data.splitIntoSentences,
         combineSentencesIntoChunks: data.combineSentencesIntoChunks,
         sploderMaxSize: 100,
-        vectorStoreType: 'simple',
+        vectorStoreType: vectorStoreType,
         projectName: data.datasetName,
-        storagePath: join(this.storagePath, 'simple_vector_store'),
+        storagePath: this.storagePath,
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap
     });
@@ -61,7 +79,10 @@ export class DocumentService {
   }
 }
 
-  async uploadCsv(data: DocumentSetParamsFilePath) {
+    async uploadCsv(data: DocumentSetParamsFilePath) {
+    // figure out if weaviate is available
+    const vectorStoreType = this.getVectorStoreType();
+
     // First create the document set record
     const documentSetId = await this.manager.addDocumentSet({
       name: data.datasetName,
@@ -76,7 +97,8 @@ export class DocumentService {
         chunkSize: data.chunkSize,
         chunkOverlap: data.chunkOverlap,
         modelName: data.modelName,
-        modelProvider: data.modelProvider
+        modelProvider: data.modelProvider,
+        vectorStoreType: vectorStoreType,
       },
       totalDocuments: 0 // We'll update this after processing
     });
@@ -99,13 +121,13 @@ export class DocumentService {
           splitIntoSentences: data.splitIntoSentences,
           combineSentencesIntoChunks: data.combineSentencesIntoChunks,
           sploderMaxSize: 100, // TODO: make configurable
-          vectorStoreType: "simple",
+          vectorStoreType: vectorStoreType,
           projectName: data.datasetName,
                         // via https://medium.com/cameron-nokes/how-to-store-user-data-in-electron-3ba6bf66bc1e
-          storagePath:  join(this.storagePath, 'simple_vector_store'),
+          storagePath:  this.storagePath,
           chunkSize: data.chunkSize,
           chunkOverlap: data.chunkOverlap,
-        }, embedSettings);
+        }, embedSettings, this.clients);
         if (!ret.success) {
           throw new Error(ret.error);
         }
@@ -120,7 +142,7 @@ export class DocumentService {
   }
 
 
-  async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10,   filters?: MetadataFilter[]  ) {
+    async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10,   filters?: MetadataFilter[]  ) {
     const documentSet = await this.manager.getDocumentSet(documentSetId);
     const settings = await this.manager.getSettings();
     if (!documentSet) {
@@ -132,12 +154,12 @@ export class DocumentService {
       splitIntoSentences: documentSet.parameters.splitIntoSentences as boolean,
       combineSentencesIntoChunks: documentSet.parameters.combineSentencesIntoChunks as boolean,
       sploderMaxSize: 100,
-      vectorStoreType: 'simple',
+      vectorStoreType: documentSet.parameters.vectorStoreType as 'simple' | 'weaviate',
       projectName: documentSet.name,
-      storagePath: join(this.storagePath, 'simple_vector_store'),
+      storagePath: this.storagePath,
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
-    }, settings);
+    }, settings, this.clients);
     const results = await search(index, query, n_results, filters);
     return results;
   }   
@@ -153,13 +175,13 @@ export class DocumentService {
       splitIntoSentences: documentSet.parameters.splitIntoSentences as boolean,
       combineSentencesIntoChunks: documentSet.parameters.combineSentencesIntoChunks as boolean,
       sploderMaxSize: 100,
-      vectorStoreType: 'simple',
+      vectorStoreType: documentSet.parameters.vectorStoreType as 'simple' | 'weaviate',
       projectName: documentSet.name,
-      storagePath: join(this.storagePath, 'simple_vector_store'),
+      storagePath: this.storagePath,
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     });
-    const document = await docStore.getNode(documentNodeId);
+    const document = unescapeNodeMetadataKeys(await docStore.getNode(documentNodeId));
     if (!document) {
       throw new Error('Document not found');
     }

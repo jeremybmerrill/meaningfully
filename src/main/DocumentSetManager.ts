@@ -6,7 +6,6 @@ export class DocumentSetManager {
 
   constructor(storagePath: string) {
     // Initialize SQLite database for document set metadata
-    console.log("sqliteDb path: ", join(storagePath, 'metadata.db'));
     this.sqliteDb = new Database(join(storagePath, 'metadata.db'));
     
     // Initialize the collection
@@ -65,19 +64,33 @@ export class DocumentSetManager {
     };
   }
 
-  async getDocumentSets(): Promise<DocumentSetMetadata[]> {
-    const stmt = this.sqliteDb.prepare(`
-        SELECT * FROM document_sets ORDER BY upload_date DESC LIMIT ?
-      `);
-    const rows = stmt.all(10);
+  async getDocumentSets(page: number = 1, pageSize: number = 10): Promise<{documents: DocumentSetMetadata[], total: number}> {
+    const offset = (page - 1) * pageSize;
+    
+    // Get total count
+    const countStmt = this.sqliteDb.prepare('SELECT COUNT(*) as count FROM document_sets');
+    const totalCount = countStmt.get().count;
 
-    return rows.map(row => ({
+    // Get paginated results
+    const stmt = this.sqliteDb.prepare(`
+        SELECT * FROM document_sets 
+        ORDER BY upload_date DESC 
+        LIMIT ? OFFSET ?
+    `);
+    const rows = stmt.all(pageSize, offset);
+
+    const documents = rows.map(row => ({
         documentSetId: row.set_id,
         name: row.name,
         uploadDate: new Date(row.upload_date),
         parameters: JSON.parse(row.parameters),
         totalDocuments: row.total_documents
-    }))
+    }));
+
+    return {
+        documents,
+        total: totalCount
+    };
   }
 
   async updateDocumentCount(documentSetId: number, count: number) {

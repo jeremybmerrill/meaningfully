@@ -7,13 +7,28 @@ import { writeFileSync, readFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
 import { DocumentSetParams, MetadataFilter } from './types';
+import { create_weaviate_database, teardown_weaviate_database } from './services/weaviateService';
 
 type HasFilePathAndName =  { file: { path: string, name: string }};
 type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
 
 const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
-const storagePath = storageArg ? storageArg.split('=')[1] : undefined;
-const docService = storagePath ? new DocumentService({ storagePath }) : new DocumentService();
+const storagePath = storageArg ? storageArg.split('=')[1] : app.getPath('userData');;
+
+const docService = new DocumentService({ 
+  storagePath,
+  weaviateClient: null // Initially set to null, will be updated after DB service is init'ec.
+});
+
+create_weaviate_database(storagePath).then((weaviateClient) => {
+  docService.setClients({ weaviateClient, postgresClient: null });
+  // weaviateClient.collections.listAll().then((res) => console.log(res)).catch((error) => {
+  //   console.error('Error listing Weaviate collections:', error);
+  // });
+}).catch((error) => {
+  console.error('Error creating Weaviate database:', error);
+  // fall back to not using weaviate (using SimpleVectorstore)
+});
 
 function createWindow(): void {
   // Create the browser window.
@@ -64,9 +79,9 @@ app.whenReady().then(() => {
 
   // IPC test
   //ipc stuff could go in its own file.
-  ipcMain.handle('list-document-sets', async () => {
+  ipcMain.handle('list-document-sets', async (_, page: number = 1, pageSize: number = 10) => {
     try {
-      return await docService.listDocumentSets();
+      return await docService.listDocumentSets(page, pageSize);
     } catch (error) {
       console.error('Error listing document sets:', error);
       throw error;
@@ -169,11 +184,25 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  if (docService.getClients().weaviateClient) {
+    console.log('All windows closed, cleaning up Weaviate database...');  
+    await teardown_weaviate_database(docService.getClients().weaviateClient);
+    docService.setClients({weaviateClient: null, postgresClient: null}); // Clear clients
+  }
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
 
-// In this file you can include the rest of your app"s specific main process
-// code. You can also put them in separate files and require them here.
+
+app.on('before-quit', async (event) => {
+  if (docService.getClients().weaviateClient) {
+    event.preventDefault() // Prevent quitting until cleanup is done
+    console.log('Cleaning up Weaviate database before quitting...');
+    await teardown_weaviate_database(docService.getClients().weaviateClient);
+    console.log('Weaviate database cleaned up.');
+    docService.setClients({weaviateClient: null, postgresClient: null}); // Clear clients
+    app.quit() // Now actually quit
+  }
+})

@@ -11,10 +11,8 @@
   let settings: Settings | null = $state(null);
 
   const getSettings = async () => {
-    console.log("getSettings")
       try {
           settings = await window.api.getSettings();
-          console.log("got settings", settings);
       } catch (error) {
           console.error('Error fetching settings:', error);
       }

@@ -24,7 +24,7 @@ interface Window {
       }
     }
     api: {
-      listDocumentSets: () => Promise<DocumentSet[]>,
+      listDocumentSets: (page: number, pageSize: number) => Promise<{documents: DocumentSetMetadata[], total: number}> ,
       uploadCsv: (formData: {
         file: File,
         datasetName: string,
