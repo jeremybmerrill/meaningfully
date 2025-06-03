@@ -1,6 +1,6 @@
 {
   "name": "meaningfully",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Semantic search over CSVs`",
   "main": "./out/main/index.js",
   "author": "example.com",
