@@ -148,6 +148,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-apple, build-intel, build-linux]
     steps:
+      - uses: actions/checkout@v4
 
       - name: Configure Node caching
         uses: actions/cache@v4
