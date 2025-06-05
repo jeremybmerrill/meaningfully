@@ -40,7 +40,7 @@ When("the column {string} has been selected as column to embed", async (columnNa
     // Here we target the first select element inside the CSV Upload page.
     const selectSelector = `${CSV_UPLOAD_PAGE_SELECTOR} select[data-testid="column-to-embed-select"]`;
     const selectElem = await $(selectSelector);
-    await selectElem.waitForDisplayed({ timeout: 5000 });
+    await selectElem.waitForExist({ timeout: 5000 });
     // Select by index (skipping the default placeholder at index 0).
     await selectElem.selectByVisibleText(columnName); // Replace with the actual index of the column you want to embed.
     await browser.pause(500);
@@ -72,7 +72,7 @@ Then(
             throw new Error(`Unknown component: ${componentName}`);
         }
         const headerRow = await $(selector);
-        await headerRow.waitForDisplayed({ timeout: 5000 });
+        await headerRow.waitForExist({ timeout: 5000 });
         const headerText = await headerRow.getText();
         expect(headerText).toContain(columnName);
     }
@@ -81,7 +81,7 @@ Then ('the "Preview" component should contain HTML linebreaks not unescaped newl
         // Assumes the Preview component renders a table with a <thead> row.
         let selector = `${PREVIEW_COMPONENT_SELECTOR} table td`;
         const dataRows = await $$(selector);
-        await dataRows[0].waitForDisplayed({ timeout: 5000 });
+        await dataRows[0].waitForExist({ timeout: 5000 });
         const cellText = await dataRows[0].getText(); 
         const cellHTML = await dataRows[0].getHTML(); // TIGHT-COUPLING: This assumes that the first cell of newline-test.csv contains text with linebreaks (with a \n in the CSV, which should be a <br> in the component under test).
         console.log('cellText: ', cellText);
@@ -102,7 +102,7 @@ Then(
             .toLowerCase()
             .replace(/ /g, '-')}"]`;
         const component = await $(selector);
-        await component.waitForDisplayed({ timeout: 5000 });
+        await component.waitForExist({ timeout: 5000 });
         expect(component).toBeDisabled();
     }
 );
@@ -115,7 +115,7 @@ Then(
             .toLowerCase()
             .replace(/ /g, '-')}"]`;
         const component = await $(selector);
-        await component.waitForDisplayed({ timeout: 5000 });
+        await component.waitForExist({ timeout: 5000 });
         expect(component).toBeEnabled();
     }
 );

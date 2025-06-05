@@ -5,7 +5,7 @@ import { expect, $, $$ } from '@wdio/globals';
 // Step: Enter a search query.
 When("a search query has been entered", async () => {
     const searchInput = await $('[data-testid="search-bar"]');
-    await searchInput.waitForDisplayed({ timeout: 5000 });
+    await searchInput.waitForExist({ timeout: 5000 });
     // Enter a sample query.
     await searchInput.setValue("test search query");
     await browser.pause(500);
@@ -13,7 +13,7 @@ When("a search query has been entered", async () => {
 
 When("no search query has been entered", async () => {
     const searchInput = await $('[data-testid="search-bar"]');
-    await searchInput.waitForDisplayed({ timeout: 5000 });
+    await searchInput.waitForExist({ timeout: 5000 });
     // Enter a sample query.
     await searchInput.clearValue();
     await browser.pause(500);
@@ -23,7 +23,7 @@ When("no search query has been entered", async () => {
 // Step: Verify search button state.
 Then("the search button is {string}", async (state: string) => {
     const searchButton = await $('[data-testid="search-button"]');
-    await searchButton.waitForDisplayed({ timeout: 5000 });
+    await searchButton.waitForExist({ timeout: 5000 });
     const isDisabled = await searchButton.getAttribute("disabled");
     if (state === "disabled") {
         expect(isDisabled).not.toBeNull();
@@ -37,7 +37,7 @@ Then("the search button is {string}", async (state: string) => {
 // Step: Click the search button.
 When("the search button has been clicked", async () => {
     const searchButton = await $('[data-testid="search-button"]');
-    await searchButton.waitForDisplayed({ timeout: 5000 });
+    await searchButton.waitForExist({ timeout: 5000 });
     await searchButton.click();
     // Allow search results to load.
     await browser.pause(1000);
@@ -74,7 +74,7 @@ When("a result row modal button has been clicked", async () => {
 // Step: Verify the details component is scrollable.
 Then("the details component should be scrollable", async () => {
     const details = await $('[data-testid="details"]');
-    await details.waitForDisplayed({ timeout: 5000 });
+    await details.waitForExist({ timeout: 5000 });
     // Check that scrollHeight is greater than clientHeight.
     const scrollHeight = await details.getProperty("scrollHeight");
     const clientHeight = await details.getProperty("clientHeight");

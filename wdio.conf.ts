@@ -63,9 +63,25 @@ export const config: WebdriverIO.Config = {
         'wdio:electronServiceOptions':  (process.env.WDIO_DEV) ? {         // to run without building, https://stackoverflow.com/questions/77992121/how-to-run-wdio-for-electron-test-without-build
             appBinaryPath: process.platform == "darwin" ? "node_modules/electron/dist/Electron.app/Contents/MacOS/Electron" : "node_modules/electron/dist/electron",
             appArgs: ["app=./out/main/index.js"] ,
-        } :{
+        } : {
             // custom application args
-            appArgs: [],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
+            appArgs: [
+      '--headless',
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      "--window-size=1440,735",
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor',
+      '--disable-extensions',
+      '--no-first-run',
+      '--disable-default-apps',
+      '--disable-translate',
+      '--disable-background-timer-throttling',
+      '--disable-renderer-backgrounding',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-ipc-flooding-protection'
+                ],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
         }
     }],
     //

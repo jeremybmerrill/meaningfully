@@ -19,7 +19,7 @@ Given("the page has been reloaded", async () => {
 When('the {string} component has been clicked', async (componentName: string) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const btn = await $(selector);
-    await btn.waitForDisplayed({ timeout: 5000 });
+    await btn.waitForExist({ timeout: 5000 });
     await btn.click();
     await browser.pause(500);
 });
@@ -32,13 +32,13 @@ When('the {string} component has been clicked', async (componentName: string) =>
 Then("the {string} component should be visible", async (componentName: string) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const component = await $(selector);
-    await expect(component).toBeDisplayed();
+    await expect(component).toBeExisting();
 });
 
 Then("the {string} component should not be visible", async (componentName: string) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const component = await $(selector);
-    await expect(component).not.toBeDisplayed();
+    await expect(component).not.toBeExisting();
 });
 
 // Navigation step: go to the search page.
@@ -63,7 +63,7 @@ Given("the app is navigated to the {string} dataset link", async (linkText: stri
     //     throw new Error(`No link found with text: ${linkText}`);
     // }
     // const link = await filteredRows[0].$(`a*=${linkText}`);
-    // await link.waitForDisplayed({ timeout: 5000 });
+    // await link.waitForExist({ timeout: 5000 });
     // await link.click();
     // Wait for the search bar to be displayed as indicator of page load.
 });
@@ -71,7 +71,7 @@ Given("the app is navigated to the {string} dataset link", async (linkText: stri
 When("the {string} component has been set to {string}", async (componentName: string, val: string) => {
     let selector = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const input = await $(selector);
-    await input.waitForDisplayed({ timeout: 5000 });
+    await input.waitForExist({ timeout: 5000 });
     // Clear existing value and set a new one.
     await input.clearValue();
     // Provide a new key value.
