@@ -65,7 +65,11 @@ export const config: WebdriverIO.Config = {
             appArgs: ["app=./out/main/index.js"] ,
         } :{
             // custom application args
-            appArgs: [],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
+            appArgs: [
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',                
+            ],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
         }
     }],
     //

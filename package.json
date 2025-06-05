@@ -21,7 +21,7 @@
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
     "test": "vitest",
-    "wdio": "NODE_ENV=test wdio run ./wdio.conf.ts"
+    "wdio": "NODE_ENV=test xvfb-maybe wdio run ./wdio.conf.ts"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
@@ -67,6 +67,7 @@
     "vite-node": "^3.0.8",
     "vitest": "^3.0.8",
     "wdio-electron-service": "^8.1.0",
-    "wdio-wait-for": "^3.1.0"
+    "wdio-wait-for": "^3.1.0",
+    "xvfb-maybe": "^0.2.1"
   }
 }
