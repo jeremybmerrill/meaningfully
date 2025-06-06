@@ -63,6 +63,8 @@ Then("the {string} component should have multiple rows shown", async (componentN
 When("a result row modal button has been clicked", async () => {
     // In your Results component, assume each row has a button to open the modal with data-testid="result-modal-button".
     const modalButtons = await $('[data-testid="result-modal-button"]');
+    await modalButtons.waitForDisplayed({ timeout: 5000 });
+
     // if (modalButtons.length === 0) {
     //     throw new Error("No modal button found in results.");
     // }
