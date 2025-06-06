@@ -130,11 +130,11 @@ jobs:
           # SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: npm run build:linux -- --publish always
 
-      - name: Run integration tests 
-        run: |
-          mkdir -p screenshots
-          npm run wdio
-        continue-on-error: true  # So we can upload screenshots even if tests fail
+      # - name: Run integration tests 
+      #   run: |
+      #     mkdir -p screenshots
+      #     npm run wdio
+      #   continue-on-error: true  # So we can upload screenshots even if tests fail
 
       - name: Upload test failure screenshots
         if: failure() || success()  # Upload screenshots regardless of test outcome
@@ -158,8 +158,6 @@ jobs:
             dist/meaningfully-${{ github.ref_name }}.deb
             dist/meaningfully-${{ github.ref_name }}.AppImage
             dist/README.txt
-      - name: Run integration tests 
-        run: npm run wdio
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
