@@ -15,3 +15,4 @@ out
 *.log*
 e2e/test-storage/metadata.db
 certs/
+screenshots/ # testing screenshots

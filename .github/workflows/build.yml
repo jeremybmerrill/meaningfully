@@ -131,7 +131,19 @@ jobs:
         run: npm run build:linux -- --publish always
 
       - name: Run integration tests 
-        run: npm run wdio
+        run: |
+          mkdir -p screenshots
+          npm run wdio
+        continue-on-error: true  # So we can upload screenshots even if tests fail
+
+      - name: Upload test failure screenshots
+        if: failure() || success()  # Upload screenshots regardless of test outcome
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-failure-screenshots
+          path: screenshots/*.png
+          retention-days: 30
+          if-no-files-found: ignore
 
       - name: Create README
         run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'

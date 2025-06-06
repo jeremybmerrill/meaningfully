@@ -283,8 +283,13 @@ export const config: WebdriverIO.Config = {
      * @param {number}                 result.duration  duration of scenario in milliseconds
      * @param {object}                 context          Cucumber World object
      */
-    // afterScenario: function (world, result, context) {
-    // },
+    afterScenario: async function (world, result, context) {
+        if (!result.passed) {
+            const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
+            const scenarioName = world.pickle.name.replace(/[^a-zA-Z0-9]/g, '_');
+            await browser.saveScreenshot(`./screenshots/${scenarioName}_${timestamp}.png`);
+        }
+    },
     /**
      *
      * Runs after a Cucumber Feature.
