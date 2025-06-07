@@ -32,7 +32,7 @@
     "js-tiktoken": "^1.0.8",
     "llamaindex": "^0.8.37",
     "lodash": "^4.17.21",
-    "natural": "^8.0.1",
+    "natural": "^8.1.0",
     "svelte-routing": "^2.13.0",
     "weaviate-client": "^3.5.3",
     "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded"

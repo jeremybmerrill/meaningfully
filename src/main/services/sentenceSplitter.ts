@@ -1,5 +1,5 @@
 import { SentenceSplitter, splitBySep, splitByRegex, splitByChar, Settings } from "llamaindex";
-import { SentenceTokenizer } from "./optional_trim_sentence_tokenizer"; // like the version from natural, but with trimSentence option added.
+import { SentenceTokenizer } from "natural"
 
 /*
 LlamaIndex's includes the length of the metadata as part of the size of the chunk when splitting by sentences. 
