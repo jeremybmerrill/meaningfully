@@ -64,22 +64,21 @@ Install `meaningfully-<version>.arm64.dmg` (with `arm64`) if your Mac has Apple 
 
 I haven't yet set up code-signing for this app, so once you install the app, you might get an error message that says ""meaningfully" cannot be opened because the developer cannot be verified." (picture below).
 
-![a screenshot of a warning that meaningfully cannot be opened because the developer cannot be verified.](
-https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-errormessage.png | width=300)
+<img alt="a screenshot of a warning that meaningfully cannot be opened because the developer cannot be verified." src="https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-errormessage.png" width=300 />
 
 ##### Here are the steps to work around this error
 
 1. Install the app as usual, by copying it from the disk image (dmg) to your Applications folder.
 
-![a screenshot of a Finder folder with the meaningfully icon and the Applications folder](https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-install.png | width=300)
+<img alt="a screenshot of a Finder folder with the meaningfully icon and the Applications folder" src="https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-install.png" width=300 />
 
 2. Right-click (or command-click) the app, then click open.
 
-![a screenshot of the right-click menu you get when you right-click on the meaningfully app, with the Open option](https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-rightclick-menu.png | width=300)
+<img alt="a screenshot of the right-click menu you get when you right-click on the meaningfully app, with the Open option" src="https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-rightclick-menu.png" width=300 />
 
 3. Then click "Open" on the pop-up dialog that says "macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it?"
 
-![a dialog that says macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it](https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-approval-dialog.png | width=300)
+<img alt="a dialog that says macOS cannot verify the developer of 'meaningfully'. Are you sure you want to open it" src="https://raw.githubusercontent.com/jeremybmerrill/meaningfully/main/docs/img/mac-codesigning-approval-dialog.png" width=300 />
 
 Sometimes you might have to try several times. But once it works, it should stay working until you update the app. If you'd like to eliminate this obstacle, please consider sponsoring this project -- as the code-signing workflow for Macs costs like $100, and I don't want to spend that until I'm sure that this project benefits people.
 
