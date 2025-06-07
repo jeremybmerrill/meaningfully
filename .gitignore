@@ -16,3 +16,4 @@ out
 e2e/test-storage/metadata.db
 certs/
 screenshots/ # testing screenshots
+meaningfully.code-workspace
