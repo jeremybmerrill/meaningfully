@@ -141,8 +141,7 @@
         </table>
         
         {#if totalPages > 1}
-          <!-- Add pagination controls -->
-          <div class="mt-4 flex items-center justify-between px-4">
+          <div class="mt-4 flex items-center justify-between px-4" data-testid="pagination-control">
             <div class="text-sm text-gray-700">
               Showing page {currentPage} of {totalPages}
             </div>

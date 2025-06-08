@@ -132,6 +132,11 @@ Then("the dataset {string} should be listed", async (datasetName: string) => {
     const datasetNames = await $$(DATASET_ROW_SELECTOR).map((datasetRow) => datasetRow.$$('td')[0].getText());
     expect(datasetNames).toContain(datasetName);
 });
+Then("the dataset {string} should not be listed", async (datasetName: string) => {
+    const datasetNames = await $$(DATASET_ROW_SELECTOR).map((datasetRow) => datasetRow.$$('td')[0].getText());
+    expect(datasetNames).not.toContain(datasetName);
+});
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
