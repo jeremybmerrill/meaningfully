@@ -1,5 +1,5 @@
 import { SentenceSplitter, splitBySep, splitByRegex, splitByChar, Settings } from "llamaindex";
-import { SentenceTokenizer } from "natural"
+import natural from "natural"
 
 /*
 LlamaIndex's includes the length of the metadata as part of the size of the chunk when splitting by sentences. 
@@ -63,7 +63,7 @@ export class CustomSentenceSplitter extends SentenceSplitter {
   chunkingTokenizerFn = (): TextSplitterFn => {
     return (text: string) => {
       try {
-        return this.tokenizer.tokenize(text, false); // this false argument does all the work of preserving spaces.
+        return this.tokenizer.tokenize(text);
       } catch {
         return [text];
       }
@@ -72,13 +72,17 @@ export class CustomSentenceSplitter extends SentenceSplitter {
   #splitFns: Set<TextSplitterFn> = new Set();
   #subSentenceSplitFns: Set<TextSplitterFn> = new Set();
   abbreviations: string[];
-  tokenizer: SentenceTokenizer;
+  tokenizer: natural.SentenceTokenizer;
 
   constructor(params: { chunkSize?: number; chunkOverlap?: number; abbreviations?: string[] } = {}) {
     super(params);
     // Create custom tokenizer with abbreviations
     this.abbreviations = params.abbreviations || default_abbreviations;
-    this.tokenizer = new SentenceTokenizer(this.abbreviations, false); // false is don't trim sentences
+
+    // I modified my local node_modules/natural/lib/natural/tokenizers/index.d.ts to add the second argument to the natural.SentenceTokenizer constructor.
+    // once that gets fixed in the next version of the library, remove the ts-ignore.
+    // @ts-ignore
+    this.tokenizer = new natural.SentenceTokenizer(this.abbreviations, false); // false is don't trim sentences
 
     // copied from the superclass.
     this.#splitFns.add(splitBySep(this.paragraphSeparator));
