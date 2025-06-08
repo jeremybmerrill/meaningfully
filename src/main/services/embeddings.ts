@@ -20,7 +20,7 @@ import { MockEmbedding } from "./mockEmbedding";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
-import { sanitizeProjectName, capitalizeFirstLetter, escapeDocumentMetadataKeys, unescapeNodeWithScoreMetadataKeys } from "../utils";
+import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
 
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
@@ -196,8 +196,6 @@ export async function embedDocuments(
   const transformations = getBaseTransformations(config);
   transformations.push(embedModel)
 
-  documents = documents.map(escapeDocumentMetadataKeys);
-
   // llama-index stupidly includes all the metadata in the embedding, which is a waste of tokens
   // so we exclude everything except the text column from the embedding
   for (const document of documents) {
@@ -324,5 +322,5 @@ export async function searchDocuments(
   const retriever = index.asRetriever({ similarityTopK: numResults, filters: metadataFilters });
 
   const results = await retriever.retrieve(query );
-  return results.map(unescapeNodeWithScoreMetadataKeys);
+  return results;
 }

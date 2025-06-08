@@ -65,7 +65,11 @@ export const config: WebdriverIO.Config = {
             appArgs: ["app=./out/main/index.js"] ,
         } :{
             // custom application args
-            appArgs: [],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
+            appArgs: [
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',                
+            ],// ["--storage-path=/Users/jeremybmerrill/code/meaningfully/e2e/test-storage/" ],
         }
     }],
     //
@@ -279,8 +283,13 @@ export const config: WebdriverIO.Config = {
      * @param {number}                 result.duration  duration of scenario in milliseconds
      * @param {object}                 context          Cucumber World object
      */
-    // afterScenario: function (world, result, context) {
-    // },
+    afterScenario: async function (world, result, context) {
+        if (!result.passed) {
+            const timestamp = new Date().toISOString().replace(/[^0-9]/g, '');
+            const scenarioName = world.pickle.name.replace(/[^a-zA-Z0-9]/g, '_');
+            await browser.saveScreenshot(`./screenshots/${scenarioName}_${timestamp}.png`);
+        }
+    },
     /**
      *
      * Runs after a Cucumber Feature.

@@ -1,7 +1,7 @@
 import { DocumentSetManager } from './DocumentSetManager';
 import { loadDocumentsFromCsv } from './services/csvLoader';
 import { createEmbeddings, getIndex, search, previewResults, getDocStore } from './api/embedding';
-import { capitalizeFirstLetter, unescapeNodeMetadataKeys } from './utils';
+import { capitalizeFirstLetter } from './utils';
 import { join } from 'path';
 import { DocumentSetParams, Settings, MetadataFilter, Clients } from './types';
 import fs from 'fs';
@@ -181,7 +181,7 @@ export class DocumentService {
       chunkSize: 1024, // not actually used, we just re-use a config object that has this option
       chunkOverlap: 20, // not actually used, we just re-use a config object that has this option
     });
-    const document = unescapeNodeMetadataKeys(await docStore.getNode(documentNodeId));
+    const document = await docStore.getNode(documentNodeId);
     if (!document) {
       throw new Error('Document not found');
     }

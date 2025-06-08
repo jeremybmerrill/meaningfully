@@ -21,18 +21,18 @@
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
     "test": "vitest",
-    "wdio": "NODE_ENV=test wdio run ./wdio.conf.ts"
+    "wdio": "NODE_ENV=test xvfb-maybe wdio run ./wdio.conf.ts"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
-    "@llamaindex/weaviate": "^0.0.20",
+    "@llamaindex/weaviate": "^0.0.24",
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
     "llamaindex": "^0.8.37",
     "lodash": "^4.17.21",
-    "natural": "^8.0.1",
+    "natural": "^8.1.0",
     "svelte-routing": "^2.13.0",
     "weaviate-client": "^3.5.3",
     "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded"
@@ -67,6 +67,7 @@
     "vite-node": "^3.0.8",
     "vitest": "^3.0.8",
     "wdio-electron-service": "^8.1.0",
-    "wdio-wait-for": "^3.1.0"
+    "wdio-wait-for": "^3.1.0",
+    "xvfb-maybe": "^0.2.1"
   }
 }

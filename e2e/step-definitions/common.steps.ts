@@ -32,6 +32,7 @@ When('the {string} component has been clicked', async (componentName: string) =>
 Then("the {string} component should be visible", async (componentName: string) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const component = await $(selector);
+    await component.waitForDisplayed({ timeout: 5000 });
     await expect(component).toBeDisplayed();
 });
 

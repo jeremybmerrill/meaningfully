@@ -58,8 +58,7 @@ describe('embedding.ts', () => {
             expect(result).toEqual({
                 success: true,
                 nodes: mockPreviewNodes,
-                estimatedPrice: 10,
-                tokenCount: 100
+                ...mockEstimate
             });
         });
 
@@ -158,8 +157,7 @@ describe('embedding.ts', () => {
       expect(result).toEqual({
         success: true,
         nodes: mockPreviewNodes,
-        estimatedPrice: 10,
-        tokenCount: 100
+        ...mockEstimate
       });
     });
 
