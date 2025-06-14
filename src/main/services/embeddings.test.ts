@@ -10,7 +10,8 @@ we need a fake OpenAIEmbedding that returns nothing.
 
 import { describe, it, expect, vi } from 'vitest';
 import { Document, TextNode } from 'llamaindex';
-import { transformDocuments, embedDocuments } from './embeddings';
+import { transformDocuments, embedDocuments, getEmbedModel } from './embeddings';
+import { ProgressOpenAIEmbedding } from './progressOpenAIEmbedding';
 
 vi.mock(import("./embeddings"), async (importOriginal) => {
     const actual = await importOriginal()
@@ -21,6 +22,13 @@ vi.mock(import("./embeddings"), async (importOriginal) => {
     }
   })
   
+vi.mock('./progressOpenAIEmbedding', () => ({
+  ProgressOpenAIEmbedding: vi.fn().mockImplementation((config, progressCallback) => ({
+    getTextEmbeddingsBatch: vi.fn().mockResolvedValue([[0.1, 0.2, 0.3]]),
+    progressCallback
+  }))
+}));
+
 describe('embedDocuments', () => {
   const mockConfig = {
     chunkSize: 100,
@@ -94,5 +102,80 @@ describe('embedDocuments', () => {
     await embedDocuments(mockDocuments, mockConfig, mockSettings);
 
     expect(mockDocuments[0].excludedEmbedMetadataKeys).toEqual(['key1', 'key2']);
+  });
+});
+
+describe('getEmbedModel', () => {
+  const mockConfig = {
+    chunkSize: 100,
+    chunkOverlap: 10,
+    combineSentencesIntoChunks: true,
+    sploderMaxSize: 500,
+    modelProvider: 'openai',
+    modelName: 'text-embedding-3-small',
+    vectorStoreType: "simple" as "simple",
+    storagePath: './storage',
+    projectName: 'test_project',
+    splitIntoSentences: true,
+  };
+
+  const mockSettings = {
+    openAIKey: 'mock-api-key',
+    oLlamaBaseURL: 'http://localhost',
+    oLlamaModelType: 'mock-model',
+  };
+
+  it('should create embedding model with progress callback for OpenAI', () => {
+    const progressCallback = vi.fn();
+    const embedModel = getEmbedModel(mockConfig, mockSettings, progressCallback);
+    
+    expect(embedModel).toBeDefined();
+    // Verify the ProgressOpenAIEmbedding constructor was called with the progress callback
+    expect(ProgressOpenAIEmbedding).toHaveBeenCalledWith(
+      expect.objectContaining({ 
+        model: 'text-embedding-3-small', 
+        apiKey: 'mock-api-key' 
+      }), 
+      progressCallback
+    );
+  });
+
+  it('should properly pass progress to callback when embedding', async () => {
+    const progressCallback = vi.fn();
+    const embedModel = getEmbedModel(
+      { ...mockConfig, modelProvider: 'openai' }, 
+      mockSettings, 
+      progressCallback
+    );
+    
+    // Simulate embedding execution that would trigger progress callback
+    await embedModel.getTextEmbeddingsBatch(['test text']);
+    
+    // Verify the progress callback was stored correctly
+    expect(embedModel.progressCallback).toBe(progressCallback);
+  });
+
+  it('should handle different model providers correctly', () => {
+    // Test with 'ollama' provider
+    const ollamaModel = getEmbedModel(
+      { ...mockConfig, modelProvider: 'ollama' }, 
+      mockSettings
+    );
+    expect(ollamaModel).toBeDefined();
+    
+    // Test with 'mock' provider
+    const mockModel = getEmbedModel(
+      { ...mockConfig, modelProvider: 'mock' }, 
+      mockSettings
+    );
+    expect(mockModel).toBeDefined();
+    
+    // Test with invalid provider
+    expect(() => {
+      getEmbedModel(
+        { ...mockConfig, modelProvider: 'invalid' as any }, 
+        mockSettings
+      );
+    }).toThrow('Unsupported embedding model provider: invalid');
   });
 });

@@ -92,7 +92,7 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
 }
 
 export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients) {
-  const embedModel = getEmbedModel(config, settings);
+  const embedModel = getEmbedModel(config, settings, (progress, total) => {console.log("getExistingVectorStoreIndex embedding progress:", progress, "/", total);});
   switch (config.vectorStoreType) {
     case "simple":
       const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
@@ -208,6 +208,7 @@ export function getEmbedModel(
   let embedModel; 
   if (config.modelProvider === "openai" ){
     embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }, progressCallback); 
+    embedModel.chunkSize = 20;
   } else if (config.modelProvider === "ollama") {
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
       host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
@@ -248,6 +249,8 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   const storageContext = await getStorageContext(config, settings, clients);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
+  // TODO: for some reason, this re-embeds the nodes
+  // which already have an embedding on them.
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
@@ -275,7 +278,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
 }
 
 async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
-  const embeddingModel = getEmbedModel(config, settings);
+  const embeddingModel = getEmbedModel(config, settings, (progress, total) => {console.log("createVectorStore embedding progress:", progress, "/", total);});
   switch (config.vectorStoreType) {
     // case "chroma":
     //   // not gonna work, requires a 'server' to run this elsewhere

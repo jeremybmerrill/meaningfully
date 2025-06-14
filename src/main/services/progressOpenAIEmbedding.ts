@@ -1,4 +1,3 @@
-
 // temporary
 // this is a wrapper around OpenAIEmbedding that logs the input of the embedding
 // it's used to debug the embedding process (to make sure random metadata isn't wrongfully included)
@@ -15,6 +14,47 @@ type EmbedFunc<T> = (values: T[]) => Promise<Array<number[]>>;
 
 export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
   progress_callback: ((progress: number, total: number) => void) | undefined;
+  
+  async getTextEmbeddingsBatch(
+    texts: string[],
+    options?: BaseEmbeddingOptions,
+  ): Promise<Array<number[]>> {
+    return await this.batchEmbeddings(
+      texts,
+      this.getTextEmbeddings,
+      this.embedBatchSize,
+      options,
+    );
+  }
+  
+  async batchEmbeddings<T>(
+      values: T[],
+      embedFunc: EmbedFunc<T>,
+      chunkSize: number,
+      /* ts-ignore */
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+      options?: BaseEmbeddingOptions,
+    ): Promise<Array<number[]>> {
+      const resultEmbeddings: Array<number[]> = [];
+      const queue: T[] = values;
+      const curBatch: T[] = [];
+      for (let i = 0; i < queue.length; i++) {
+        curBatch.push(queue[i]!);
+        if (i == queue.length - 1 || curBatch.length == chunkSize) {
+          const embeddings = await embedFunc(curBatch);
+    
+          resultEmbeddings.push(...embeddings);
+          if (this.progress_callback) {
+            this.progress_callback?.(i+1, queue.length);
+          }
+    
+          curBatch.length = 0;
+        }
+      }
+    
+      return resultEmbeddings;
+    }
+
   constructor(
     init?: Omit<Partial<OpenAIEmbedding>, "lazySession"> & {
       session?: LLMInstance | undefined;
@@ -24,36 +64,5 @@ export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
   ) {
     super(init);
     this.progress_callback = progress_callback;
-    // overwrite private member "getMessage" 🙀
-    (this as any).batchEmbeddings = async function<T>(
-        values: T[],
-        embedFunc: EmbedFunc<T>,
-        chunkSize: number,
-        options?: BaseEmbeddingOptions,
-      ): Promise<Array<number[]>> {
-        const resultEmbeddings: Array<number[]> = [];
-      
-        const queue: T[] = values;
-      
-        const curBatch: T[] = [];
-      
-        for (let i = 0; i < queue.length; i++) {
-          curBatch.push(queue[i]!);
-          if (i == queue.length - 1 || curBatch.length == chunkSize) {
-            const embeddings = await embedFunc(curBatch);
-      
-            resultEmbeddings.push(...embeddings);
-      
-            if (options?.logProgress) {
-              this.progress_callback?.(i, queue.length);
-              console.log(`getting embedding progress: ${i} / ${queue.length}`);
-            }
-      
-            curBatch.length = 0;
-          }
-        }
-      
-        return resultEmbeddings;
-      }
   }
 }

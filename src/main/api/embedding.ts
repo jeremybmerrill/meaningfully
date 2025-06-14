@@ -29,9 +29,7 @@ export async function createEmbeddings(
     
     progressManager.updateProgress(operationId, 5);
     
-    // Pass a progress callback to embedDocuments
     const nodes = await embedDocuments(documents, config, settings, (progress, total) => {
-      console.log("in-callback embedding progress:", progress, "/", total);
       const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
       progressManager.updateProgress(operationId, percentage);
     });

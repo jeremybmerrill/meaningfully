@@ -8,6 +8,7 @@ import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
 import { DocumentSetParams, MetadataFilter } from './types';
 import { create_weaviate_database, teardown_weaviate_database } from './services/weaviateService';
+import { ProgressManager } from './services/progressManager';
 
 type HasFilePathAndName =  { file: { path: string, name: string }};
 type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
@@ -172,6 +173,9 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle('get-upload-progress', async () => {
+    return ProgressManager.getInstance().getCurrentProgress();
+  });
 
   createWindow()
   app.on('activate', function () {
