@@ -24,13 +24,33 @@
         </p>
     </section>
     <section>
-        <h2>Uploading a CSV</h2>
+        <h2> a CSV</h2>
         <p>
-            This is the help page.
+            You can select a CSV from your computer to "upload" it to Meaningfully. Then, select one column
+            from the CSV to search semantically, and any number of other columns to be shown alongside it in results.
+        </p>
+        <p>
+            Once you upload the CSV, each entry in the chosen column will be embedded, with the results stored on your
+            computer. If you choose a remote embedding API -- like OpenAI's text-embedding-small or text-embedding-large --
+            then the entries in your column will be sent
+            to that service; if you choose a local one, then the data will not leave your computer.
+        </p>
+        <p>
+            Meaningfully provides additional options:
+        </p>
+        <ul>
+            <li>Split long text into sentences. When a single row contains many ideas, splitting it by sentence helps the search surface 
+                results that match a single idea.
+            </li>
+            <li>Combine short sentences into chunks. You can adjust how large the chunks are and how much overlap exists between chunks.</li>
+        </ul>
+        <p>
+            Embedding can take a while, especially for large CSVs with 10,000 or more rows. Once it finishes, you'll
+            be able to search your CSV.
         </p>
     </section>
     <section>
-        <h2>How should I write my query?</h2>
+        <h2>How should I write my search query?</h2>
         <p>
             <strong>Do: </strong> Imagine the perfect version of what you're looking for, that you wish exists in your spreadsheet. <span class="block whitespace-pre overflow-x-scroll">My car caught on fire as I was driving on the highway.</span>
         </p>

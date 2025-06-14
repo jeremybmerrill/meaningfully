@@ -3,22 +3,28 @@
   import type { DocumentSet } from '../main';
   import Results from './Results.svelte';
 
-  export let validApiKeysSet: boolean;
+  interface Props {
+    validApiKeysSet: boolean;
+  }
+
+  let { validApiKeysSet }: Props = $props();
 
   let documentSetId = parseInt(window.location.href.split("?")[0].split('/').pop());
-  let documentSet: DocumentSet | null = null;
-  let documentSetLoading = true;
-  let metadataColumns: string[] = [];
-  let textColumn: string = '';
-  let loading = false;
-  let hasResults = false;
+  let documentSet: DocumentSet | null = $state(null);
+  let documentSetLoading = $state(true);
+  let metadataColumns: string[] = $state([]);
+  let textColumn: string = $state('');
+  let loading = $state(false);
+  let hasResults = $state(false);
+  let showModal = $state(false);
+  let modalContent: Record<string, any> | null = $state(null);
 
   const blankSearchQuery = '';
-  let searchQuery = blankSearchQuery;
-  let metadataFilters: Array<{ key: string, operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", value: any }> = [];
+  let searchQuery = $state(blankSearchQuery);
+  let metadataFilters: Array<{ key: string, operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", value: any }> = $state([]);
 
-  let results: Array<Record<string, any>> = [];
-  let error: string | null = null;
+  let results: Array<Record<string, any>> = $state([]);
+  let error: string | null = $state(null);
 
   window.api.getDocumentSet(documentSetId).then(receivedDocumentSet => {
     documentSet = receivedDocumentSet;
@@ -27,8 +33,8 @@
     documentSetLoading = false;
   }).catch(error => {
     console.error('Error fetching document set:', error);
-        navigate('/');
-      });
+    navigate('/');
+  });
 
   const placeholderQueries = [
     "The CEO got fired",
@@ -49,18 +55,23 @@
         documentSetId: documentSet.documentSetId,
         query: searchQuery,
         n_results: 100,
-        filters: metadataFilters
+        filters: metadataFilters.map(filter => ({
+          key: filter.key,
+          operator: filter.operator,
+          value: filter.value
+        }))
       });
       results = searchResults.map(result => ({ // TODO Factor this out if preview and search use the same data structure.
         ...result.metadata, // flatten the metadata so that this object is the same shape as a CSV row.
         similarity: result.score.toFixed(2),
-        [textColumn]: result.text
+        [textColumn]: result.text,
+        sourceNodeId: result.sourceNodeId
       })); 
       error = null; 
     } catch (error_) {
       console.error('Search failed:', error_);
       error = error_;
-          } finally {
+    } finally {
       loading = false;
     }
   }
@@ -72,13 +83,28 @@
   function removeFilter(index: number) {
     metadataFilters = metadataFilters.filter((_, i) => i !== index);
   }
+
+  async function handleOriginalDocumentClick( documentId: string) {
+    try {
+      const documentData = await window.api.getDocument({ documentSetId, documentId });
+      modalContent = documentData;
+      showModal = true;
+    } catch (error) {
+      console.error('Error fetching document:', error);
+    }
+  }
+
+  function closeModal() {
+    showModal = false;
+    modalContent = null;
+  }
 </script>
 
 <div class="p-6 space-y-6">
   <div class="flex items-center space-x-4">
     <button 
       class="text-blue-500 hover:text-blue-600 flex items-center space-x-1"
-      on:click={() => history.back()}
+      onclick={() => history.back()}
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -93,7 +119,7 @@
     <p>Document set not found. {documentSetId}</p>
   {:else}
     <div class="space-y-2">
-      <h1 class="text-2xl font-bold">Search: {documentSet.name}</h1>
+      <h1 class="text-2xl font-bold" data-testid="document-set-name">{documentSet.name}</h1>
       <p class="text-gray-600">
         {documentSet.totalDocuments} documents • Uploaded {documentSet.uploadDate.toLocaleDateString()}
       </p>
@@ -115,11 +141,13 @@
             type="text"
             bind:value={searchQuery}
             placeholder={placeholderQuery}
-            class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            data-testid="search-bar"
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 placeholder-gray-400"
           />
           <button
-            on:click={handleSearch}
+            onclick={handleSearch}
             disabled={loading || !validApiKeysSet}
+            data-testid="search-button"
             class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Searching...' : 'Search'}
@@ -158,22 +186,22 @@
                 <option value="is_empty">is empty</option>
               </select>
               <input
-                                type="text"
+                type="text"
                 bind:value={filter.value}
                 placeholder="Value"
                 class="flex-1 px-2 py-1 border border-gray-300 rounded-md"
               />
-              <button on:click={() => removeFilter(index)} class="text-red-500 hover:text-red-600">
+              <button onclick={() => removeFilter(index)} class="text-red-500 hover:text-red-600">
                 Remove
               </button>
             </div>
           {/each}
-          <button on:click={addFilter} class="text-blue-500 hover:text-blue-600">
+          <button onclick={addFilter} class="text-blue-500 hover:text-blue-600">
             Add Filter
           </button>
         </div>
       </div>
-            {/if}
+      {/if}
     </div>
 
     <!-- Results -->
@@ -183,12 +211,44 @@
       </div>
     {/if}
     {#if (searchQuery != blankSearchQuery || metadataFilters.length > 0) && hasResults}
-      <Results
-        {results}
-        {loading}
-        {textColumn}
-        {metadataColumns}
-      />
+      <!-- Wrap Results component for easier selection -->
+      <div data-testid="results">
+        <Results
+          {results}
+          {loading}
+          {textColumn}
+          {metadataColumns}
+          originalDocumentClick={handleOriginalDocumentClick}
+          />
+      </div>
     {/if}
   {/if}
-</div> 
+</div>
+
+<!-- modal for showing a whole document -->
+{#if showModal && modalContent}
+  <div data-testid="details" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white text-black p-6 rounded-lg shadow-lg max-w-xl w-full max-h-screen overflow-y-auto">
+      <h2 class="text-xl font-semibold mb-4">Original Document</h2>
+      <table>
+        <thead>
+          <tr>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="px-4 py-2 text-left border-b text-black">Original text</td>
+            <td class="px-4 py-2 border-b text-black">{modalContent.text}</td>
+          </tr>
+          {#each metadataColumns as key}
+            <tr>
+              <td class="px-4 py-2 text-left border-b text-black">{key}</td>
+              <td class="px-4 py-2 border-b text-black">{modalContent.metadata[key]}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+      <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" onclick={closeModal}>Close</button>
+    </div>
+  </div>
+{/if}

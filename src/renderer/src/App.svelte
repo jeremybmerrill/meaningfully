@@ -7,19 +7,17 @@
   import HelpPage from './components/HelpPage.svelte'
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
 //  import electronLogo from './assets/electron.svg'
-
-  let settings: Settings | null = null;
+  let url = $state("");
+  let settings: Settings | null = $state(null);
 
   const getSettings = async () => {
-    console.log("getSettings")
       try {
           settings = await window.api.getSettings();
-          console.log("got settings", settings);
       } catch (error) {
           console.error('Error fetching settings:', error);
       }
   };
-  $: validApiKeysSet = settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL));
+  let validApiKeysSet = $derived(settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL)));
 
   onMount(getSettings);
 
@@ -27,7 +25,7 @@
 
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
 
-<Router>
+<Router url={url} >
   <Link to="/">
     <h1 class="text-2xl font-bold">
       Meaningfully
@@ -43,22 +41,22 @@
   {/if}
 
   <main class="container mx-auto px-4 py-8">
-    <Route path="/">
+    <Route path="">
       <FrontPage validApiKeysSet={validApiKeysSet} />
     </Route>
-    <Route path="/search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
-    <Route path="/help" component={HelpPage} />
-    <Route path="/settings">
+    <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
+    <Route path="help" component={HelpPage} />
+    <Route path="settings">
       {#if settings}
-        <ApiKeyPage settings={settings} on:SettingsUpdated={() => getSettings() } />
+        <ApiKeyPage settings={settings} settingsUpdated={() => getSettings() } />
       {/if}
     </Route>
   </main>
 
   <nav class="navbar">
-    <Link to="/" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
-    <Link to="/help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
-    <Link to="/settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
+    <Link to="" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
+    <Link to="help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
+    <Link to="settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
     <span class="nav-link">Built with ✨ by Jeremy</span>
     <span class="nav-link">© 2025</span>
   </nav>

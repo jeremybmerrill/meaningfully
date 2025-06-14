@@ -2,16 +2,20 @@
     import ExistingDatabases from './ExistingDatabases.svelte'
     import CsvUpload from './CsvUpload.svelte'
 
-    let databasesComponent: ExistingDatabases
-    export let validApiKeysSet: boolean;
+    let databasesComponent: ExistingDatabases = $state()
+  interface Props {
+    validApiKeysSet: boolean;
+  }
+
+  let { validApiKeysSet }: Props = $props();
 </script>
 
 
 <div class="container mx-auto px-4 space-y-8">
     <CsvUpload 
         validApiKeysSet={validApiKeysSet}
-        on:file-selected={() => {databasesComponent.hide()}}
-        on:upload-complete={() => {
+        fileSelected={() => {databasesComponent.hide()}}
+        uploadComplete={() => {
           databasesComponent.loadDocumentSets(); 
           databasesComponent.show();
         }}/>

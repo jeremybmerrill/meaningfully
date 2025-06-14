@@ -9,6 +9,9 @@ files:
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!{.git,.github,.husky,.idea,.vscode}'
+  - '!{coverage,docs,public,e2e}'
+  - '!{scripts}'
 asarUnpack:
   - resources/**
 win:
@@ -19,27 +22,53 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
+  category: public.app-category.utilities # from Claude, for building w/o signing
+  target: "dmg" # from Claude, for building w/o signing
+  identity: null # from Claude, for building w/o signing
+  hardenedRuntime: false # from Claude, for building w/o signing
+  gatekeeperAssess: false # from Claude, for building w/o signing
+  entitlements: null # from Claude, for building w/o signing
+  entitlementsInherit: null # from Claude, for building w/o signing
+  # entitlementsInherit: build/entitlements.mac.plist # re-enable for building WITH signing.
+  signIgnore: # from Claude, for building w/o signing
+    - "node_modules"
+  cscLink: ${CSC_LINK}
+  cscKeyPassword: "${CSC_KEY_PASSWORD}"
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}.${arch}.${ext}
+  sign: false
 linux:
   target:
     - AppImage
-    - snap
     - deb
+#    - snap
   maintainer: electronjs.org
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
+deb: 
+  artifactName: ${name}-${version}.${ext}
+  depends:
+    - libappindicator1
+    - libgconf-2-4
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libx11-xcb1
+    - libxss1
+    - libasound2
+    - libgbm-dev
+    - gconf-service-backend
+  priority: optional
+  description: "Meaningfully is a semantic search tool for text data in spreadsheets."
 npmRebuild: false
 publish:
   provider: generic
   url: https://example.com/auto-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
+# afterSign: "./scripts/notarize.js" # from Claude, for building w/o signing

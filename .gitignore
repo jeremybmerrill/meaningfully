@@ -6,9 +6,14 @@ sample-data/
 python-prototype/chroma/
 __pycache__
 js/meaningfully/storage
+e2e/test-storage/metadata.db
 .vscode/
 node_modules
 dist
 out
 .DS_Store
 *.log*
+e2e/test-storage/metadata.db
+certs/
+screenshots/ # testing screenshots
+meaningfully.code-workspace

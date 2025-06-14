@@ -1,7 +1,6 @@
 import { 
   Document, 
   VectorStoreIndex, 
-  OpenAIEmbedding, 
   OllamaEmbedding,
   IngestionPipeline,
   TransformComponent,
@@ -13,13 +12,16 @@ import {
   SimpleVectorStore,
   StorageContext
 } from "llamaindex";
+import { WeaviateVectorStore } from '@llamaindex/weaviate';
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
+import { MockEmbedding } from "./mockEmbedding";
 import { encodingForModel, TiktokenModel } from "js-tiktoken";
 import { join } from "path";
-import { EmbeddingConfig, Settings, MetadataFilter  } from "../types";
+import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
+import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
-
+import { ProgressOpenAIEmbedding } from "./progressOpenAIEmbedding";
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
 
 // unused, but probalby eventually will be used.
@@ -34,9 +36,6 @@ const PRICE_PER_1M = {
   "text-embedding-3-large": 0.13
 };
 
-function sanitizeProjectName(projectName: string) {
-  return projectName.replace(/[^a-zA-Z0-9]/g, "_");
-}
 
 /* all transformations except the embedding step (which costs money) */
 function getBaseTransformations(config: EmbeddingConfig){
@@ -75,6 +74,7 @@ export async function createPreviewNodes(
 export function estimateCost(nodes: TextNode[], modelName: string): {
   estimatedPrice: number;
   tokenCount: number;
+  pricePer1M: number;
 } {
   const tokenizer = encodingForModel(modelName as TiktokenModel);
   
@@ -86,15 +86,16 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
 
   return {
     estimatedPrice,
-    tokenCount
+    tokenCount,
+    pricePer1M: PRICE_PER_1M[modelName]
   };
 }
 
-export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings) {
+export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients) {
   const embedModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     case "simple":
-      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+      const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
       const storageContext = await storageContextFromDefaults({
         persistDir: persistDir,
       });
@@ -105,37 +106,76 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
       return vsi;
 
     case "postgres":
-      throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
-      // return await createVectorStore(config);
+      if (!clients.postgresClient) {
+        throw new Error("Postgres client required but not provided");
+      }
+      const pgStore = new PGVectorStore({
+        clientConfig: { connectionString: process.env.POSTGRES_CONNECTION_STRING }, 
+        tableName: sanitizeProjectName(config.projectName),
+        dimensions: MODEL_DIMENSIONS[config.modelName],
+        embeddingModel: embedModel
+      });
+      const pgStorageContext = await storageContextFromDefaults({
+        vectorStores: { [ModalityType.TEXT]: pgStore },
+      });
+      return await VectorStoreIndex.init({
+        storageContext: pgStorageContext,
+      });
+    case "weaviate":
+      if (!clients.weaviateClient) {
+        throw new Error("Weaviate client required but not provided");
+      }
+      const weaviateStore = new WeaviateVectorStore({
+        indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)),
+        weaviateClient: clients.weaviateClient,
+        embeddingModel: embedModel
+      });
+
+      // WeaviateVectorStore's getNodeSimilarity method looks for distance, but current weaviate provides score
+      // (WeaviateVectorStore would get `score` if we were doing hybrid search)
+      // Overwrite the private getNodeSimilarity method to use 'score' from metadata
+      // @ts-ignore
+      weaviateStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
+        return  entry.metadata.score;
+      }
+
+      return await VectorStoreIndex.fromVectorStore(weaviateStore)
+
     default:
       throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
   }
 }
 
-function getEmbedModel(config: EmbeddingConfig, settings: Settings) {
-  let embedModel; 
-  if (config.modelProvider === "openai" ){
-    embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
-  } else if (config.modelProvider === "ollama") {
-    embedModel = new OllamaEmbedding({ model: config.modelName,     config: {
-      host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
-    }, }); 
-  } else {
-    throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
-  }
-  return embedModel;
+export async function getExistingDocStore(config: EmbeddingConfig) {
+  // switch (config.vectorStoreType) {
+  //   case "simple":
+      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+      const storageContext = await storageContextFromDefaults({
+        persistDir: persistDir,
+      });
+      return storageContext.docStore;
+
+  //   case "postgres":
+  //     throw new Error(`Not yet implemented vector store type: ${config.vectorStoreType}`);
+  //     // return await createVectorStore(config);
+  //   default:
+  //     throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
+  // }
 }
 
-// TODO: rename this to be parallel to createPreviewNodes
+
+
+// Add a progress callback parameter to the embedDocuments function
 export async function embedDocuments(
   documents: Document[],
   config: EmbeddingConfig,
-  settings: Settings
+  settings: Settings,
+  progressCallback?: (progress: number, total: number) => void
 ) {
   console.time("embedDocuments Run Time");
 
 
-  const embedModel = getEmbedModel(config, settings);
+  const embedModel = getEmbedModel(config, settings, progressCallback);
   // Create embedding model
   // use the same transformations as previewNodes
   // but with the actual embedding step added
@@ -149,6 +189,10 @@ export async function embedDocuments(
   }
   console.time("embedDocuments transformDocuments Run Time");
 
+  // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
+  // that might not ultimately be the right solution. 
+  documents = documents.filter((document_) => document_.text && document_.text.length > 0);
+
   // Create nodes with sentence splitting and optional sploder
   const nodes = await transformDocuments(documents, transformations);
   console.timeEnd("embedDocuments transformDocuments Run Time");
@@ -156,19 +200,52 @@ export async function embedDocuments(
   return nodes;
 }
 
-export async function getStorageContext(config: EmbeddingConfig, settings: Settings): Promise<StorageContext> {
-  const vectorStore = await createVectorStore(config, settings);
+export function getEmbedModel(
+  config: EmbeddingConfig, 
+  settings: Settings,
+  progressCallback?: (progress: number, total: number) => void
+) {
+  let embedModel; 
+  if (config.modelProvider === "openai" ){
+    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }, progressCallback); 
+  } else if (config.modelProvider === "ollama") {
+    embedModel = new OllamaEmbedding({ model: config.modelName, config: {
+      host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
+    }, }); 
+  } else if (config.modelProvider === "mock") {
+    embedModel = new MockEmbedding();
+  } else {
+    throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
+  }
+  return embedModel;
+}
+
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<StorageContext> {
+  const vectorStore = await createVectorStore(config, settings, clients);
   fs.mkdirSync(config.storagePath, { recursive: true }); 
+  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
   return await storageContextFromDefaults({
-    persistDir: join(config.storagePath, sanitizeProjectName(config.projectName)),
+    persistDir: persistDir,
     vectorStores: {[ModalityType.TEXT]: vectorStore}
   });
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings): Promise<VectorStoreIndex> { 
+export async function persistDocuments(documents: Document[], config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<void> {
+  console.time("persistDocuments Run Time");
+  const storageContext = await getStorageContext(config, settings, clients);
+  await storageContext.docStore.addDocuments(documents, true);
+  console.timeEnd("persistDocuments Run Time");
+}
+
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
-  const storageContext = await getStorageContext(config, settings);
+
+  // from script that works.
+  // const storageContext = await storageContextFromDefaults({ vectorStore });
+  // const vectorStore = new WeaviateVectorStore({ indexName , weaviateClient: client, embeddingModel: embedModel });
+
+  const storageContext = await getStorageContext(config, settings, clients);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   // Create index and embed documents
   const index = await VectorStoreIndex.init({ 
@@ -179,9 +256,14 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // I'm not sure why this explicit call to persist is necessary. 
   // storageContext should handle this, but it doesn't.
   // all the if statements are just type-checking boilerplate.
+  // N.B. WeaviateVectorStore does not need to be explicitly persisted, so we don't include it in the OR conditional here..
   if (vectorStore) {
     if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
       await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
+    } else if (vectorStore instanceof WeaviateVectorStore) {
+      // WeaviateVectorStore does not have a persist method, it persists automatically
+      // so we don't need to do anything here.
+      console.log("Pretending to persist Weaviate vector store, but it actually persists automatically.");
     } else {
       throw new Error("Vector store does not support persist method");
     }
@@ -192,7 +274,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings): Promise<PGVectorStore | SimpleVectorStore> {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
   const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
@@ -215,20 +297,22 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings): P
     case "simple":
       return new SimpleVectorStore({embeddingModel: embeddingModel});
 
-    // case "weaviate": 
-    // oddly the WeaviateClient from the embedded client doesn't define the same interface as the client from regular Weaviate
-    // which is what WeaviateVectorStore expects 
-    // TODO: figure this out.
-    // Vectra might be good, but there is no VectraVectorStore
+    case "weaviate": 
+      const vectorStore = new WeaviateVectorStore({ 
+        indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)), 
+        weaviateClient: clients.weaviateClient, 
+        embeddingModel: embeddingModel 
+      });
 
-    //   const client = weaviate.client(new EmbeddedOptions({env: {persistence_data_path:  join(app.getPath('userData'), 'weaviate_store', config.projectName)}}));
-      
-    //   await client.embedded.start();
-    
-    //   return new WeaviateVectorStore({
-    //     weaviateClient: client
-    //   });
+      // WeaviateVectorStore's getNodeSimilarity method looks for distance, but current weaviate provides score
+      // (WeaviateVectorStore would get `score` if we were doing hybrid search)
+      // Overwrite the private getNodeSimilarity method to use 'score' from metadata
+      // @ts-ignore
+      vectorStore.getNodeSimilarity = (entry, _similarityKey = "score") => {
+        return  entry.metadata.score;
+      }
 
+      return vectorStore;
     default:
       throw new Error(`Unsupported vector store type: ${config.vectorStoreType}`);
   }

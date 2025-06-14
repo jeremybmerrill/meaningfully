@@ -3,7 +3,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('api', {
-  listDocumentSets: () => ipcRenderer.invoke('list-document-sets'),
+  listDocumentSets: (page?: number, pageSize?: number) => 
+    ipcRenderer.invoke('list-document-sets', page, pageSize),
   getDocumentSet: (documentSetId: number) => ipcRenderer.invoke('get-document-set', documentSetId),
   deleteDocumentSet: (documentSetId: number) => ipcRenderer.invoke('delete-document-set', documentSetId),
   uploadCsv: (formData: {
@@ -19,6 +20,9 @@ contextBridge.exposeInMainWorld('api', {
     chunkOverlap: number,
   }) => {
     // Convert File object to a format that can be sent over IPC
+    if (process.env.NODE_ENV === 'test') {
+      formData["modelProvider"] = "mock"; // Ensure modelProvider is set to "mock" so we don't hit a paid API.
+    }
     const { file, ...rest } = formData;
     return ipcRenderer.invoke('upload-csv', {
       ...rest,
@@ -59,6 +63,12 @@ contextBridge.exposeInMainWorld('api', {
     n_results: number;
     filters?: Record<string, any>;
   }) => ipcRenderer.invoke('search-document-set', params),
+  
+  getDocument: (params: {
+    documentSetId: number;
+    documentId: string;
+  }) => ipcRenderer.invoke('get-document', params),
+
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: {  openAIKey: string;
     oLlamaModelType: string;

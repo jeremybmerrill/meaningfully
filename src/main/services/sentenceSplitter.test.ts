@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { expect, test } from 'vitest'
 import { CustomSentenceSplitter } from './sentenceSplitter'
 import { SentenceSplitter, IngestionPipeline, Document } from "llamaindex";
@@ -22,7 +23,7 @@ let originalSentenceSplitterPipeline = new IngestionPipeline({
     });
 let customSentenceSplitterPipeline = new IngestionPipeline({
     transformations: [
-      new CustomSentenceSplitter(),
+      new CustomSentenceSplitter({ chunkSize: 50, chunkOverlap: 10 }),
     ],
   });
 
@@ -44,24 +45,24 @@ test("original sentenceSplitter does eliminate spaces", () => {
 
 let noAbbrevsCustomSentenceSplitterPipeline = new IngestionPipeline({
     transformations: [
-      new CustomSentenceSplitter({abbreviations: []}),
+      new CustomSentenceSplitter({ chunkSize: 50, chunkOverlap: 10, abbreviations: []}),
     ],
   });
 
 
   test("my modified sentenceSplitter doesn't split on specified abbreviations", () => {
     customSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
-        expect(nodes.map((node) => node["text"])).not.toContainEqual("Mr.");
+        expect(nodes.map((node) => !!node["text"].match(/Mr\.$/))).not.toContainEqual(true);
     });
 });
 
 // this is only a problem on branch fix/sentence-splitter-spaces
 // where the chunker is eliminated entirely in favor of just splitting by sentences with natural.
-// test("original sentenceSplitter splits in silly places, like Mr", () => {
-//     noAbbrevsCustomSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
-//         expect(nodes.map((node) => node["text"])).toContainEqual("Mr.");
-//     });
-// });
+test("original sentenceSplitter splits in silly places, like Mr", () => {
+    noAbbrevsCustomSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
+        expect(nodes.map((node) => !!node["text"].match(/Mr\.$/))).toContainEqual(true);
+    });
+});
 
 const testcases = [
     ["USA v. 4227 JENIFER STREET N.W. WASHINGTON, D.C., AND ELECTRONIC DEVICES THEREIN UNDER RULE 41", "USA v. 4227 JENIFER STREET N.W. WASHINGTON, D.C., AND ELECTRONIC DEVICES THEREIN UNDER RULE 41"],

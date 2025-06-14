@@ -11,6 +11,7 @@ interface SearchResult {
   content: string;
   similarity: number;
   [key: string]: any; // For metadata fields
+  sourceNodeId: string | undefined;
 } 
 
 interface Window {
@@ -23,7 +24,7 @@ interface Window {
       }
     }
     api: {
-      listDocumentSets: () => Promise<DocumentSet[]>,
+      listDocumentSets: (page: number, pageSize: number) => Promise<{documents: DocumentSetMetadata[], total: number}> ,
       uploadCsv: (formData: {
         file: File,
         datasetName: string,
@@ -51,7 +52,7 @@ interface Window {
         chunkOverlap: number,
         modelName: string,
         modelProvider: string
-      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number, pricePer1M: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;
@@ -62,6 +63,7 @@ interface Window {
           value: any 
         }[];
       }) => Promise<SearchResult[]>;
+      getDocument: (params: {documentSetId: number, documentId: string}) => Promise<{ text: string, metadata: Record<string, any> }>;
       getSettings: () => Promise<Settings>;
       setSettings: (settings: Settings) => Promise<{success: boolean}>;
       deleteDocumentSet: (documentSetId: number) => Promise<void>;

@@ -1,0 +1,205 @@
+name: Build Distributions
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build-apple:
+    name: Build macOS (Apple Silicon)
+    runs-on: macos-latest
+    environment: "mac build" 
+    outputs:
+      artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (macOS ARM)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:mac
+
+      - name: Create README
+        run: |
+          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
+
+      - name: Upload artifact (macOS)
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-macOS
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.arm64.dmg
+            dist/README.txt
+
+  build-intel:
+    name: Build macOS (Intel)
+    runs-on: macos-13
+    environment: "mac build"
+    outputs:
+      artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install brew dependencies
+        run: brew install pkg-config cairo pango libjpeg giflib librsvg
+
+      - name: Install npm deps
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (macOS Intel)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:mac -- --publish always
+
+      - name: Create README
+        run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
+
+      - name: Upload artifact (macOS Intel)
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-macOS-intel
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.x64.dmg
+            dist/README.txt
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    environment: "mac build" 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Node caching
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Install Linux Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
+          # sudo snap install snapcraft --classic
+
+      - name: Install dependencies
+        run: npm install
+    
+      - name: Run tests
+        run: npm test
+        timeout-minutes: 5
+
+      - name: Build distribution (Linux)
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
+        run: npm run build:linux -- --publish always
+
+      # - name: Run integration tests 
+      #   run: |
+      #     mkdir -p screenshots
+      #     npm run wdio
+      #   continue-on-error: true  # So we can upload screenshots even if tests fail
+
+      - name: Upload test failure screenshots
+        if: failure() || success()  # Upload screenshots regardless of test outcome
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-failure-screenshots
+          path: screenshots/*.png
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Create README
+        run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
+
+      - name: Upload artifact (Linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: meaningfully-linux
+
+          # add back later under path.  dist/meaningfully-${{ github.ref_name }}.snap
+          path: |
+            dist/meaningfully-${{ github.ref_name }}.deb
+            dist/meaningfully-${{ github.ref_name }}.AppImage
+            dist/README.txt
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    environment: "mac build"
+    needs:
+      - build-apple
+      - build-intel
+      # - build-windows
+      - build-linux
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meaningfully-macOS
+          path: ./artifacts/macOS
+
+      - name: Download macOS (Intel) artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meaningfully-macOS-intel
+          path: ./artifacts/macOS-intel
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meaningfully-linux
+          path: ./artifacts/linux
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          # add back later under files:              ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
+          files: |
+            ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
+            ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
+            ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
+            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg

@@ -64,19 +64,33 @@ export class DocumentSetManager {
     };
   }
 
-  async getDocumentSets(): Promise<DocumentSetMetadata[]> {
-    const stmt = this.sqliteDb.prepare(`
-        SELECT * FROM document_sets ORDER BY upload_date DESC LIMIT ?
-      `);
-    const rows = stmt.all(10);
+  async getDocumentSets(page: number = 1, pageSize: number = 10): Promise<{documents: DocumentSetMetadata[], total: number}> {
+    const offset = (page - 1) * pageSize;
+    
+    // Get total count
+    const countStmt = this.sqliteDb.prepare('SELECT COUNT(*) as count FROM document_sets');
+    const totalCount = countStmt.get().count;
 
-    return rows.map(row => ({
+    // Get paginated results
+    const stmt = this.sqliteDb.prepare(`
+        SELECT * FROM document_sets 
+        ORDER BY upload_date DESC 
+        LIMIT ? OFFSET ?
+    `);
+    const rows = stmt.all(pageSize, offset);
+
+    const documents = rows.map(row => ({
         documentSetId: row.set_id,
         name: row.name,
         uploadDate: new Date(row.upload_date),
         parameters: JSON.parse(row.parameters),
         totalDocuments: row.total_documents
-    }))
+    }));
+
+    return {
+        documents,
+        total: totalCount
+    };
   }
 
   async updateDocumentCount(documentSetId: number, count: number) {
@@ -111,7 +125,12 @@ export class DocumentSetManager {
     const row = stmt.get();
     let settings;
     if (row){
-      settings = JSON.parse(row.settings) as Settings;
+      try {
+        settings = JSON.parse(row.settings) as Settings;
+      } catch (error) {
+        console.error("Error parsing settings JSON:", error);
+        settings = DEFAULT_SETTINGS;
+      }
     }else{
       settings = DEFAULT_SETTINGS;
     }
@@ -127,7 +146,6 @@ export class DocumentSetManager {
     
     stmt.run(JSON.stringify(settings));
     return Object.assign(settings, {"success": true});
-
   }
 
   close() {

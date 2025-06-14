@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { describe, it, expect, vi } from 'vitest';
 import { createEmbeddings, previewResults, getDocStore, getIndex, search } from './embedding';
 import { loadDocumentsFromCsv } from '../services/csvLoader';
@@ -47,7 +48,7 @@ describe('embedding.ts', () => {
             const mockDocuments = Array(20).fill({ text: 'doc' });
             const mockNodes = [{ text: 'node1', metadata: {} }, { text: 'node2', metadata: {} }];
             const mockPreviewNodes = [{ text: 'node1', metadata: {} }, { text: 'node2', metadata: {} }];
-            const mockEstimate = { estimatedPrice: 10, tokenCount: 100 };
+            const mockEstimate = { estimatedPrice: 10, tokenCount: 100, pricePer1M: 0.01 };
             loadDocumentsFromCsv.mockResolvedValue(mockDocuments);
             createPreviewNodes.mockResolvedValue(mockNodes);
             estimateCost.mockReturnValue(mockEstimate);
@@ -57,8 +58,7 @@ describe('embedding.ts', () => {
             expect(result).toEqual({
                 success: true,
                 nodes: mockPreviewNodes,
-                estimatedPrice: 10,
-                tokenCount: 100
+                ...mockEstimate
             });
         });
 
@@ -147,7 +147,7 @@ describe('embedding.ts', () => {
       const mockDocuments = Array(20).fill({ text: 'doc' });
       const mockNodes = [{ text: 'node1', metadata: {} }, { text: 'node2', metadata: {} }];
       const mockPreviewNodes = [{ text: 'node1', metadata: {} }, { text: 'node2', metadata: {} }];
-      const mockEstimate = { estimatedPrice: 10, tokenCount: 100 };
+      const mockEstimate = { estimatedPrice: 10, tokenCount: 100, pricePer1M: 0.01 };
       loadDocumentsFromCsv.mockResolvedValue(mockDocuments);
       createPreviewNodes.mockResolvedValue(mockNodes);
       estimateCost.mockReturnValue(mockEstimate);
@@ -157,8 +157,7 @@ describe('embedding.ts', () => {
       expect(result).toEqual({
         success: true,
         nodes: mockPreviewNodes,
-        estimatedPrice: 10,
-        tokenCount: 100
+        ...mockEstimate
       });
     });
 

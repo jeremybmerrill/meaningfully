@@ -19,6 +19,7 @@ export interface PreviewResult {
   }>;
   estimatedPrice?: number;
   tokenCount?: number;
+  pricePer1M?: number;
 } 
 
 
@@ -49,7 +50,7 @@ export interface DocumentSetParams {
 export interface EmbeddingConfig {
   modelName: string;
   modelProvider: string
-  vectorStoreType: "simple" | "postgres" ;
+  vectorStoreType: "simple" | "postgres" | "weaviate";
   projectName: string;
   storagePath: string;
   splitIntoSentences: boolean;
@@ -70,4 +71,9 @@ export interface MetadataFilter{
   key: string, 
   operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
   value: any 
+}
+
+export interface Clients {
+  weaviateClient: any;
+  postgresClient: any;
 }
