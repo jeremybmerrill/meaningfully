@@ -13,7 +13,7 @@ type LLMInstance = Pick<OpenAILLM, "embeddings" | "apiKey">;
 type EmbedFunc<T> = (values: T[]) => Promise<Array<number[]>>;
 
 export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
-  progress_callback: ((progress: number, total: number) => void) | undefined;
+  progressCallback: ((progress: number, total: number) => void) | undefined;
   
   async getTextEmbeddingsBatch(
     texts: string[],
@@ -44,8 +44,14 @@ export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
           const embeddings = await embedFunc(curBatch);
     
           resultEmbeddings.push(...embeddings);
-          if (this.progress_callback) {
-            this.progress_callback?.(i+1, queue.length);
+          if (this.progressCallback) {
+            this.progressCallback?.(i+1, queue.length);
+          } else if (options?.logProgress) {
+            console.log(
+              `Progress: ${i + 1} / ${queue.length} (${Math.floor(
+                ((i + 1) / queue.length) * 100
+              )}%)`,
+            );
           }
     
           curBatch.length = 0;
@@ -60,9 +66,9 @@ export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
       session?: LLMInstance | undefined;
       azure?: AzureClientOptions;
     },
-    progress_callback?: (progress: number, total: number) => void,
+    progressCallback?: (progress: number, total: number) => void,
   ) {
     super(init);
-    this.progress_callback = progress_callback;
+    this.progressCallback = progressCallback;
   }
 }

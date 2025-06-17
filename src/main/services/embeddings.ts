@@ -54,23 +54,6 @@ function getBaseTransformations(config: EmbeddingConfig){
   return transformations;
 }
 
-export async function transformDocuments(documents: Document[], transformations: TransformComponent[]): Promise<TextNode[]> {
-  const pipeline = new IngestionPipeline({
-    transformations
-  });
-
-  return (await pipeline.run({documents: documents})) as TextNode[];
-}
-
-export async function createPreviewNodes(
-  documents: Document[],
-  config: EmbeddingConfig
-): Promise<TextNode[]> {
-
-  const transformations = getBaseTransformations(config);
-  return transformDocuments(documents, transformations);
-}
-
 export function estimateCost(nodes: TextNode[], modelName: string): {
   estimatedPrice: number;
   tokenCount: number;
@@ -92,7 +75,7 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
 }
 
 export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients) {
-  const embedModel = getEmbedModel(config, settings, (progress, total) => {console.log("getExistingVectorStoreIndex embedding progress:", progress, "/", total);});
+  const embedModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     case "simple":
       const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
@@ -165,49 +148,48 @@ export async function getExistingDocStore(config: EmbeddingConfig) {
 
 
 
-// Add a progress callback parameter to the embedDocuments function
-export async function embedDocuments(
+export async function transformDocumentsToNodes(
   documents: Document[],
   config: EmbeddingConfig,
-  settings: Settings,
-  progressCallback?: (progress: number, total: number) => void
 ) {
-  console.time("embedDocuments Run Time");
+  console.time("transformDocumentsToNodes Run Time");
 
 
-  const embedModel = getEmbedModel(config, settings, progressCallback);
   // Create embedding model
   // use the same transformations as previewNodes
   // but with the actual embedding step added
   const transformations = getBaseTransformations(config);
-  transformations.push(embedModel)
 
   // llama-index stupidly includes all the metadata in the embedding, which is a waste of tokens
   // so we exclude everything except the text column from the embedding
   for (const document of documents) {
     document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
   }
-  console.time("embedDocuments transformDocuments Run Time");
+  console.time("transformDocumentsToNodes transformDocuments Run Time");
 
   // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
   // that might not ultimately be the right solution. 
   documents = documents.filter((document_) => document_.text && document_.text.length > 0);
 
   // Create nodes with sentence splitting and optional sploder
-  const nodes = await transformDocuments(documents, transformations);
-  console.timeEnd("embedDocuments transformDocuments Run Time");
-  console.timeEnd("embedDocuments Run Time");  
+  const pipeline = new IngestionPipeline({
+    transformations
+  });
+
+  const nodes = (await pipeline.run({documents: documents})) as TextNode[];
+
+  console.timeEnd("transformDocumentsToNodes transformDocuments Run Time");
+  console.timeEnd("transformDocumentsToNodes Run Time");  
   return nodes;
 }
 
 export function getEmbedModel(
   config: EmbeddingConfig, 
-  settings: Settings,
-  progressCallback?: (progress: number, total: number) => void
+  settings: Settings
 ) {
   let embedModel; 
   if (config.modelProvider === "openai" ){
-    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }, progressCallback); 
+    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
     embedModel.chunkSize = 20;
   } else if (config.modelProvider === "ollama") {
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
@@ -238,7 +220,7 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
   console.timeEnd("persistDocuments Run Time");
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<VectorStoreIndex> { 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<VectorStoreIndex> { 
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
 
@@ -248,14 +230,25 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
 
   const storageContext = await getStorageContext(config, settings, clients);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
+  if (!vectorStore) {
+    throw new Error("Vector store is undefined");
+  }
   // Create index and embed documents
   // TODO: for some reason, this re-embeds the nodes
   // which already have an embedding on them.
+
+  if (vectorStore.embedModel instanceof ProgressOpenAIEmbedding) {
+    vectorStore.embedModel.progressCallback = progressCallback;
+  }
+  // this is what actaully embeds the nodes
+  // (even if they already have embeddings, stupidly)
+  // transformDocumentsToNodes (soon to be renamed) used to embed them.
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
     logProgress: true
   });
+
   // I'm not sure why this explicit call to persist is necessary. 
   // storageContext should handle this, but it doesn't.
   // all the if statements are just type-checking boilerplate.
@@ -278,7 +271,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
 }
 
 async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
-  const embeddingModel = getEmbedModel(config, settings, (progress, total) => {console.log("createVectorStore embedding progress:", progress, "/", total);});
+  const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     // case "chroma":
     //   // not gonna work, requires a 'server' to run this elsewhere

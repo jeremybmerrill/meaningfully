@@ -1,4 +1,4 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
+import { transformDocumentsToNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
 import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter, Clients} from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
@@ -29,14 +29,14 @@ export async function createEmbeddings(
     
     progressManager.updateProgress(operationId, 5);
     
-    const nodes = await embedDocuments(documents, config, settings, (progress, total) => {
-      const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
-      progressManager.updateProgress(operationId, percentage);
-    });
+    const nodes = await transformDocumentsToNodes(documents, config);
     
     progressManager.updateProgress(operationId, 95);
     
-    const index = await persistNodes(nodes, config, settings, clients);
+    const index = await persistNodes(nodes, config, settings, clients, (progress, total) => {
+      const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
+      progressManager.updateProgress(operationId, percentage);
+    });
     await persistDocuments(documents, config, settings, clients);
     
     progressManager.completeOperation(operationId);
@@ -75,8 +75,8 @@ export async function previewResults(
       Math.floor(documents.length / 2) + 10
     );
 
-    const previewNodes = await createPreviewNodes(documents, config);
-    const previewSubsetNodes = await createPreviewNodes(previewDocumentsSubset, config);
+    const previewNodes = await transformDocumentsToNodes(documents, config);
+    const previewSubsetNodes = await transformDocumentsToNodes(previewDocumentsSubset, config);
     const { estimatedPrice, tokenCount, pricePer1M } = estimateCost(previewNodes, config.modelName);
 
     return {
