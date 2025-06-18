@@ -37,7 +37,7 @@ const PRICE_PER_1M = {
 };
 
 
-/* all transformations except the embedding step (which costs money) */
+/* all transformations except the embedding step (which is handled by VectorStoreIndex.init) */
 function getBaseTransformations(config: EmbeddingConfig){
   const transformations: TransformComponent[] = [
     new CustomSentenceSplitter({ chunkSize: config.chunkSize, chunkOverlap: config.chunkOverlap }),
@@ -74,8 +74,8 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
   };
 }
 
-export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients) {
-  const embedModel = getEmbedModel(config, settings);
+export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void) {
+  const embedModel = getEmbedModel(config, settings, progressCallback);
   switch (config.vectorStoreType) {
     case "simple":
       const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
@@ -154,10 +154,6 @@ export async function transformDocumentsToNodes(
 ) {
   console.time("transformDocumentsToNodes Run Time");
 
-
-  // Create embedding model
-  // use the same transformations as previewNodes
-  // but with the actual embedding step added
   const transformations = getBaseTransformations(config);
 
   // llama-index stupidly includes all the metadata in the embedding, which is a waste of tokens
@@ -166,7 +162,6 @@ export async function transformDocumentsToNodes(
     document.excludedEmbedMetadataKeys = Object.keys(document.metadata);
   }
   console.time("transformDocumentsToNodes transformDocuments Run Time");
-
   // remove empty documents. we can't meaningfully embed these, so we're just gonna ignore 'em.
   // that might not ultimately be the right solution. 
   documents = documents.filter((document_) => document_.text && document_.text.length > 0);
@@ -185,11 +180,12 @@ export async function transformDocumentsToNodes(
 
 export function getEmbedModel(
   config: EmbeddingConfig, 
-  settings: Settings
+  settings: Settings,
+  progressCallback?: (progress: number, total: number) => void
 ) {
   let embedModel; 
   if (config.modelProvider === "openai" ){
-    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined }); 
+    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined}, progressCallback );
     embedModel.chunkSize = 20;
   } else if (config.modelProvider === "ollama") {
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
@@ -203,8 +199,8 @@ export function getEmbedModel(
   return embedModel;
 }
 
-export async function getStorageContext(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<StorageContext> {
-  const vectorStore = await createVectorStore(config, settings, clients);
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<StorageContext> {
+  const vectorStore = await createVectorStore(config, settings, clients, progressCallback);
   fs.mkdirSync(config.storagePath, { recursive: true }); 
   const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
   return await storageContextFromDefaults({
@@ -224,25 +220,14 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
 
-  // from script that works.
-  // const storageContext = await storageContextFromDefaults({ vectorStore });
-  // const vectorStore = new WeaviateVectorStore({ indexName , weaviateClient: client, embeddingModel: embedModel });
-
-  const storageContext = await getStorageContext(config, settings, clients);
+  const storageContext = await getStorageContext(config, settings, clients, progressCallback);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   if (!vectorStore) {
     throw new Error("Vector store is undefined");
   }
   // Create index and embed documents
-  // TODO: for some reason, this re-embeds the nodes
-  // which already have an embedding on them.
-
-  if (vectorStore.embedModel instanceof ProgressOpenAIEmbedding) {
-    vectorStore.embedModel.progressCallback = progressCallback;
-  }
   // this is what actaully embeds the nodes
   // (even if they already have embeddings, stupidly)
-  // transformDocumentsToNodes (soon to be renamed) used to embed them.
   const index = await VectorStoreIndex.init({ 
     nodes, 
     storageContext, 
@@ -270,18 +255,12 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
-  const embeddingModel = getEmbedModel(config, settings);
+async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
+  const embeddingModel = getEmbedModel(config, settings, progressCallback);
   switch (config.vectorStoreType) {
-    // case "chroma":
-    //   // not gonna work, requires a 'server' to run this elsewhere
-    //   return new ChromaVectorStore({
-    //     collectionName: config.projectName,
-    //   });
 
     // for some reason the embedding model has to be specified here TOO
     // otherwise it defaults to Ada.
-
     case "postgres":
       return new PGVectorStore({
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
