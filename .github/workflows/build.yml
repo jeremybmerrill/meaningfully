@@ -122,6 +122,7 @@ jobs:
             mingw-w64-x86_64-librsvg
             base-devel
             gcc
+            mingw-w64-x86_64-gcc
 
       - name: Add MSYS2 and GTK to PATH and set env vars
         shell: pwsh
@@ -148,11 +149,19 @@ jobs:
           # Diagnostic: Check if GTK DLLs are where canvas expects
           Write-Host "Checking for GTK DLLs in C:\msys64\mingw64\bin"
           Get-ChildItem "C:\msys64\mingw64\bin\*.dll" | Select-Object -First 10 | Format-Table Name
-          Write-Host "Checking for MSBuild.exe"
-          Get-Command MSBuild.exe | Select-Object Path
+
+      - name: Setup GTK symlink
+        run: |
+          New-Item -ItemType Directory -Force -Path "C:\GTK"
+          New-Item -ItemType SymbolicLink -Path "C:\GTK\bin" -Target "C:\msys64\mingw64\bin"
+        shell: powershell
 
       - name: Install dependencies
         run: npm install
+
+      - name: Install dependencies with GTK path
+        run: npm install --build-from-source --GTK_Root=C:\msys64\mingw64
+        shell: cmd
 
       - name: Run tests
         run: npm test
