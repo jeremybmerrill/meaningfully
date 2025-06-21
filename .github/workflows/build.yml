@@ -156,9 +156,6 @@ jobs:
           New-Item -ItemType SymbolicLink -Path "C:\GTK\bin" -Target "C:\msys64\mingw64\bin"
         shell: powershell
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Install dependencies with GTK path
         run: npm install --build-from-source --GTK_Root=C:\msys64\mingw64
         shell: cmd
