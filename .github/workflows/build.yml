@@ -187,7 +187,8 @@ jobs:
           path: |
             dist/meaningfully-${{ github.ref_name }}.exe
             dist/meaningfully-${{ github.ref_name }}-portable.exe
-            dist\README.txt  build-linux:
+            dist\README.txt  
+  build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
     environment: "mac build" 
