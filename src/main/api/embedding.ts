@@ -1,7 +1,8 @@
-import { embedDocuments, createPreviewNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
+import { transformDocumentsToNodes, estimateCost, searchDocuments, getExistingVectorStoreIndex, persistNodes, persistDocuments, getExistingDocStore } from "../services/embeddings";
 import type { EmbeddingConfig, EmbeddingResult, SearchResult, PreviewResult, Settings, MetadataFilter, Clients} from "../types";
 import { loadDocumentsFromCsv } from "../services/csvLoader";
 import { MetadataMode } from "llamaindex";
+import { ProgressManager } from "../services/progressManager";
 
 export async function createEmbeddings(
   csvPath: string,
@@ -12,18 +13,33 @@ export async function createEmbeddings(
 ): Promise<EmbeddingResult> {
   try {
     console.time("createEmbeddings Run Time");
+    const operationId = `embed-${Date.now()}`;
+    const progressManager = ProgressManager.getInstance();
+    progressManager.startOperation(operationId, 100);
 
     const documents = await loadDocumentsFromCsv(csvPath, textColumnName);
     if (documents.length === 0) {
+      progressManager.clearOperation(operationId);
       console.timeEnd("createEmbeddings Run Time");
       return {
         success: false,
         error: "That CSV does not appear to contain any documents. Please check the file and try again.",
       };
     }
-    const nodes = await embedDocuments(documents, config, settings);
-    const index = await persistNodes(nodes, config, settings, clients);
+    
+    progressManager.updateProgress(operationId, 5);
+    
+    const nodes = await transformDocumentsToNodes(documents, config);
+    
+    progressManager.updateProgress(operationId, 95);
+    
+    const index = await persistNodes(nodes, config, settings, clients, (progress, total) => {
+      const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
+      progressManager.updateProgress(operationId, percentage);
+    });
     await persistDocuments(documents, config, settings, clients);
+    
+    progressManager.completeOperation(operationId);
     console.timeEnd("createEmbeddings Run Time");
     return {
       success: true,
@@ -59,8 +75,8 @@ export async function previewResults(
       Math.floor(documents.length / 2) + 10
     );
 
-    const previewNodes = await createPreviewNodes(documents, config);
-    const previewSubsetNodes = await createPreviewNodes(previewDocumentsSubset, config);
+    const previewNodes = await transformDocumentsToNodes(documents, config);
+    const previewSubsetNodes = await transformDocumentsToNodes(previewDocumentsSubset, config);
     const { estimatedPrice, tokenCount, pricePer1M } = estimateCost(previewNodes, config.modelName);
 
     return {

@@ -40,6 +40,11 @@ export interface Settings {
   oLlamaBaseURL: string;
 }
 
+export interface UploadProgress {
+  progress: number;
+  total: number;
+}
+
 declare global {
   interface Window {
     electron: ElectronAPI
@@ -84,6 +89,7 @@ declare global {
         modelName: string,
         modelProvider: string
       }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      getUploadProgress: () => Promise<UploadProgress>
     }
   }
 }

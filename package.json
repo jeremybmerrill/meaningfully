@@ -1,6 +1,6 @@
 {
   "name": "meaningfully",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Semantic search over CSVs`",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -20,7 +20,7 @@
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
-    "test": "vitest",
+    "test": "vitest --silent=false --disable-console-intercept",
     "wdio": "NODE_ENV=test xvfb-maybe wdio run ./wdio.conf.ts"
   },
   "dependencies": {

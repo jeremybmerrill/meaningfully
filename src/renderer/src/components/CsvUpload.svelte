@@ -1,6 +1,5 @@
 <script lang="ts">
   import { debounce } from 'lodash';
-
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
   import Preview from './Preview.svelte';
@@ -20,7 +19,7 @@
   let showUploadSettings = $state(false); // don't show upload settings until the user has selected a text column and a file.
   let generatingPreview = $state(false); // loading state for the preview data.
   let datasetName = $state('');
-  const defaultChunkSize = 100
+  const defaultChunkSize = 100;
   const defaultChunkOverlap = 20;
   let chunkSize = $state(defaultChunkSize);
   let chunkOverlap = $state(defaultChunkOverlap);
@@ -35,6 +34,23 @@
   let pricePer1M: number = $state();
   let isCollapsed = $state(true);
 
+  // New state variables for progress tracking
+  let progress = $state(0);
+  let progressTotal = $state(100);
+
+  // Poll the backend every second for upload progress.
+  const pollProgress = async () => {
+    if (!uploading) return;
+    try {
+      const result = await window.api.getUploadProgress();
+      console.log("Progress result:", result);
+      progress = result.progress;
+      progressTotal = result.total;
+    } catch(e) {
+      console.error("Error fetching progress:", e);
+    }
+    if (uploading) setTimeout(pollProgress, 1000);
+  };
 
   const handleFileSelect = async (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -67,7 +83,6 @@
       error = 'Please select a text column';
       return;
     }
-
     try {
       error = '';
       generatingPreview = true;
@@ -81,8 +96,8 @@
         description: 'TK',
         textColumns: [selectedTextColumn],
         metadataColumns: selectedMetadataColumns.map(c => c),
-        splitIntoSentences: splitIntoSentences,
-        combineSentencesIntoChunks: combineSentencesIntoChunks,
+        splitIntoSentences,
+        combineSentencesIntoChunks,
         sploderMaxSize: 100,
         modelName,
         modelProvider,
@@ -106,7 +121,6 @@
       error = e.message;
     } finally {
       generatingPreview = false;
-      // uploading = false; // Remove this line
     }
   };
 
@@ -119,19 +133,21 @@
       error = 'Please select a text column';
       return;
     }
-
     try {
       uploading = true;
       error = '';
-      
+
+      // Start polling for progress
+      pollProgress();
+
       const response = await window.api.uploadCsv({
         file: files[0],
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
         metadataColumns: selectedMetadataColumns.map(c => c), // de-proxy
-        splitIntoSentences: splitIntoSentences,
-        combineSentencesIntoChunks: combineSentencesIntoChunks,
+        splitIntoSentences,
+        combineSentencesIntoChunks,
         sploderMaxSize: 100,
         chunkSize,
         chunkOverlap,
@@ -145,7 +161,7 @@
         showUploadSettings = false;
         files = null;
       } else {
-        error =  'Upload failed';
+        error = 'Upload failed';
       }
     } catch (e) {
       error = e.message;
@@ -156,7 +172,6 @@
 
   const toggleMetadataColumn = (column: string) => {
     if (column === selectedTextColumn) return;
-
     const index = selectedMetadataColumns.indexOf(column);
     if (index === -1) {
       selectedMetadataColumns = [...selectedMetadataColumns, column];
@@ -168,6 +183,7 @@
   const toggleTextHandlingSectionCollapse = () => {
     isCollapsed = !isCollapsed;
   };
+
   const debouncedGeneratePreview = debounce(generatePreview, 1000);
 
   $effect(() => {
@@ -398,6 +414,16 @@
       </button>
       {#if uploading}
         <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
+        <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
+          <div 
+            class="bg-violet-600 h-4 rounded-full transition-all duration-500" 
+            style="width: {Math.min(100, Math.round((progress / progressTotal) * 100))}%"
+          ></div>
+        </div>
+        <p class="text-sm text-gray-600 mt-1">
+          <!-- magic numbers 5 and 95 match src/main/api/embedding.ts where embedding progress is smooshed to between 5% and 95%. -->
+          Progress: {progress <= 5 ? 'processing upload' : ( progress >= 95 ? 'finishing up' : 'embedding') }  ({Math.round((progress / progressTotal) * 100)}%)
+        </p>
       {/if }
     </div>
   </div>

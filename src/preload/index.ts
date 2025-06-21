@@ -73,7 +73,9 @@ contextBridge.exposeInMainWorld('api', {
   setSettings: (settings: {  openAIKey: string;
     oLlamaModelType: string;
     oLlamaBaseURL: string;
-  }) => ipcRenderer.invoke('set-settings', settings)
+  }) => ipcRenderer.invoke('set-settings', settings),
+  
+  getUploadProgress: () => ipcRenderer.invoke('get-upload-progress')
 })
 
 // Expose electron utilities
