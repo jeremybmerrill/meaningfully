@@ -94,7 +94,7 @@ jobs:
           path: |
             dist/meaningfully-${{ github.ref_name }}.x64.dmg
             dist/README.txt
-  build-windows:
+build-windows:
     name: Build Windows
     runs-on: windows-latest
     steps:
@@ -104,9 +104,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20' # Or your specific Node.js version
-          cache: 'npm' # Use built-in npm caching, simpler than manual path
+          cache: 'npm'
 
-      - name: Setup MSYS2
+      # Explicitly install Visual Studio Build Tools via Chocolatey
+      # This is often more reliable than hoping node-gyp finds pre-installed ones.
+      - name: Install Visual Studio Build Tools
+        run: |
+          choco install visualstudio2022-workload-vctools --no-progress -y
+          # For older Node/Electron, you might need an older VS version, e.g.,
+          # choco install visualstudio2017-workload-vctools --no-progress -y
+        shell: powershell
+
+      # Keep your MSYS2 setup for GTK and other build tools, but ensure it's
+      # installing the correct GTK version (GTK3 is generally preferred for modern canvas)
+      - name: Setup MSYS2 and GTK
         uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -122,23 +133,35 @@ jobs:
             base-devel
             gcc
 
-      - name: Add MSYS2 to PATH
-        # This step is crucial. We need to ensure these paths are available
-        # for subsequent steps, especially 'npm install'.
-        # The msys2/setup-msys2 action *might* add it, but explicitly setting
-        # it via environment variable ensures it's available for the current job.
+      - name: Add MSYS2 and GTK to PATH and set env vars
         shell: pwsh
         run: |
+          # Add MSYS2 paths
           echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "C:\msys64\usr\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          # Also set an environment variable that might be checked by some build systems
+
+          # These environment variables are crucial for node-gyp/pkg-config to find libs
           echo "PKG_CONFIG_PATH=C:\msys64\mingw64\lib\pkgconfig" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "C_INCLUDE_PATH=C:\msys64\mingw64\include" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "LIBRARY_PATH=C:\msys64\mingw64\lib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+          # **Crucial for canvas:** Set GTK_Root if canvas expects it in a specific location
+          # The errors indicate it's looking in C:\GTK\bin
+          # We need to link C:\msys64\mingw64 to C:\GTK or tell canvas where GTK is.
+          # A common fix is to create a symlink or manually copy if symlinks are an issue.
+          # Or, better, pass --GTK_Root to node-gyp if possible (electron-builder might not expose this easily).
+          # Let's try explicitly setting a GTK_Root env var if node-pre-gyp might pick it up.
+          # As a fallback, you could try copying the GTK files to C:\GTK
+          # This might be the culprit for "Missing input files: C:\GTK\bin\zlib1.dll"
+          echo "GTK_Root=C:\msys64\mingw64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          # Diagnostic: Check if GTK DLLs are where canvas expects
+          Write-Host "Checking for GTK DLLs in C:\msys64\mingw64\bin"
+          Get-ChildItem "C:\msys64\mingw64\bin\*.dll" | Select-Object -First 10 | Format-Table Name
+          Write-Host "Checking for MSBuild.exe"
+          Get-Command MSBuild.exe | Select-Object Path
+
       - name: Install dependencies
-        # This is where electron-builder install-app-deps runs.
-        # It needs the PATH to be correctly set from the previous step.
         run: npm install
 
       - name: Run tests
@@ -150,8 +173,7 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          # Potentially add this if build process needs it explicitly
-          # Path might also need to be here for electron-builder
+          # Ensure PATH includes MSYS2 bins for electron-builder if needed
           PATH: "C:\\msys64\\mingw64\\bin;C:\\msys64\\usr\\bin;${{ env.PATH }}"
         run: npm run build:win -- --publish always
 
@@ -165,8 +187,7 @@ jobs:
           path: |
             dist/meaningfully-${{ github.ref_name }}.exe
             dist/meaningfully-${{ github.ref_name }}-portable.exe
-            dist\README.txt
-  build-linux:
+            dist\README.txt  build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
     environment: "mac build" 
