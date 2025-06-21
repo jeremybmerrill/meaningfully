@@ -105,16 +105,6 @@ jobs:
         with:
           node-version: '20' # Or your specific Node.js version
           cache: 'npm'
-
-      # Explicitly install Visual Studio Build Tools via Chocolatey
-      # This is often more reliable than hoping node-gyp finds pre-installed ones.
-      - name: Install Visual Studio Build Tools
-        run: |
-          choco install visualstudio2022-workload-vctools --no-progress -y
-          # For older Node/Electron, you might need an older VS version, e.g.,
-          # choco install visualstudio2017-workload-vctools --no-progress -y
-        shell: powershell
-
       # Keep your MSYS2 setup for GTK and other build tools, but ensure it's
       # installing the correct GTK version (GTK3 is generally preferred for modern canvas)
       - name: Setup MSYS2 and GTK
