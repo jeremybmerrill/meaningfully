@@ -94,7 +94,7 @@ jobs:
           path: |
             dist/meaningfully-${{ github.ref_name }}.x64.dmg
             dist/README.txt
-build-windows:
+  build-windows:
     name: Build Windows
     runs-on: windows-latest
     steps:
