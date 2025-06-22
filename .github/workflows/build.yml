@@ -226,14 +226,14 @@ jobs:
       #     npm run wdio
       #   continue-on-error: true  # So we can upload screenshots even if tests fail
 
-      - name: Upload test failure screenshots
-        if: failure() || success()  # Upload screenshots regardless of test outcome
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-failure-screenshots
-          path: screenshots/*.png
-          retention-days: 30
-          if-no-files-found: ignore
+      # - name: Upload test failure screenshots
+      #   if: failure() || success()  # Upload screenshots regardless of test outcome
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: test-failure-screenshots
+      #     path: screenshots/*.png
+      #     retention-days: 30
+      #     if-no-files-found: ignore
 
       - name: Create README
         run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
@@ -255,7 +255,7 @@ jobs:
     needs:
       - build-apple
       - build-intel
-      # - build-windows
+      - build-windows
       - build-linux
     steps:
       - uses: actions/checkout@v4
@@ -278,6 +278,12 @@ jobs:
           name: meaningfully-linux
           path: ./artifacts/linux
 
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: meaningfully-windows
+          path: ./artifacts/windows
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         env:
@@ -293,3 +299,5 @@ jobs:
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
             ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
             ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
+            ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe
+            ./artifacts/windows/meaningfully-${{ github.ref_name }}-portable.exe
