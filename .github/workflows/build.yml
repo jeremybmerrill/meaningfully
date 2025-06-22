@@ -217,7 +217,7 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: npm run build:linux -- --publish always
 
       # - name: Run integration tests 
@@ -247,6 +247,7 @@ jobs:
           path: |
             dist/meaningfully-${{ github.ref_name }}.deb
             dist/meaningfully-${{ github.ref_name }}.AppImage
+            dist/meaningfully-${{ github.ref_name }}.snap
             dist/README.txt
   release:
     name: Create GitHub Release
@@ -297,6 +298,7 @@ jobs:
           files: |
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
+            ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap            
             ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
             ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
             ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe

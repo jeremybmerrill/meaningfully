@@ -46,7 +46,7 @@ linux:
   target:
     - AppImage
     - deb
-#    - snap
+    - snap
   maintainer: electronjs.org
   category: Utility
 appImage:
