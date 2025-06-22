@@ -97,6 +97,7 @@ jobs:
   build-windows:
     name: Build Windows
     runs-on: windows-latest
+    environment: "mac build" 
     steps:
       - uses: actions/checkout@v4
 
