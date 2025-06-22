@@ -290,8 +290,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_name == 'main' && 'manual release' || github.ref_name }}
-          name: Release ${{ github.ref_name == 'main' && 'manual release' || github.ref_name }}
+          tag_name: ${{ github.ref_name == 'main' && 'manualrelease' || github.ref_name }}
+          name: Release ${{ github.ref_name == 'main' && 'manualrelease' || github.ref_name }}
           draft: false
           prerelease: false
           # add back later under files:              ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
