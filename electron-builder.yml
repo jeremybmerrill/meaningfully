@@ -16,7 +16,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: meaningfully
-  publisherName: "Jeremy B. Merrill"
+  publisherName: "Jeremy Merrill"
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
