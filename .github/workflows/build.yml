@@ -185,8 +185,8 @@ jobs:
         with:
           name: meaningfully-windows
           path: |
-            dist/meaningfully-${{ github.ref_name }}.exe
-            dist/meaningfully-${{ github.ref_name }}-portable.exe
+            dist/meaningfully-${{ github.ref_name }}-setup.exe
+            dist/meaningfully-${{ github.ref_name }}-setup.exe.blockmap
             dist\README.txt  
   build-linux:
     name: Build Linux
@@ -240,6 +240,9 @@ jobs:
 
       - name: Create README
         run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
+
+      - name: ls dist
+        run: 'ls dist/'
 
       - name: Upload artifact (Linux)
         uses: actions/upload-artifact@v4
@@ -304,5 +307,5 @@ jobs:
             ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap            
             ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
             ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
-            ./artifacts/windows/meaningfully-${{ github.ref_name }}.exe
-            ./artifacts/windows/meaningfully-${{ github.ref_name }}-portable.exe
+            ./artifacts/windows/meaningfully-${{ github.ref_name }}-setup.exe
+            ./artifacts/windows/meaningfully-${{ github.ref_name }}-setup.exe.blockmap
