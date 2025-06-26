@@ -12,9 +12,13 @@ jobs:
     runs-on: macos-latest
     environment: "mac build" 
     outputs:
-      artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Configure Node caching
         uses: actions/cache@v4
@@ -47,7 +51,7 @@ jobs:
         with:
           name: meaningfully-macOS
           path: |
-            dist/meaningfully-${{ github.ref_name }}.arm64.dmg
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.arm64.dmg
             dist/README.txt
 
   build-intel:
@@ -55,9 +59,13 @@ jobs:
     runs-on: macos-13
     environment: "mac build"
     outputs:
-      artifact-folder: ${{ steps.upload.outputs.artifact-folder }}
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Configure Node caching
         uses: actions/cache@v4
@@ -92,14 +100,20 @@ jobs:
         with:
           name: meaningfully-macOS-intel
           path: |
-            dist/meaningfully-${{ github.ref_name }}.x64.dmg
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.x64.dmg
             dist/README.txt
   build-windows:
     name: Build Windows
     runs-on: windows-latest
     environment: "mac build" 
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $env:GITHUB_OUTPUT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -185,15 +199,21 @@ jobs:
         with:
           name: meaningfully-windows
           path: |
-            dist/meaningfully-${{ github.ref_name }}-setup.exe
-            dist/meaningfully-${{ github.ref_name }}-setup.exe.blockmap
+            dist/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe
+            dist/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe.blockmap
             dist\README.txt  
   build-linux:
     name: Build Linux
     runs-on: ubuntu-latest
     environment: "mac build" 
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Configure Node caching
         uses: actions/cache@v4
@@ -249,11 +269,11 @@ jobs:
         with:
           name: meaningfully-linux
 
-          # add back later under path.  dist/meaningfully-${{ github.ref_name }}.snap
+          # add back later under path.  dist/meaningfully-${{ steps.get-version.outputs.version }}.snap
           path: |
-            dist/meaningfully-${{ github.ref_name }}.deb
-            dist/meaningfully-${{ github.ref_name }}.AppImage
-            dist/meaningfully-${{ github.ref_name }}.snap
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.deb
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.AppImage
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.snap
             dist/README.txt
   release:
     name: Create GitHub Release
@@ -266,6 +286,10 @@ jobs:
       - build-linux
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get version from build job
+        id: get-version
+        run: echo "version=${{ needs.build-apple.outputs.version }}" >> $GITHUB_OUTPUT
 
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
@@ -300,12 +324,12 @@ jobs:
           name: Release ${{ github.ref_name == 'main' && 'manualrelease' || github.ref_name }}
           draft: false
           prerelease: false
-          # add back later under files:              ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap
+          # add back later under files:              ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.snap
           files: |
-            ./artifacts/linux/meaningfully-${{ github.ref_name }}.deb
-            ./artifacts/linux/meaningfully-${{ github.ref_name }}.AppImage
-            ./artifacts/linux/meaningfully-${{ github.ref_name }}.snap            
-            ./artifacts/macOS-intel/meaningfully-${{ github.ref_name }}.x64.dmg
-            ./artifacts/macOS/meaningfully-${{ github.ref_name }}.arm64.dmg
-            ./artifacts/windows/meaningfully-${{ github.ref_name }}-setup.exe
-            ./artifacts/windows/meaningfully-${{ github.ref_name }}-setup.exe.blockmap
+            ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.deb
+            ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.AppImage
+            ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.snap            
+            ./artifacts/macOS-intel/meaningfully-${{ steps.get-version.outputs.version }}.x64.dmg
+            ./artifacts/macOS/meaningfully-${{ steps.get-version.outputs.version }}.arm64.dmg
+            ./artifacts/windows/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe
+            ./artifacts/windows/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe.blockmap
