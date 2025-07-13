@@ -23,9 +23,18 @@
   const defaultChunkOverlap = 20;
   let chunkSize = $state(defaultChunkSize);
   let chunkOverlap = $state(defaultChunkOverlap);
-  const availableModelNames = ["text-embedding-3-small", "text-embedding-3-large"] // TODO: add Llama support, get this from the backend.
+  
+  // Model options grouped by provider
+  const modelOptions = {
+    "openai": ["text-embedding-3-small", "text-embedding-3-large"],
+    "azure": ["text-embedding-3-small", "text-embedding-3-large"],
+    "ollama": ["mxbai-embed-large", "nomic-embed-text"],
+    "mistral": ["mistral-embed"],
+    "gemini": ["text-embedding-004"]
+  };
+  
+  let modelProvider = $state("openai");
   let modelName = $state("text-embedding-3-small");
-  let modelProvider = "openai"; // TODO: make configurable
   let splitIntoSentences = $state(true);
   let combineSentencesIntoChunks = $state(true); // aka combineSentencesIntoChunks
   let previewData: Array<Record<string, any>> = $state([]); // processed data from 'backend'
@@ -33,6 +42,13 @@
   let tokenCount: number = $state();
   let pricePer1M: number = $state();
   let isCollapsed = $state(true);
+  
+  // Update model name when provider changes
+  $effect(() => {
+    if (modelProvider && modelOptions[modelProvider]) {
+      modelName = modelOptions[modelProvider][0];
+    }
+  });
 
   // New state variables for progress tracking
   let progress = $state(0);
@@ -245,11 +261,28 @@
       </div>
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
+          What embedding provider should we use?
+          <select
+            bind:value={modelProvider}
+            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
+            <option value="openai">OpenAI</option>
+            <option value="azure">Azure OpenAI</option>
+            <option value="ollama">Ollama</option>
+            <option value="mistral">Mistral AI</option>
+            <option value="gemini">Google Gemini</option>
+          </select>
+        </label>  
+        <p class="text-xs text-gray-500">
+          The provider for the embedding model.
+        </p>
+      </div>
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">
           What embedding model should we use?
           <select
             bind:value={modelName}
             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500">
-            {#each availableModelNames as modelNameChoice}
+            {#each modelOptions[modelProvider] as modelNameChoice}
               <option value={modelNameChoice}>{modelNameChoice}</option>
             {/each}
           </select>

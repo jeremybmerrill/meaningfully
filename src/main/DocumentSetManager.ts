@@ -115,8 +115,12 @@ export class DocumentSetManager {
   async getSettings() { 
     const DEFAULT_SETTINGS = {
       "openAIKey": null,
-      "oLlamaModelType": null,
       "oLlamaBaseURL": null,
+      "azureOpenAIKey": null,
+      "azureOpenAIEndpoint": null,
+      "azureOpenAIApiVersion": null,
+      "mistralApiKey": null,
+      "geminiApiKey": null,
     }
     const stmt = this.sqliteDb.prepare(`
       SELECT * FROM meaningfully_settings WHERE settings_id = 1

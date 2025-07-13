@@ -4,8 +4,12 @@
 
 interface Settings {
   openAIKey: string;
-  oLlamaModelType: string;
   oLlamaBaseURL: string;
+  azureOpenAIKey: string;
+  azureOpenAIEndpoint: string;
+  azureOpenAIApiVersion: string;
+  mistralApiKey: string;
+  geminiApiKey: string;
 }
 interface SearchResult {
   content: string;

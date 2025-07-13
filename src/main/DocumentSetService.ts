@@ -200,15 +200,22 @@ export class DocumentService {
     const settings = await this.manager.getSettings();
     return {
       openAIKey: maskKey(settings.openAIKey),
-      oLlamaModelType: settings.oLlamaModelType,
-      oLlamaBaseURL: settings.oLlamaBaseURL
+      oLlamaBaseURL: settings.oLlamaBaseURL,
+      azureOpenAIKey: maskKey(settings.azureOpenAIKey),
+      azureOpenAIEndpoint: settings.azureOpenAIEndpoint,
+      azureOpenAIApiVersion: settings.azureOpenAIApiVersion,
+      mistralApiKey: maskKey(settings.mistralApiKey),
+      geminiApiKey: maskKey(settings.geminiApiKey)
     };
   }
   async setMaskedSettings(newSettings: Settings) { 
     const oldSettings = await this.manager.getSettings();
     const settings = {
       ...newSettings,
-      openAIKey: newSettings.openAIKey == maskKey(oldSettings.openAIKey) ? oldSettings.openAIKey : newSettings.openAIKey
+      openAIKey: newSettings.openAIKey == maskKey(oldSettings.openAIKey) ? oldSettings.openAIKey : newSettings.openAIKey,
+      azureOpenAIKey: newSettings.azureOpenAIKey == maskKey(oldSettings.azureOpenAIKey) ? oldSettings.azureOpenAIKey : newSettings.azureOpenAIKey,
+      mistralApiKey: newSettings.mistralApiKey == maskKey(oldSettings.mistralApiKey) ? oldSettings.mistralApiKey : newSettings.mistralApiKey,
+      geminiApiKey: newSettings.geminiApiKey == maskKey(oldSettings.geminiApiKey) ? oldSettings.geminiApiKey : newSettings.geminiApiKey
     };
     return this.manager.setSettings(settings);
   }

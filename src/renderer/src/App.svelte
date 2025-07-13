@@ -17,7 +17,13 @@
           console.error('Error fetching settings:', error);
       }
   };
-  let validApiKeysSet = $derived(settings && !!((!!settings.openAIKey) || (settings.oLlamaModelType && settings.oLlamaBaseURL)));
+  let validApiKeysSet = $derived(settings && !!(
+    (!!settings.openAIKey) || 
+    (settings.oLlamaBaseURL) ||
+    (settings.azureOpenAIKey && settings.azureOpenAIEndpoint) ||
+    (!!settings.mistralApiKey) ||
+    (!!settings.geminiApiKey)
+  ));
 
   onMount(getSettings);
 
