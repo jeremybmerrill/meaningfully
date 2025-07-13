@@ -216,7 +216,6 @@ export function getEmbedModel(
     if (!settings.azureOpenAIKey || !settings.azureOpenAIEndpoint) {
       throw new Error("Azure OpenAI API key and endpoint are required for Azure embedding models");
     }
-    // Azure OpenAI uses the same OpenAI class but with different configuration
     embedModel = new AzureOpenAIEmbedding({ 
       model: config.modelName, 
       apiKey: settings.azureOpenAIKey,
@@ -227,8 +226,6 @@ export function getEmbedModel(
     if (!settings.mistralApiKey) {
       throw new Error("Mistral API key is required for Mistral embedding models");
     }
-    // For now, use OpenAI embedding class with Mistral-compatible configuration
-    // This may need adjustment based on actual Mistral API compatibility
     embedModel = new MistralAIEmbedding({ 
       model: MistralAIEmbeddingModelType.MISTRAL_EMBED, // only one choice!
       apiKey: settings.mistralApiKey
