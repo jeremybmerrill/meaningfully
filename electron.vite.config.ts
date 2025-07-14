@@ -4,10 +4,20 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        external: ['utf-8-validate', 'bufferutil']
+      }
+    }
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        external: ['utf-8-validate', 'bufferutil']
+      }
+    }
   },
   renderer: {
     plugins: [svelte(), tailwindcss()]

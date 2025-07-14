@@ -36,8 +36,12 @@ export interface DocumentSetMetadata {
 
 export interface Settings {
   openAIKey: string;
-  oLlamaModelType: string;
   oLlamaBaseURL: string;
+  azureOpenAIKey: string;
+  azureOpenAIEndpoint: string;
+  azureOpenAIApiVersion: string;
+  mistralApiKey: string;
+  geminiApiKey: string;
 }
 
 export interface UploadProgress {

@@ -71,8 +71,12 @@ contextBridge.exposeInMainWorld('api', {
 
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: {  openAIKey: string;
-    oLlamaModelType: string;
     oLlamaBaseURL: string;
+    azureOpenAIKey: string;
+    azureOpenAIEndpoint: string;
+    azureOpenAIApiVersion: string;
+    mistralApiKey: string;
+    geminiApiKey: string;
   }) => ipcRenderer.invoke('set-settings', settings),
   
   getUploadProgress: () => ipcRenderer.invoke('get-upload-progress')
