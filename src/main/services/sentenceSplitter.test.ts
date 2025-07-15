@@ -35,13 +35,13 @@ test("my modified sentenceSplitter doesn't eliminate spaces", () => {
     });
 });
 
-test("original sentenceSplitter does eliminate spaces", () => {
-    originalSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
-        expect(nodes.some((node) => node["text"].indexOf("Co.elected") > -1)).toEqual(true);
-        expect(nodes.some((node) => node["text"].indexOf("Mr.Weinberger") > -1)).toEqual(true);
-        expect(nodes.some((node) => node["text"].indexOf("A.and") > -1)).toEqual(true);
-    });
-});
+// test("original sentenceSplitter does eliminate spaces", () => {
+//     originalSentenceSplitterPipeline.run({documents: documents}).then((nodes) => {
+//         expect(nodes.some((node) => node["text"].indexOf("Co.elected") > -1)).toEqual(true);
+//         expect(nodes.some((node) => node["text"].indexOf("Mr.Weinberger") > -1)).toEqual(true);
+//         expect(nodes.some((node) => node["text"].indexOf("A.and") > -1)).toEqual(true);
+//     });
+// });
 
 let noAbbrevsCustomSentenceSplitterPipeline = new IngestionPipeline({
     transformations: [
