@@ -1,17 +1,22 @@
 import { 
   Document, 
   VectorStoreIndex, 
-  OllamaEmbedding,
+  // OpenAIEmbedding,
   IngestionPipeline,
   TransformComponent,
   TextNode,
   ModalityType,
   MetadataFilters,
-  PGVectorStore,
   storageContextFromDefaults,
   SimpleVectorStore,
-  StorageContext
+  StorageContext,
+  Settings as LlamaindexSettings
 } from "llamaindex";
+import { OllamaEmbedding} from '@llamaindex/ollama'
+import { MistralAIEmbedding, MistralAIEmbeddingModelType } from '@llamaindex/mistral'
+import { GeminiEmbedding } from './GeminiEmbedding';
+import { PGVectorStore } from '@llamaindex/postgres';
+import { AzureOpenAIEmbedding } from "@llamaindex/azure";
 import { WeaviateVectorStore } from '@llamaindex/weaviate';
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
@@ -29,11 +34,18 @@ import { ProgressOpenAIEmbedding } from "./progressOpenAIEmbedding";
 const MODEL_DIMENSIONS = {
   "text-embedding-3-small": 1536,
   "text-embedding-3-large": 3072,
+  "mxbai-embed-large": 1024,
+  "mistral-embed": 1024,
+  "text-embedding-004": 768, // Gemini embedding model
 };
 
 const PRICE_PER_1M = {
   "text-embedding-3-small": 0.02,
-  "text-embedding-3-large": 0.13
+  "text-embedding-3-large": 0.13,
+  "mistral-embed": 0.1, 
+  "mxbai-embed-large": 0, // local model, free
+  "nomic-embed-text": 0, // local model, free
+  "text-embedding-004": 0.0, // Gemini embedding is currently free
 };
 
 
@@ -59,18 +71,27 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
   tokenCount: number;
   pricePer1M: number;
 } {
-  const tokenizer = encodingForModel(modelName as TiktokenModel);
-  
+  const pricePer1M = PRICE_PER_1M[modelName] || 0; // default to 0 if model not found or free
+
+  let tokenizer; 
+  try{
+    tokenizer = encodingForModel(modelName as TiktokenModel); // This doesn't work for ollama
+  } catch (error) {
+    // If the tokenizer is not found, it means the model is likely not supported by tiktoken
+    // or is a local model (like Ollama). In this case, we can't estimate the cost.
+    tokenizer = encodingForModel("text-embedding-3-small"); // fallback to a known tokenizer
+    console.warn(`Tokenizer for model ${modelName} not found. Using fallback tokenizer.`);
+  }
   const tokenCount = nodes.reduce((sum, node) => {
     return sum + tokenizer.encode(node.text).length;
   }, 0);
 
-  const estimatedPrice = tokenCount * (PRICE_PER_1M[modelName] / 1_000_000);
+  const estimatedPrice = tokenCount * (pricePer1M / 1_000_000);
 
   return {
     estimatedPrice,
     tokenCount,
-    pricePer1M: PRICE_PER_1M[modelName]
+    pricePer1M
   };
 }
 
@@ -95,7 +116,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
       const pgStore = new PGVectorStore({
         clientConfig: { connectionString: process.env.POSTGRES_CONNECTION_STRING }, 
         tableName: sanitizeProjectName(config.projectName),
-        dimensions: MODEL_DIMENSIONS[config.modelName],
+        dimensions: MODEL_DIMENSIONS[config.modelName] || 1536, // default to 1536 if model not found
         embeddingModel: embedModel
       });
       const pgStorageContext = await storageContextFromDefaults({
@@ -191,11 +212,38 @@ export function getEmbedModel(
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
       host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
     }, }); 
+  } else if (config.modelProvider === "azure") {
+    if (!settings.azureOpenAIKey || !settings.azureOpenAIEndpoint) {
+      throw new Error("Azure OpenAI API key and endpoint are required for Azure embedding models");
+    }
+    embedModel = new AzureOpenAIEmbedding({ 
+      model: config.modelName, 
+      apiKey: settings.azureOpenAIKey,
+      endpoint: settings.azureOpenAIEndpoint,
+      apiVersion: settings.azureOpenAIApiVersion ?? undefined
+    });
+  } else if (config.modelProvider === "mistral") {
+    if (!settings.mistralApiKey) {
+      throw new Error("Mistral API key is required for Mistral embedding models");
+    }
+    embedModel = new MistralAIEmbedding({ 
+      model: MistralAIEmbeddingModelType.MISTRAL_EMBED, // only one choice!
+      apiKey: settings.mistralApiKey
+    });
+  } else if (config.modelProvider === "gemini") {
+    if (!settings.geminiApiKey) {
+      throw new Error("Gemini API key is required for Gemini embedding models");
+    }
+    embedModel = new GeminiEmbedding({ 
+      apiKey: settings.geminiApiKey,
+    });
+    embedModel.embedBatchSize = 50;
   } else if (config.modelProvider === "mock") {
     embedModel = new MockEmbedding();
   } else {
     throw new Error(`Unsupported embedding model provider: ${config.modelProvider}`);
   }
+  LlamaindexSettings.embedModel = embedModel;
   return embedModel;
 }
 
@@ -265,7 +313,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       return new PGVectorStore({
         clientConfig: {connectionString: process.env.POSTGRES_CONNECTION_STRING},
         tableName: sanitizeProjectName(config.projectName),
-        dimensions: MODEL_DIMENSIONS[config.modelName],
+        dimensions: MODEL_DIMENSIONS[config.modelName] || 1536, // default to 1536 if model not found
         embeddingModel: embeddingModel
       });
 

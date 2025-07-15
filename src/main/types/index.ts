@@ -63,8 +63,12 @@ export interface EmbeddingConfig {
 
 export interface Settings {
   openAIKey: string | null;
-  oLlamaModelType: string | null;
   oLlamaBaseURL: string | null;
+  azureOpenAIKey: string | null;
+  azureOpenAIEndpoint: string | null;
+  azureOpenAIApiVersion: string | null;
+  mistralApiKey: string | null;
+  geminiApiKey: string | null;
 }
 
 export interface MetadataFilter{ 

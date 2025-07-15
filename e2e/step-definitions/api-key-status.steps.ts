@@ -1,5 +1,5 @@
 import { Given, When, Then } from '@wdio/cucumber-framework';
-import { expect, $$, $ } from '@wdio/globals';
+import { expect, $$, $, browser } from '@wdio/globals';
 import { execSync } from 'child_process';
 
 
@@ -12,7 +12,15 @@ Given("the settings store is empty", async () => {
     await browser.execute(() => {
         // @ts-ignore
         if (window.api && window.api.setSettings) {
-            window.api.setSettings({ openAIKey: null, oLlamaModelType: null, oLlamaBaseURL: null });
+            window.api.setSettings({ 
+                openAIKey: "", 
+                oLlamaBaseURL: "",
+                azureOpenAIKey: "",
+                azureOpenAIEndpoint: "",
+                azureOpenAIApiVersion: "",
+                mistralApiKey: "",
+                geminiApiKey: ""
+            });
         }
     });
     await browser.pause(500); // Optional: Adjust as needed
@@ -24,7 +32,15 @@ Given("the setting store has an OpenAI API Key value", async () => {
     await browser.execute(() => {
         // @ts-ignore
         if (window.api && window.api.setSettings) {
-            window.api.setSettings({ openAIKey: "sk-proj-meaningfullytesting-1234567890123456789012345678901234567890", oLlamaModelType: null, oLlamaBaseURL: null });
+            window.api.setSettings({ 
+                openAIKey: "sk-proj-meaningfullytesting-1234567890123456789012345678901234567890", 
+                oLlamaBaseURL: "",
+                azureOpenAIKey: "",
+                azureOpenAIEndpoint: "",
+                azureOpenAIApiVersion: "",
+                mistralApiKey: "",
+                geminiApiKey: ""
+            });
         }
     });
     await browser.pause(500); // Optional: Adjust as needed
@@ -51,7 +67,7 @@ Given("the setting store has an OpenAI API Key value", async () => {
 //         // @ts-ignore
 //         if (window.api && window.api.setSettings) {
 //             // Set a dummy API key.
-//             window.api.setSettings({ openAIKey: "sk-dummyapikeyvalue", oLlamaModelType: "", oLlamaBaseURL: "" });
+//             window.api.setSettings({ openAIKey: "sk-dummyapikeyvalue", oLlamaBaseURL: "" });
 //         }
 //     });
 //     await browser.pause(500);

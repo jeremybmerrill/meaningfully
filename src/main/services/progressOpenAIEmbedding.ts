@@ -1,14 +1,10 @@
-// temporary
-// this is a wrapper around OpenAIEmbedding that logs the input of the embedding
-// it's used to debug the embedding process (to make sure random metadata isn't wrongfully included)
-// it's not used in the production code
+// remove this file in favor of LlamaIndex's OpenAIEmbedding
+// once https://github.com/run-llama/LlamaIndexTS/pull/2098 is merged
+// all this file does is the same as OpenAIEmbedding, but with a progress callback
 
-import { OpenAIEmbedding, BaseEmbeddingOptions } from "llamaindex";
-import type {
-  AzureClientOptions,
-  OpenAI as OpenAILLM,
-} from "openai";
-type LLMInstance = Pick<OpenAILLM, "embeddings" | "apiKey">;
+import { BaseEmbeddingOptions } from "llamaindex";
+import { OpenAIEmbedding } from "@llamaindex/openai";
+import type { LLMInstance } from "@llamaindex/openai";
 
 type EmbedFunc<T> = (values: T[]) => Promise<Array<number[]>>;
 
@@ -62,9 +58,8 @@ export class ProgressOpenAIEmbedding extends OpenAIEmbedding {
     }
 
   constructor(
-    init?: Omit<Partial<OpenAIEmbedding>, "lazySession"> & {
+    init?: Omit<Partial<OpenAIEmbedding>, "session"> & {
       session?: LLMInstance | undefined;
-      azure?: AzureClientOptions;
     },
     progressCallback?: (progress: number, total: number) => void,
   ) {

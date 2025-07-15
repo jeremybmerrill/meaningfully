@@ -42,7 +42,11 @@ describe('transformDocumentsToNodes', () => {
   const mockSettings = {
     openAIKey: 'mock-api-key',
     oLlamaBaseURL: 'http://localhost',
-    oLlamaModelType: 'mock-model',
+    azureOpenAIKey: null,
+    azureOpenAIEndpoint: null,
+    azureOpenAIApiVersion: null,
+    mistralApiKey: null,
+    geminiApiKey: null,
   };
 
   it('should process documents and return nodes', async () => {
@@ -106,7 +110,11 @@ describe('getEmbedModel', () => {
   const mockSettings = {
     openAIKey: 'mock-api-key',
     oLlamaBaseURL: 'http://localhost',
-    oLlamaModelType: 'mock-model',
+    azureOpenAIKey: null,
+    azureOpenAIEndpoint: null,
+    azureOpenAIApiVersion: null,
+    mistralApiKey: null,
+    geminiApiKey: null,
   };
 
 
