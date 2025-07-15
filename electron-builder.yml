@@ -27,21 +27,20 @@ mac:
     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: false
-  category: public.app-category.utilities # from Claude, for building w/o signing
-  target: "dmg" # from Claude, for building w/o signing
-  identity: null # from Claude, for building w/o signing
-  hardenedRuntime: false # from Claude, for building w/o signing
-  gatekeeperAssess: false # from Claude, for building w/o signing
-  entitlements: null # from Claude, for building w/o signing
-  entitlementsInherit: null # from Claude, for building w/o signing
-  # entitlementsInherit: build/entitlements.mac.plist # re-enable for building WITH signing.
-  signIgnore: # from Claude, for building w/o signing
+  category: public.app-category.utilities
+  target: "dmg"
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  entitlements: null
+  entitlementsInherit: null
+  signIgnore:
     - "node_modules"
-  cscLink: ${CSC_LINK}
-  cscKeyPassword: "${CSC_KEY_PASSWORD}"
+    - "**/*"
 dmg:
   artifactName: ${name}-${version}.${arch}.${ext}
   sign: false
+  writeUpdateInfo: false
 linux:
   target:
     - AppImage
