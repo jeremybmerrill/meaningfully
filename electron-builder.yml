@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.jeremybmerrill.meaningfully
 productName: meaningfully
 directories:
   buildResources: build
@@ -18,27 +18,26 @@ win:
   executableName: meaningfully
   publisherName: "Jeremy Merrill"
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+afterSign: "./scripts/notarize.mjs"
 mac:
   extendInfo:
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
+    NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: { 
+       teamId: process.env.APPLETEAMID,
+    }
   category: public.app-category.utilities
   target: "dmg"
-  identity: null
-  hardenedRuntime: false
+  hardenedRuntime: true
   gatekeeperAssess: false
-  entitlements: null
-  entitlementsInherit: null
-  signIgnore:
-    - "node_modules"
-    - "**/*"
+  entitlements: "./build/entitlements.mac.plist"
+  entitlementsInherit: "./build/entitlements.mac.plist"
 dmg:
-  artifactName: ${name}-${version}.${arch}.${ext}
+  artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
   writeUpdateInfo: false
 linux:
@@ -49,9 +48,9 @@ linux:
   maintainer: electronjs.org
   category: Utility
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 deb: 
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
   depends:
     - libappindicator1
     - libgconf-2-4
@@ -71,4 +70,3 @@ publish:
   url: https://example.com/auto-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
-# afterSign: "./scripts/notarize.js" # from Claude, for building w/o signing
