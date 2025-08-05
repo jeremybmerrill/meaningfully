@@ -60,6 +60,9 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          APPLETEAMID: ${{ secrets.APPLETEAMID }}
         run: npm run build:mac
 
       - name: Create README
@@ -132,6 +135,9 @@ jobs:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          APPLETEAMID: ${{ secrets.APPLETEAMID }}
         run: npm run build:mac -- --publish always
 
       - name: Create README
