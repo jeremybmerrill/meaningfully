@@ -21,8 +21,8 @@ Based on https://kilianvalkhof.com/2019/electron/notarizing-your-electron-applic
 //   });
 // }
 
-import dotenv from 'dotenv';
-dotenv.config({ path: './.env' });
+// import dotenv from 'dotenv';
+// dotenv.config({ path: './.env' });
 import { notarize } from "electron-notarize";
 
 export default async function notarizing(context) {
