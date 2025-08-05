@@ -40,7 +40,7 @@ jobs:
             echo "Skipping version validation - not both semantic versions"
             echo "package.json: $PACKAGE_VERSION"
             echo "tag: $TAG_NAME"
-        uses: ./.github/actions/validate-version
+      - uses: ./.github/actions/validate-version
         with:
           package_version: ${{ steps.get-version.outputs.version }}
           tag_name: ${{ github.ref_name }}
