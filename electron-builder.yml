@@ -27,10 +27,8 @@ mac:
   extendInfo:
     NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
     NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: { 
-       teamId: process.env.APPLETEAMID,
-  notarize:
-    teamId: process.env.APPLETEAMID
+  notarize: 
+       teamId: ${APPLETEAMID}
   category: public.app-category.utilities
   target: "dmg"
   hardenedRuntime: true
