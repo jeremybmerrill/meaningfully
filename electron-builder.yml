@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.jeremybmerrill.meaningfully
 productName: meaningfully
 directories:
   buildResources: build
@@ -18,30 +18,27 @@ win:
   executableName: meaningfully
   publisherName: "Jeremy Merrill"
 nsis:
-  artifactName: ${name}-${version}-setup.${ext}
+  artifactName: ${productName}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+afterSign: "./scripts/notarize.mjs"
 mac:
   extendInfo:
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-  category: public.app-category.utilities # from Claude, for building w/o signing
-  target: "dmg" # from Claude, for building w/o signing
-  identity: null # from Claude, for building w/o signing
-  hardenedRuntime: false # from Claude, for building w/o signing
-  gatekeeperAssess: false # from Claude, for building w/o signing
-  entitlements: null # from Claude, for building w/o signing
-  entitlementsInherit: null # from Claude, for building w/o signing
-  # entitlementsInherit: build/entitlements.mac.plist # re-enable for building WITH signing.
-  signIgnore: # from Claude, for building w/o signing
-    - "node_modules"
-  cscLink: ${CSC_LINK}
-  cscKeyPassword: "${CSC_KEY_PASSWORD}"
+    NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: 
+       teamId: ${APPLETEAMID}
+  category: public.app-category.utilities
+  target: "dmg"
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: "./build/entitlements.mac.plist"
+  entitlementsInherit: "./build/entitlements.mac.plist"
 dmg:
-  artifactName: ${name}-${version}.${arch}.${ext}
+  artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
+  writeUpdateInfo: false
 linux:
   target:
     - AppImage
@@ -50,9 +47,9 @@ linux:
   maintainer: electronjs.org
   category: Utility
 appImage:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
 deb: 
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${productName}-${version}.${ext}
   depends:
     - libappindicator1
     - libgconf-2-4
@@ -72,4 +69,3 @@ publish:
   url: https://example.com/auto-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
-# afterSign: "./scripts/notarize.js" # from Claude, for building w/o signing

@@ -20,6 +20,31 @@ jobs:
         id: get-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
+      - name: Validate version consistency
+        run: |
+          PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
+          TAG_NAME="${{ github.ref_name }}"
+          
+          # Check if both are semantic versions (x.y.z format)
+          if [[ $PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ $TAG_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
+            if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
+              echo "ERROR: Version mismatch!"
+              echo "package.json version: $PACKAGE_VERSION"
+              echo "Git tag version: $TAG_NAME"
+              exit 1
+            else
+              echo "✅ Versions match: $PACKAGE_VERSION"
+            fi
+          else
+            echo "Skipping version validation - not both semantic versions"
+            echo "package.json: $PACKAGE_VERSION"
+            echo "tag: $TAG_NAME"
+        uses: ./.github/actions/validate-version
+        with:
+          package_version: ${{ steps.get-version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+
       - name: Configure Node caching
         uses: actions/cache@v4
         with:
@@ -66,6 +91,28 @@ jobs:
       - name: Get version from package.json
         id: get-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Validate version consistency
+        run: |
+          PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
+          TAG_NAME="${{ github.ref_name }}"
+          
+          # Check if both are semantic versions (x.y.z format)
+          if [[ $PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ $TAG_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
+            if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
+              echo "ERROR: Version mismatch!"
+              echo "package.json version: $PACKAGE_VERSION"
+              echo "Git tag version: $TAG_NAME"
+              exit 1
+            else
+              echo "✅ Versions match: $PACKAGE_VERSION"
+            fi
+          else
+            echo "Skipping version validation - not both semantic versions"
+            echo "package.json: $PACKAGE_VERSION"
+            echo "tag: $TAG_NAME"
+          fi
 
       - name: Configure Node caching
         uses: actions/cache@v4
@@ -114,6 +161,29 @@ jobs:
       - name: Get version from package.json
         id: get-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $env:GITHUB_OUTPUT
+
+      - name: Validate version consistency
+        shell: pwsh
+        run: |
+          $PACKAGE_VERSION = "${{ steps.get-version.outputs.version }}"
+          $TAG_NAME = "${{ github.ref_name }}"
+          
+          # Check if both are semantic versions (x.y.z format)
+          if ($PACKAGE_VERSION -match '^[0-9]+\.[0-9]+\.[0-9]+$' -and $TAG_NAME -match '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            Write-Host "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
+            if ($PACKAGE_VERSION -ne $TAG_NAME) {
+              Write-Host "ERROR: Version mismatch!" -ForegroundColor Red
+              Write-Host "package.json version: $PACKAGE_VERSION" -ForegroundColor Red
+              Write-Host "Git tag version: $TAG_NAME" -ForegroundColor Red
+              exit 1
+            } else {
+              Write-Host "✅ Versions match: $PACKAGE_VERSION" -ForegroundColor Green
+            }
+          } else {
+            Write-Host "Skipping version validation - not both semantic versions"
+            Write-Host "package.json: $PACKAGE_VERSION"
+            Write-Host "tag: $TAG_NAME"
+          }
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -214,6 +284,28 @@ jobs:
       - name: Get version from package.json
         id: get-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Validate version consistency
+        run: |
+          PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
+          TAG_NAME="${{ github.ref_name }}"
+          
+          # Check if both are semantic versions (x.y.z format)
+          if [[ $PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ $TAG_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
+            if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
+              echo "ERROR: Version mismatch!"
+              echo "package.json version: $PACKAGE_VERSION"
+              echo "Git tag version: $TAG_NAME"
+              exit 1
+            else
+              echo "✅ Versions match: $PACKAGE_VERSION"
+            fi
+          else
+            echo "Skipping version validation - not both semantic versions"
+            echo "package.json: $PACKAGE_VERSION"
+            echo "tag: $TAG_NAME"
+          fi
 
       - name: Configure Node caching
         uses: actions/cache@v4
