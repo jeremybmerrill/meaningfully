@@ -40,7 +40,10 @@ jobs:
             echo "Skipping version validation - not both semantic versions"
             echo "package.json: $PACKAGE_VERSION"
             echo "tag: $TAG_NAME"
-          fi
+        uses: ./.github/actions/validate-version
+        with:
+          package_version: ${{ steps.get-version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
 
       - name: Configure Node caching
         uses: actions/cache@v4
