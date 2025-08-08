@@ -1,5 +1,21 @@
 import weaviate, { EmbeddedOptions, EmbeddedDB } from 'weaviate-ts-embedded';
 import path from 'path';
+import fs from 'fs';
+
+function findWeaviate() {
+  const possibilities = [
+    // In packaged app
+    path.join(process.resourcesPath, "resources", "weaviate", "weaviate-embedded-latest"),
+    // In development
+    path.join(__dirname, "resources", "weaviate", "weaviate-embedded-latest"),
+  ];
+  for (const path of possibilities) {
+    if (fs.existsSync(path)) {
+      return path;
+    }
+  }
+  return undefined;
+}
 
 export async function create_weaviate_database(storagePath: string) {
     let embedded_db: any = null;
@@ -8,6 +24,7 @@ export async function create_weaviate_database(storagePath: string) {
       host: '127.0.0.1',
       port: 9898,
       persistenceDataPath: path.join(storagePath, "weaviate_data"),
+      binaryPath: findWeaviate()
     });
     
     embedded_db = new EmbeddedDB(embeddedOptions);
