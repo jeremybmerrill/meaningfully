@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-apple:
-    name: Build macOS (Apple Silicon)
+    name: Build macOS
     runs-on: macos-latest
     environment: "mac build" 
     outputs:
@@ -55,7 +55,7 @@ jobs:
         run: npm test
         timeout-minutes: 5
 
-      - name: Build distribution (macOS ARM)
+      - name: Build distribution (macOS Universal)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -75,82 +75,7 @@ jobs:
         with:
           name: meaningfully-macOS
           path: |
-            dist/meaningfully-${{ steps.get-version.outputs.version }}.arm64.dmg
-            dist/README.txt
-
-  build-intel:
-    name: Build macOS (Intel)
-    runs-on: macos-13
-    environment: "mac build"
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Get version from package.json
-        id: get-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Validate version consistency
-        run: |
-          PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
-          TAG_NAME="${{ github.ref_name }}"
-          
-          # Check if both are semantic versions (x.y.z format)
-          if [[ $PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ $TAG_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
-            if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
-              echo "ERROR: Version mismatch!"
-              echo "package.json version: $PACKAGE_VERSION"
-              echo "Git tag version: $TAG_NAME"
-              exit 1
-            else
-              echo "✅ Versions match: $PACKAGE_VERSION"
-            fi
-          else
-            echo "Skipping version validation - not both semantic versions"
-            echo "package.json: $PACKAGE_VERSION"
-            echo "tag: $TAG_NAME"
-          fi
-
-      - name: Configure Node caching
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
-
-      - name: Install brew dependencies
-        run: brew install pkg-config cairo pango libjpeg giflib librsvg
-
-      - name: Install npm deps
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
-
-      - name: Build distribution (macOS Intel)
-        env:
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLEID: ${{ secrets.APPLEID }}
-          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
-          APPLETEAMID: ${{ secrets.APPLETEAMID }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:mac -- --publish always
-
-      - name: Create README
-        run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
-
-      - name: Upload artifact (macOS Intel)
-        id: upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: meaningfully-macOS-intel
-          path: |
-            dist/meaningfully-${{ steps.get-version.outputs.version }}.x64.dmg
+            dist/meaningfully-${{ steps.get-version.outputs.version }}.universal.dmg
             dist/README.txt
   build-windows:
     name: Build Windows
@@ -376,7 +301,6 @@ jobs:
     environment: "mac build"
     needs:
       - build-apple
-      - build-intel
       - build-windows
       - build-linux
     steps:
@@ -391,12 +315,6 @@ jobs:
         with:
           name: meaningfully-macOS
           path: ./artifacts/macOS
-
-      - name: Download macOS (Intel) artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: meaningfully-macOS-intel
-          path: ./artifacts/macOS-intel
 
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
@@ -423,8 +341,7 @@ jobs:
           files: |
             ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.deb
             ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.AppImage
-            ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.snap            
-            ./artifacts/macOS-intel/meaningfully-${{ steps.get-version.outputs.version }}.x64.dmg
-            ./artifacts/macOS/meaningfully-${{ steps.get-version.outputs.version }}.arm64.dmg
+            ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.snap
+            ./artifacts/macOS/meaningfully-${{ steps.get-version.outputs.version }}.universal.dmg
             ./artifacts/windows/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe
             ./artifacts/windows/meaningfully-${{ steps.get-version.outputs.version }}-setup.exe.blockmap

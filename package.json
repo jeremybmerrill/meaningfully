@@ -18,7 +18,7 @@
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && node scripts/ensureWeaviateIsDownloaded.mjs && electron-builder --win",
-    "build:mac": "npm run build && node scripts/ensureWeaviateIsDownloaded.mjs && electron-builder --mac",
+    "build:mac": "npm run build && node scripts/ensureWeaviateIsDownloaded.mjs && electron-builder --mac --universal",
     "build:linux": "npm run build && node scripts/ensureWeaviateIsDownloaded.mjs && electron-builder --linux",
     "test": "vitest --silent=false --disable-console-intercept",
     "wdio": "NODE_ENV=test xvfb-maybe wdio run ./wdio.conf.ts"
