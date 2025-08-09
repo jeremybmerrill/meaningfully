@@ -36,8 +36,8 @@ mac:
   entitlements: "./build/entitlements.mac.plist"
   entitlementsInherit: "./build/entitlements.mac.plist"
   binaries: 
-    - ./dist/mac/meaningfully.app/Contents/Resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node
-    - ./dist/mac/meaningfully.app/Contents/Resources/app.asar.unpacked/resources/weaviate/weaviate-embedded-latest
+    - Contents/Resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+    - Contents/Resources/app.asar.unpacked/resources/weaviate/weaviate-embedded-latest
   extraResources:
     - from: weaviate-embedded-latest
       to: weaviate-embedded-latest
