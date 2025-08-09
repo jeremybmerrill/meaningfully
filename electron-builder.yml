@@ -49,6 +49,8 @@ dmg:
   artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
   writeUpdateInfo: false
+snap:
+  grade: stable
 linux:
   target:
     - AppImage
