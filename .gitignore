@@ -1,19 +1,24 @@
-.DS_Store
-.env
-sample-data/
-.ipynb_checkpoints/
-*.duckdb
-python-prototype/chroma/
-__pycache__
-js/meaningfully/storage
-e2e/test-storage/metadata.db
-.vscode/
+
+
+
+# build stuff
 node_modules
 dist
 out
-.DS_Store
-*.log*
 e2e/test-storage/metadata.db
-certs/
-screenshots/ # testing screenshots
+
+# too big for github
+resources/weaviate/weaviate-embedded-latest
+
+# Jeremy's development stuff
 meaningfully.code-workspace
+.DS_Store
+.env
+.ipynb_checkpoints/
+__pycache__
+*.log*
+certs/
+.vscode/
+sample-data/
+python-prototype/chroma/
+python-prototype/storage/
