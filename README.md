@@ -58,10 +58,9 @@ Visit meaningfully's [release page](https://github.com/jeremybmerrill/meaningful
 
 For Macs, use the x64 binary if you have an Intel chip and arm64 if you have Apple Silicon. See "About This Mac" in the Apple menu on the top left of your screen to determine which kind of processor you have; computers manufactured before late 2020 generally have Intel chips.
 
-
 #### Windows
 
-I couldn't get the Windows builds to work. If you use Windows and want to try meaningfully, please try development mode below, or help me get the Windows builds working.
+I couldn't get the Windows builds to work. If you use Windows and want to try meaningfully, please try development mode below, or help me get the Windows builds working. It might work fine, although it will be slower and the file-sizes larger than on Mac and Windows, because the Weaviate database binary isn't available for Windwos.
 
 #### Linux
 
