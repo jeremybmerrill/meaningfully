@@ -11,6 +11,7 @@
     uploadComplete
   } = $props();
   let files: FileList;
+  let fileInput: HTMLInputElement;
   let uploading = $state(false);
   let error = $state('');
   let availableColumns: string[] = $state([]);
@@ -53,6 +54,35 @@
   // New state variables for progress tracking
   let progress = $state(0);
   let progressTotal = $state(100);
+
+  // Export function to reset the component
+  export function reset() {
+    files = null;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    uploading = false;
+    error = '';
+    availableColumns = [];
+    selectedTextColumn = '';
+    selectedMetadataColumns = [];
+    showUploadSettings = false;
+    generatingPreview = false;
+    datasetName = '';
+    chunkSize = defaultChunkSize;
+    chunkOverlap = defaultChunkOverlap;
+    modelProvider = "openai";
+    modelName = "text-embedding-3-small";
+    splitIntoSentences = true;
+    combineSentencesIntoChunks = true;
+    previewData = [];
+    costEstimate = undefined;
+    tokenCount = undefined;
+    pricePer1M = undefined;
+    isCollapsed = true;
+    progress = 0;
+    progressTotal = 100;
+  }
 
   // Poll the backend every second for upload progress.
   const pollProgress = async () => {
@@ -228,6 +258,7 @@
   <label class="block">
     <span class="sr-only">Choose CSV file</span>
     <input
+      bind:this={fileInput}
       type="file"
       accept=".csv"
       onchange={handleFileSelect}

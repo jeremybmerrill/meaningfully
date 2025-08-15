@@ -9,6 +9,7 @@
 //  import electronLogo from './assets/electron.svg'
   let url = $state("");
   let settings: Settings | null = $state(null);
+  let frontPageComponent: FrontPage = $state();
 
   const getSettings = async () => {
       try {
@@ -17,6 +18,13 @@
           console.error('Error fetching settings:', error);
       }
   };
+  
+  const handleHomeClick = () => {
+    if (frontPageComponent) {
+      frontPageComponent.resetToHome();
+    }
+  };
+  
   let validApiKeysSet = $derived(settings && !!(
     (!!settings.openAIKey) || 
     (settings.oLlamaBaseURL) ||
@@ -32,7 +40,7 @@
 <!-- <img alt="logo" class="logo" src={electronLogo} /> -->
 
 <Router url={url} >
-  <Link to="/">
+  <Link to="/" onclick={handleHomeClick}>
     <h1 class="text-2xl font-bold">
       Meaningfully
     </h1>
@@ -48,7 +56,7 @@
 
   <main class="container mx-auto px-4 py-8">
     <Route path="">
-      <FrontPage validApiKeysSet={validApiKeysSet} />
+      <FrontPage bind:this={frontPageComponent} validApiKeysSet={validApiKeysSet} />
     </Route>
     <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
     <Route path="help" component={HelpPage} />
@@ -60,7 +68,7 @@
   </main>
 
   <nav class="navbar">
-    <Link to="" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Home</Link>
+    <Link to="" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600" onclick={handleHomeClick}>Home</Link>
     <Link to="help" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Help</Link>
     <Link to="settings" class="nav-link underline text-blue-600 hover:text-blue-800 visited:text-purple-600">Settings / API Keys</Link>
     <span class="nav-link">Built with ✨ by Jeremy</span>
