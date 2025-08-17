@@ -1,24 +1,19 @@
 <script lang="ts">
-  import { debounce } from 'lodash';
+  import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
-  import Papa from 'papaparse';
+  import { debounce } from 'lodash';
   import Preview from './Preview.svelte';
 
-
   let {
-    validApiKeysSet,
-    fileSelected,
-    uploadComplete
+    validApiKeysSet
   } = $props();
-  let files: FileList;
-  let fileInput: HTMLInputElement;
+
+  let fileData: any = $state(null);
   let uploading = $state(false);
   let error = $state('');
-  let availableColumns: string[] = $state([]);
   let selectedTextColumn = $state('');
   let selectedMetadataColumns: string[] = $state([]);
-  let showUploadSettings = $state(false); // don't show upload settings until the user has selected a text column and a file.
-  let generatingPreview = $state(false); // loading state for the preview data.
+  let generatingPreview = $state(false);
   let datasetName = $state('');
   const defaultChunkSize = 100;
   const defaultChunkOverlap = 20;
@@ -37,8 +32,8 @@
   let modelProvider = $state("openai");
   let modelName = $state("text-embedding-3-small");
   let splitIntoSentences = $state(true);
-  let combineSentencesIntoChunks = $state(true); // aka combineSentencesIntoChunks
-  let previewData: Array<Record<string, any>> = $state([]); // processed data from 'backend'
+  let combineSentencesIntoChunks = $state(true);
+  let previewData: Array<Record<string, any>> = $state([]);
   let costEstimate: number = $state();
   let tokenCount: number = $state();
   let pricePer1M: number = $state();
@@ -51,45 +46,27 @@
     }
   });
 
-  // New state variables for progress tracking
+  // Progress tracking
   let progress = $state(0);
   let progressTotal = $state(100);
 
-  // Export function to reset the component
-  export function reset() {
-    files = null;
-    if (fileInput) {
-      fileInput.value = '';
+  onMount(() => {
+    // Check if we have file data from the previous step
+    const storedData = sessionStorage.getItem('csvFileData');
+    if (!storedData) {
+      navigate('/'); // Redirect back to home if no file data
+      return;
     }
-    uploading = false;
-    error = '';
-    availableColumns = [];
-    selectedTextColumn = '';
-    selectedMetadataColumns = [];
-    showUploadSettings = false;
-    generatingPreview = false;
-    datasetName = '';
-    chunkSize = defaultChunkSize;
-    chunkOverlap = defaultChunkOverlap;
-    modelProvider = "openai";
-    modelName = "text-embedding-3-small";
-    splitIntoSentences = true;
-    combineSentencesIntoChunks = true;
-    previewData = [];
-    costEstimate = undefined;
-    tokenCount = undefined;
-    pricePer1M = undefined;
-    isCollapsed = true;
-    progress = 0;
-    progressTotal = 100;
-  }
+    
+    fileData = JSON.parse(storedData);
+    datasetName = fileData.name.replace(/\.csv$/, '');
+  });
 
-  // Poll the backend every second for upload progress.
+  // Poll the backend every second for upload progress
   const pollProgress = async () => {
     if (!uploading) return;
     try {
       const result = await window.api.getUploadProgress();
-      console.log("Progress result:", result);
       progress = result.progress;
       progressTotal = result.total;
     } catch(e) {
@@ -98,46 +75,18 @@
     if (uploading) setTimeout(pollProgress, 1000);
   };
 
-  const handleFileSelect = async (event: Event) => {
-    const input = event.target as HTMLInputElement;
-    if (!input.files?.length) return;
-    fileSelected();
-
-    const file = input.files[0];
-    showUploadSettings = false;
-    datasetName = file.name.replace(/\.csv$/, '');
-    
-    // only necessary to get the column names.
-    Papa.parse(file, {
-      complete: async (results) => {
-        availableColumns = results.meta.fields || [];
-        selectedTextColumn = '';
-        selectedMetadataColumns = [];
-        showUploadSettings = true;
-      },
-      header: true
-    });
-    files = input.files;
-  };
-
   const generatePreview = async () => {
-    if (!files?.[0]) {
-      error = 'Please select a file';
+    if (!fileData || !selectedTextColumn) {
+      error = 'Select a text column (or maybe something went wrong with the file you chose)';
       return;
     }
-    if (!selectedTextColumn) {
-      error = 'Please select a text column';
-      return;
-    }
+    
     try {
       error = '';
       generatingPreview = true;
-      
-      // Keep UI responsive by not setting uploading=true
-      // uploading = true; // Remove this line
-    
-      const response = await window.api.generatePreviewData({
-        file: files[0],
+      const previewResponse = await window.api.generatePreviewData({
+        fileContent: fileData.fileContent,
+        fileName: fileData.name,
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
@@ -151,17 +100,17 @@
         chunkOverlap
       });
 
-      if (response.success) {
-        costEstimate = response.estimatedPrice;
-        tokenCount = response.tokenCount;
-        pricePer1M = response.pricePer1M;
-        previewData = response.nodes.map(result => ({
+      if (previewResponse.success) {
+        costEstimate = previewResponse.estimatedPrice;
+        tokenCount = previewResponse.tokenCount;
+        pricePer1M = previewResponse.pricePer1M;
+        previewData = previewResponse.nodes.map(result => ({
           ...result.metadata,
           [selectedTextColumn]: result.text
         }));
-        showUploadSettings = true;
       } else {
         error = 'Preview generation failed';
+        console.error('Preview generation failed:', previewResponse);
       }
     } catch (e) {
       error = e.message;
@@ -171,14 +120,11 @@
   };
 
   const handleUpload = async () => {
-    if (!files?.[0]) {
-      error = 'Please select a file';
+    if (!fileData || !selectedTextColumn) {
+      error = 'Select a text column (or maybe something went wrong with the file you chose)';
       return;
     }
-    if (!selectedTextColumn) {
-      error = 'Please select a text column';
-      return;
-    }
+    
     try {
       uploading = true;
       error = '';
@@ -186,12 +132,13 @@
       // Start polling for progress
       pollProgress();
 
-      const response = await window.api.uploadCsv({
-        file: files[0],
+      const uploadResponse = await window.api.uploadCsv({
+        fileContent: fileData.fileContent,
+        fileName: fileData.name,
         datasetName,
         description: 'TK',
         textColumns: [selectedTextColumn],
-        metadataColumns: selectedMetadataColumns.map(c => c), // de-proxy
+        metadataColumns: selectedMetadataColumns.map(c => c),
         splitIntoSentences,
         combineSentencesIntoChunks,
         sploderMaxSize: 100,
@@ -201,11 +148,10 @@
         modelProvider
       });
 
-      if (response.success) {
-        uploadComplete();
-        navigate("/search/" + response.documentSetId);
-        showUploadSettings = false;
-        files = null;
+      if (uploadResponse.success) {
+        // Clear stored data
+        sessionStorage.removeItem('csvFileData');
+        navigate("/search/" + uploadResponse.documentSetId);
       } else {
         error = 'Upload failed';
       }
@@ -250,30 +196,31 @@
       debouncedGeneratePreview();
     }
   });
+
+  const goBack = () => {
+    sessionStorage.removeItem('csvFileData');
+    navigate('/');
+  };
 </script>
 
-<div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10" data-testid="upload-a-spreadsheet">
-  <h2 class="text-xl font-semibold">Upload A Spreadsheet</h2>
-  
-  <label class="block">
-    <span class="sr-only">Choose CSV file</span>
-    <input
-      bind:this={fileInput}
-      type="file"
-      accept=".csv"
-      onchange={handleFileSelect}
-      class="block w-full text-sm text-slate-500
-        file:mr-4 file:py-2 file:px-4
-        file:rounded-full file:border-0
-        file:text-sm file:font-semibold
-        file:bg-violet-50 file:text-violet-700
-        hover:file:bg-violet-100
-      "
-    />
-  </label>
-</div>
+{#if fileData}
+  <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold">The Details: Set up semantic search for "{fileData.name}"</h2>
+      <button
+        onclick={goBack}
+        class="text-sm text-gray-600 hover:text-gray-800 underline"
+      >
+        ← Choose A Different File
+      </button>
+    </div>
+    
+    <div class="text-sm text-gray-600">
+      File size: {Math.round(fileData.size / 1024)} KB • 
+      {fileData.availableColumns.length} columns detected
+    </div>
+  </div>
 
-{#if showUploadSettings && availableColumns.length > 0}
   <div data-testid="csv-upload-settings">
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       <div class="space-y-2">
@@ -290,6 +237,7 @@
           The name is just for you. Use something that will help you remember what this spreadsheet is.
         </p>
       </div>
+      
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
           What embedding provider should we use?
@@ -307,6 +255,7 @@
           The provider for the embedding model.
         </p>
       </div>
+      
       <div class="space-y-2">
         <label class="block text-sm font-medium text-gray-700">
           What embedding model should we use?
@@ -336,7 +285,7 @@
               data-testid="column-to-embed-select"
             >
               <option value="">Select a column...</option>
-              {#each availableColumns as column}
+              {#each fileData.availableColumns as column}
                 <option value={column}>{column}</option>
               {/each}
             </select>
@@ -352,7 +301,7 @@
             <code>URL</code>, you might select it so you can click through to the original.
           </p>
           <div class="flex flex-wrap gap-2">
-            {#each availableColumns as column}
+            {#each fileData.availableColumns as column}
               <label class="inline-flex items-center">
                 <input
                   type="checkbox"
@@ -369,6 +318,7 @@
         </div>
       </div>    
     </div>
+    
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       <h3><button onclick={toggleTextHandlingSectionCollapse}>Text Handling Options {isCollapsed ? '›' : '⌄'}</button></h3>
 
@@ -399,54 +349,45 @@
             <div class="flex flex-wrap gap-2">
               <div class="inline-flex max-w-md p-2">
                 <label class="block text-sm font-medium text-gray-700">
-                  Chunk Size (in tokens):
-                  <div class="flex items-center gap-2">
-                    <input
-                      type="range"
-                      bind:value={chunkSize}
-                      min="10"
-                      max="500"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-                    />
-                    <span class="text-sm text-gray-600">{chunkSize}</span>
-                  </div>
+                  Chunk size:
+                  <input
+                    type="number"
+                    bind:value={chunkSize}
+                    min="50"
+                    max="1000"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                  />
                 </label>
-                <p class="text-xs text-gray-500">
-                  Split each text into chunks of about this many words.
-                  (Sentences will stay together.)
-                </p>
               </div>
               <div class="inline-flex max-w-md p-2">
                 <label class="block text-sm font-medium text-gray-700">
-                  Chunk Overlap (in tokens):
-                  <div class="flex items-center gap-2">
-                    <input
-                      type="range" 
-                      bind:value={chunkOverlap}
-                      min="0"
-                      max="500"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
-                    />
-                    <span class="text-sm text-gray-600">{chunkOverlap}</span>
-                  </div>
-                </label>  
-                <p class="text-xs text-gray-500">
-                  If a text is split into multiple chunks, about this many words between chunks will overlap.
-                </p>
+                  Chunk overlap:
+                  <input
+                    type="number"
+                    bind:value={chunkOverlap}
+                    min="0"
+                    max="100"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500"
+                  />
+                </label>
               </div>
             </div>
           </div>
         </div>
       {/if}
     </div>
+    
     <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
       {#key costEstimate}
         {#key tokenCount}
           {#key pricePer1M }
             {#if tokenCount > 0 && costEstimate > 0}
               <div data-testid="cost-estimate">
-                <p>Cost estimate: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(costEstimate)} for {new Intl.NumberFormat("en-US").format(tokenCount)} tokens (@{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(pricePer1M)}/1M tokens)</p>
-                <p>Disclaimer: You are responsible for all costs. The estimate might be wrong.</p>
+                <h3>Cost Estimate</h3>
+                <p class="text-sm text-gray-600">
+                  Estimated cost: <strong>${costEstimate.toFixed(4)}</strong> 
+                  ({tokenCount.toLocaleString()} tokens at ${pricePer1M.toFixed(2)} per 1M tokens)
+                </p>
               </div>
             {/if}
           {/key}
@@ -458,10 +399,10 @@
           {#key selectedMetadataColumns}
             {#if (previewData.length > 0 || generatingPreview) && selectedTextColumn}
               <Preview
-                loading={generatingPreview}
                 previewData={previewData}
                 textColumn={selectedTextColumn}
                 metadataColumns={selectedMetadataColumns}
+                loading={generatingPreview}
               />
             {/if}
           {/key}
@@ -476,6 +417,7 @@
       >
         {uploading ? 'Uploading...' : 'Upload Spreadsheet'}
       </button>
+      
       {#if uploading}
         <p>This could take a few minutes. Go get a cup of coffee or re-arrange your MySpace Top 8.</p>
         <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
@@ -485,11 +427,14 @@
           ></div>
         </div>
         <p class="text-sm text-gray-600 mt-1">
-          <!-- magic numbers 5 and 95 match src/main/api/embedding.ts where embedding progress is smooshed to between 5% and 95%. -->
           Progress: {progress <= 5 ? 'processing upload' : ( progress >= 95 ? 'finishing up' : 'embedding') }  ({Math.round((progress / progressTotal) * 100)}%)
         </p>
       {/if }
     </div>
+  </div>
+{:else}
+  <div class="bg-white p-6 rounded-lg shadow space-y-6 text-black mb-10">
+    <p>Loading file data...</p>
   </div>
 {/if}
 

@@ -24,11 +24,6 @@ Given(
         // Upload the file (this copies the file to a temporary location on the Selenium server).
         const remoteFilePath = await browser.uploadFile(filePath);
         await fileInput.setValue(remoteFilePath);
-        // Trigger change event if necessary.
-        await browser.execute((input: HTMLInputElement) => {
-            const event = new Event('change', { bubbles: true });
-            input.dispatchEvent(event);
-        }, fileInput);
         // Allow time for the file selection to process.
         await browser.pause(1000);
     }

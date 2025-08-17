@@ -3,15 +3,12 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { DocumentService } from './DocumentSetService'
-import { writeFileSync, readFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
 import { DocumentSetParams, MetadataFilter } from './types';
 import { create_weaviate_database, teardown_weaviate_database } from './services/weaviateService';
 import { ProgressManager } from './services/progressManager';
-
-type HasFilePathAndName =  { file: { path: string, name: string }};
-type DocumentSetParamsFileAndPath = DocumentSetParams & HasFilePathAndName;
 
 const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
 const storagePath = storageArg ? storageArg.split('=')[1] : app.getPath('userData');;
@@ -124,11 +121,14 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('upload-csv', async (_, formData: DocumentSetParamsFileAndPath) => {
+  ipcMain.handle('upload-csv', async (_, formData: (DocumentSetParams & { fileContent: string, fileName: string })) => {
     try {
-      // For files from renderer, we need to handle the Buffer data
-      const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)
-      await writeFileSync(tempPath, readFileSync(formData.file.path))
+      let tempPath: string;
+      
+      // New content-based approach
+      tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.fileName}`)
+      await writeFileSync(tempPath, formData.fileContent, 'utf8')
+      
       return await docService.uploadCsv({
         ...formData,
         filePath: tempPath
@@ -139,10 +139,16 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('generate-preview-data', async (_, formData: DocumentSetParamsFileAndPath) => {
+  ipcMain.handle('generate-preview-data', async (_, formData: (DocumentSetParams & { fileContent: string, fileName: string })) => {
     try {
-      const tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.file.name}`)
-      await writeFileSync(tempPath, readFileSync(formData.file.path))
+      let tempPath: string;
+      
+      // Handle both file-based and content-based uploads  
+      console.log('formData', formData)
+      // New content-based approach
+      tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.fileName}`)
+      await writeFileSync(tempPath, formData.fileContent, 'utf8')
+
       return await docService.generatePreviewData({
         ...formData,
         filePath: tempPath
