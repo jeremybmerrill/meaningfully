@@ -127,7 +127,11 @@ app.whenReady().then(() => {
       
       // New content-based approach
       tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.fileName}`)
-      await writeFileSync(tempPath, formData.fileContent, 'utf8')
+      // Decode base64 fileContent before writing; data:text/csv;base64,Y2Fz...
+      // split by comma removes 
+      const base64Data = formData.fileContent.split(',')[1] || formData.fileContent;
+      const buffer = Buffer.from(base64Data, 'base64');
+      await writeFileSync(tempPath, buffer);
       
       return await docService.uploadCsv({
         ...formData,
@@ -147,7 +151,12 @@ app.whenReady().then(() => {
       console.log('formData', formData)
       // New content-based approach
       tempPath = pathJoin(tmpdir(), `${Date.now()}-${formData.fileName}`)
-      await writeFileSync(tempPath, formData.fileContent, 'utf8')
+      
+      // Decode base64 fileContent before writing; data:text/csv;base64,Y2Fz...
+      // split by comma removes 
+      const base64Data = formData.fileContent.split(',')[1] || formData.fileContent;
+      const buffer = Buffer.from(base64Data, 'base64');
+      await writeFileSync(tempPath, buffer);
 
       return await docService.generatePreviewData({
         ...formData,

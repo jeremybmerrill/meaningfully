@@ -131,7 +131,7 @@
 
       // Start polling for progress
       pollProgress();
-
+      console.log(fileData);
       const uploadResponse = await window.api.uploadCsv({
         fileContent: fileData.fileContent,
         fileName: fileData.name,

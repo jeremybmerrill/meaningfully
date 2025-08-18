@@ -16,7 +16,6 @@
     
     // Parse CSV to get column names and validate it's a valid CSV
     Papa.parse(file, {      
-      skipEmptyLines: true,
       complete: async (results) => {
         if (results.errors.length > 0) {
           error = 'Invalid CSV file';
@@ -46,13 +45,13 @@
             ...fileData,
             fileContent: reader.result
           }));
-          
           // Navigate to configuration page
           navigate('/configure-upload');
         };
         reader.readAsDataURL(file);
       },
       header: true,
+      skipEmptyLines: true,
       preview: 10 // Only parse first 10 rows for validation
     });
   };
