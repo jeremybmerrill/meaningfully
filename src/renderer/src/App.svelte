@@ -3,7 +3,7 @@
   import { Router, Route, Link } from "svelte-routing";
   import SearchPage from './components/SearchPage.svelte'
   import FrontPage from './components/FrontPage.svelte'
-  import SearchConfig from './components/SearchConfig.svelte'
+  import DatabaseConfig from './components/DatabaseConfig.svelte'
   import ApiKeyPage from './components/ApiKeyPage.svelte'
   import HelpPage from './components/HelpPage.svelte'
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
@@ -53,7 +53,7 @@
       <FrontPage validApiKeysSet={validApiKeysSet} />
     </Route>
     <Route path="configure-upload">
-      <SearchConfig validApiKeysSet={validApiKeysSet} />
+      <DatabaseConfig validApiKeysSet={validApiKeysSet} />
     </Route>
     <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
     <Route path="help" component={HelpPage} />

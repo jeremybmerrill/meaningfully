@@ -1,6 +1,6 @@
 <script lang="ts">
     import ExistingDatabases from './ExistingDatabases.svelte'
-    import CsvFileUpload from './CsvFileUpload.svelte'
+    import CsvUpload from './CsvUpload.svelte'
 
     interface Props {
       validApiKeysSet: boolean;
@@ -10,7 +10,7 @@
 </script>
 
 <div class="container mx-auto px-4 space-y-8">
-    <CsvFileUpload validApiKeysSet={validApiKeysSet} />
+    <CsvUpload validApiKeysSet={validApiKeysSet} />
     <ExistingDatabases />
 </div>
   
