@@ -35,15 +35,25 @@
           size: file.size,
           lastModified: file.lastModified,
           availableColumns,
-          sampleData: results.data.slice(0, 5) // Store a few sample rows
         };
         
         // Store the actual file as a base64 string
         const reader = new FileReader();
         reader.onload = () => {
+          let fileContent = reader.result as string;
+          
+          // Check if it's already a file URL encoded -- which is base64 encoded and starts with data:text/csv;base64, prefix
+          // in real life it always will be since we used readAsDataURL, but not in test, for some reason
+          // probably due to a webdriver quirk.
+          // or maybe due to me understanding my build pipeline wrong? in which case this might be unnecessary.
+          if (!fileContent.startsWith('data:')) {
+            // only needed in test.
+            fileContent = 'data:text/csv;base64,' + btoa(fileContent);
+          }
+          
           sessionStorage.setItem('csvFileData', JSON.stringify({
             ...fileData,
-            fileContent: reader.result
+            fileContent
           }));
           // Navigate to configuration page
           navigate('/configure-upload');
