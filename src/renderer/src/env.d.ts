@@ -33,16 +33,10 @@ interface BaseUploadFormData {
   modelProvider: string;
 }
 
-interface FileUploadFormData extends BaseUploadFormData {
-  file: File;
-}
-
-interface ContentUploadFormData extends BaseUploadFormData {
+interface UploadFormData extends BaseUploadFormData {
   fileContent: string;
   fileName: string;
 }
-
-type UploadFormData = FileUploadFormData | ContentUploadFormData;
 
 interface Window {
   electron: {
