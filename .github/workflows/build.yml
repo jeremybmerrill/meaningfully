@@ -418,6 +418,14 @@ jobs:
         with:
           tag_name: ${{ github.ref_name == 'main' && 'manualrelease' || github.ref_name }}
           name: Release ${{ github.ref_name == 'main' && 'manualrelease' || github.ref_name }}
+          body: |
+            ## Release Notes
+            - This release includes builds for macOS (Apple Silicon and Intel), Windows, and Linux.
+            - For more information, visit [Meaningfully GitHub](https://github.com/jeremybmerrill/meaningfully) 
+            
+            For MacOS: if your computer has an Intel chip (older than 2020-ish), use the x64 build. 
+              If your computer has an Apple Silicon chip (newer than 2020ish), 
+                 use the arm64 build. 
           draft: false
           prerelease: false
           # add back later under files:              ./artifacts/linux/meaningfully-${{ steps.get-version.outputs.version }}.snap
