@@ -3,12 +3,10 @@ import path from 'path';
 import { expect, $$, $ } from '@wdio/globals';
 
 // Selectors – adjust these if needed.
-const UPLOAD_COMPONENT_SELECTOR = '[data-testid="upload-a-spreadsheet"]';
 const CSV_UPLOAD_PAGE_SELECTOR = '[data-testid="csv-upload-settings"]';
 const PREVIEW_COMPONENT_SELECTOR = '[data-testid="preview"]';
 
 const TEST_CSV_FILE_NAME = "newline-test.csv"; // The name of the test CSV file to use.
-const INDEX_OF_COLUMN_TO_EMBED = 4; 
 
 // Step: Simulate file selection using the test CSV file.
 Given(
@@ -24,11 +22,6 @@ Given(
         // Upload the file (this copies the file to a temporary location on the Selenium server).
         const remoteFilePath = await browser.uploadFile(filePath);
         await fileInput.setValue(remoteFilePath);
-        // Trigger change event if necessary.
-        await browser.execute((input: HTMLInputElement) => {
-            const event = new Event('change', { bubbles: true });
-            input.dispatchEvent(event);
-        }, fileInput);
         // Allow time for the file selection to process.
         await browser.pause(1000);
     }

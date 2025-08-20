@@ -80,7 +80,7 @@ There's a weird bug where sometimes I think the storage directory isn't created 
 
 meaningfully has both unit tests and end-to-end integration tests.
 
-Run the unit tests for the backend with `npm test`. Run the integration tests for the frontend by building (`npm run build:<platform>`) with `npm run wdio`; specify a specific file with `CUCUMBER_TEST_ONLY_FEATURE=upload-process npm run wdio`.
+Run the unit tests for the backend with `npm test`. Run the integration tests for the frontend by building (`npm run build:<platform>`) with `npm run wdio`; specify a specific file with `npm run build && CUCUMBER_TEST_ONLY_FEATURE=upload-process npm run wdio`.
 
 ## My documents are PDFs, not spreadsheets. Can I use Meaningfully?
 
