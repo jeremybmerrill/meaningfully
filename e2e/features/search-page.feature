@@ -14,9 +14,9 @@ Feature: Search page
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 1"
     And the "Upload button" component has been clicked
-    # And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" link
 
-    # And the app is navigated to the "Test Dataset 1" dataset link
+    And the app is navigated to the "Test Dataset 1" dataset link
     Then the "Document Set name" component should be visible
     And the "Search bar" component should be visible
     And the "Search button" component should be visible

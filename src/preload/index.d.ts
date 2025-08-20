@@ -49,19 +49,32 @@ export interface UploadProgress {
   total: number;
 }
 
+export interface BaseUploadFormData {
+  datasetName: string;
+  description: string;
+  textColumns: string[];
+  metadataColumns: string[];
+  splitIntoSentences: boolean;
+  combineSentencesIntoChunks: boolean;
+  sploderMaxSize: number;
+  chunkSize: number;
+  chunkOverlap: number;
+  modelName: string;
+  modelProvider: string;
+}
+
+export interface UploadFormData extends BaseUploadFormData {
+  fileContent: string;
+  fileName: string;
+}
+
 declare global {
   interface Window {
     electron: ElectronAPI
     api: {
       listDocumentSets: () => Promise<{documents: DocumentSetMetadata[], total: number}> ,
       getDocumentSet: (documentSetId: number) => Promise<DocumentSetMetadata>,
-      uploadCsv: (formData: {
-        file: File,
-        datasetName: string,
-        description: string,
-        textColumns: string[],
-        metadataColumns: string[]
-      }) => Promise<{ success: true, documentSetId: number }>,
+      uploadCsv: (formData: UploadFormData) => Promise<{ success: true, documentSetId: number }>,
       searchDocumentSet: (params: {
         documentSetId: number;
         query: string;
@@ -79,20 +92,7 @@ declare global {
       getSettings: () => Promise<Settings>, 
       setSettings: (settings: Settings) => Promise<void>,
       deleteDocumentSet: (documentSetId: number) => Promise<{ success: boolean }>,
-      generatePreviewData: (formData: {
-        file: File,
-        datasetName: string,
-        description: string,
-        textColumns: string[],
-        metadataColumns: string[],
-        splitIntoSentences: boolean,
-        combineSentencesIntoChunks: boolean,
-        sploderMaxSize: number,
-        chunkSize: number,
-        chunkOverlap: number,
-        modelName: string,
-        modelProvider: string
-      }) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      generatePreviewData: (formData: UploadFormData) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
       getUploadProgress: () => Promise<UploadProgress>
     }
   }

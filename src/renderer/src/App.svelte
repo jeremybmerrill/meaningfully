@@ -1,12 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Router, Route, Link } from "svelte-routing"; // also Link
+  import { Router, Route, Link } from "svelte-routing";
   import SearchPage from './components/SearchPage.svelte'
   import FrontPage from './components/FrontPage.svelte'
+  import DatabaseConfig from './components/DatabaseConfig.svelte'
   import ApiKeyPage from './components/ApiKeyPage.svelte'
   import HelpPage from './components/HelpPage.svelte'
   import ApiKeyStatus from './components/ApiKeyStatus.svelte'
-//  import electronLogo from './assets/electron.svg'
+
   let url = $state("");
   let settings: Settings | null = $state(null);
 
@@ -17,6 +18,7 @@
           console.error('Error fetching settings:', error);
       }
   };
+  
   let validApiKeysSet = $derived(settings && !!(
     (!!settings.openAIKey) || 
     (settings.oLlamaBaseURL) ||
@@ -49,6 +51,9 @@
   <main class="container mx-auto px-4 py-8">
     <Route path="">
       <FrontPage validApiKeysSet={validApiKeysSet} />
+    </Route>
+    <Route path="configure-upload">
+      <DatabaseConfig validApiKeysSet={validApiKeysSet} />
     </Route>
     <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
     <Route path="help" component={HelpPage} />

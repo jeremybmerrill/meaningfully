@@ -79,10 +79,9 @@ export class DocumentService {
   }
 }
 
-    async uploadCsv(data: DocumentSetParamsFilePath) {
+  async uploadCsv(data: DocumentSetParamsFilePath) {
     // figure out if weaviate is available
     const vectorStoreType = this.getVectorStoreType();
-
     // First create the document set record
     const documentSetId = await this.manager.addDocumentSet({
       name: data.datasetName,
