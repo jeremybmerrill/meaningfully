@@ -14,7 +14,7 @@ import {
 } from "llamaindex";
 import { OllamaEmbedding} from '@llamaindex/ollama'
 import { MistralAIEmbedding, MistralAIEmbeddingModelType } from '@llamaindex/mistral'
-import { GeminiEmbedding } from './GeminiEmbedding';
+import { GeminiEmbedding } from '@llamaindex/google'
 import { PGVectorStore } from '@llamaindex/postgres';
 import { AzureOpenAIEmbedding } from "@llamaindex/azure";
 import { Sploder } from "./sploder";
@@ -25,9 +25,9 @@ import { join } from "path";
 import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
 import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
-import { ProgressOpenAIEmbedding } from "./progressOpenAIEmbedding";
-import { PatchedWeaviateVectorStore } from "./patchedWeaviateVectorStore";
-// import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
+import { OpenAIEmbedding } from "@llamaindex/openai";
+import { BatchingWeaviateVectorStore } from "./batchingWeaviateVectorStore";
+import { LoggingVectorStoreIndex } from "./LoggingVectorStoreIndex";
 
 // unused, but probalby eventually will be used.
 // to be used by postgres store, which it' slooking increasingly like I have to enable again
@@ -95,8 +95,8 @@ export function estimateCost(nodes: TextNode[], modelName: string): {
   };
 }
 
-export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void) {
-  const embedModel = getEmbedModel(config, settings, progressCallback);
+export async function getExistingVectorStoreIndex(config: EmbeddingConfig, settings: Settings, clients: Clients) {
+  const embedModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     case "simple":
       const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
@@ -129,7 +129,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
       if (!clients.weaviateClient) {
         throw new Error("Weaviate client required but not provided");
       }
-      const weaviateStore = new PatchedWeaviateVectorStore({
+      const weaviateStore = new BatchingWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)),
         weaviateClient: clients.weaviateClient,
         embeddingModel: embedModel
@@ -202,11 +202,10 @@ export async function transformDocumentsToNodes(
 export function getEmbedModel(
   config: EmbeddingConfig, 
   settings: Settings,
-  progressCallback?: (progress: number, total: number) => void
 ) {
   let embedModel; 
   if (config.modelProvider === "openai" ){
-    embedModel = new ProgressOpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined}, progressCallback );
+    embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined} );
     embedModel.chunkSize = 20;
   } else if (config.modelProvider === "ollama") {
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
@@ -247,8 +246,8 @@ export function getEmbedModel(
   return embedModel;
 }
 
-export async function getStorageContext(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<StorageContext> {
-  const vectorStore = await createVectorStore(config, settings, clients, progressCallback);
+export async function getStorageContext(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<StorageContext> {
+  const vectorStore = await createVectorStore(config, settings, clients);
   fs.mkdirSync(config.storagePath, { recursive: true }); 
   const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
   return await storageContextFromDefaults({
@@ -264,11 +263,11 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
   console.timeEnd("persistDocuments Run Time");
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<VectorStoreIndex> { 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<LoggingVectorStoreIndex> { 
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
 
-  const storageContext = await getStorageContext(config, settings, clients, progressCallback);
+  const storageContext = await getStorageContext(config, settings, clients);
   const vectorStore = storageContext.vectorStores[ModalityType.TEXT];
   if (!vectorStore) {
     throw new Error("Vector store is undefined");
@@ -276,10 +275,11 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create index and embed documents
   // this is what actaully embeds the nodes
   // (even if they already have embeddings, stupidly)
-  const index = await VectorStoreIndex.init({ 
+  const index = await LoggingVectorStoreIndex.init({
     nodes, 
     storageContext, 
-    logProgress: true
+    logProgress: true,
+    progressCallback,
   });
 
   // I'm not sure why this explicit call to persist is necessary. 
@@ -289,7 +289,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   if (vectorStore) {
     if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
       await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
-    } else if (vectorStore instanceof PatchedWeaviateVectorStore) {
+    } else if (vectorStore instanceof BatchingWeaviateVectorStore) {
       // WeaviateVectorStore does not have a persist method, it persists automatically
       console.log("Pretending to persist Weaviate vector store, but it actually persists automatically.");
     } else {
@@ -302,8 +302,8 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<PGVectorStore | SimpleVectorStore | PatchedWeaviateVectorStore> {
-  const embeddingModel = getEmbedModel(config, settings, progressCallback);
+async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | BatchingWeaviateVectorStore> {
+  const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
 
     // for some reason the embedding model has to be specified here TOO
@@ -320,7 +320,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       return new SimpleVectorStore({embeddingModel: embeddingModel});
 
     case "weaviate": 
-      const vectorStore = new PatchedWeaviateVectorStore({
+      const vectorStore = new BatchingWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)), 
         weaviateClient: clients.weaviateClient, 
         embeddingModel: embeddingModel 
