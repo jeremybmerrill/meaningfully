@@ -118,7 +118,7 @@ export class DocumentSetManager {
       "oLlamaBaseURL": null,
       "azureOpenAIKey": null,
       "azureOpenAIEndpoint": null,
-      "azureOpenAIApiVersion": null,
+      "azureOpenAIApiVersion": "2024-02-01",
       "mistralApiKey": null,
       "geminiApiKey": null,
     }
