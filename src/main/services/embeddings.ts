@@ -17,7 +17,6 @@ import { MistralAIEmbedding, MistralAIEmbeddingModelType } from '@llamaindex/mis
 import { GeminiEmbedding } from './GeminiEmbedding';
 import { PGVectorStore } from '@llamaindex/postgres';
 import { AzureOpenAIEmbedding } from "@llamaindex/azure";
-import { WeaviateVectorStore } from '@llamaindex/weaviate';
 import { Sploder } from "./sploder";
 import { CustomSentenceSplitter } from "./sentenceSplitter";
 import { MockEmbedding } from "./mockEmbedding";
@@ -27,6 +26,7 @@ import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
 import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
 import { ProgressOpenAIEmbedding } from "./progressOpenAIEmbedding";
+import { PatchedWeaviateVectorStore } from "./patchedWeaviateVectorStore";
 // import { LoggingOpenAIEmbedding } from "./loggingOpenAIEmbedding"; // for debug only
 
 // unused, but probalby eventually will be used.
@@ -129,7 +129,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
       if (!clients.weaviateClient) {
         throw new Error("Weaviate client required but not provided");
       }
-      const weaviateStore = new WeaviateVectorStore({
+      const weaviateStore = new PatchedWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)),
         weaviateClient: clients.weaviateClient,
         embeddingModel: embedModel
@@ -289,9 +289,8 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   if (vectorStore) {
     if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
       await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
-    } else if (vectorStore instanceof WeaviateVectorStore) {
+    } else if (vectorStore instanceof PatchedWeaviateVectorStore) {
       // WeaviateVectorStore does not have a persist method, it persists automatically
-      // so we don't need to do anything here.
       console.log("Pretending to persist Weaviate vector store, but it actually persists automatically.");
     } else {
       throw new Error("Vector store does not support persist method");
@@ -303,7 +302,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<PGVectorStore | SimpleVectorStore | WeaviateVectorStore> {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<PGVectorStore | SimpleVectorStore | PatchedWeaviateVectorStore> {
   const embeddingModel = getEmbedModel(config, settings, progressCallback);
   switch (config.vectorStoreType) {
 
@@ -321,7 +320,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       return new SimpleVectorStore({embeddingModel: embeddingModel});
 
     case "weaviate": 
-      const vectorStore = new WeaviateVectorStore({ 
+      const vectorStore = new PatchedWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)), 
         weaviateClient: clients.weaviateClient, 
         embeddingModel: embeddingModel 
