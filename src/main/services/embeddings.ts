@@ -26,8 +26,8 @@ import { EmbeddingConfig, Settings, MetadataFilter, Clients  } from "../types";
 import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
 import { OpenAIEmbedding } from "@llamaindex/openai";
-import { PatchedWeaviateVectorStore } from "./patchedWeaviateVectorStore";
-import { CustomVectorStoreIndex } from "./CustomVectorStoreIndex";
+import { BatchingWeaviateVectorStore } from "./batchingWeaviateVectorStore";
+import { LoggingVectorStoreIndex } from "./LoggingVectorStoreIndex";
 
 // unused, but probalby eventually will be used.
 // to be used by postgres store, which it' slooking increasingly like I have to enable again
@@ -129,7 +129,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
       if (!clients.weaviateClient) {
         throw new Error("Weaviate client required but not provided");
       }
-      const weaviateStore = new PatchedWeaviateVectorStore({
+      const weaviateStore = new BatchingWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)),
         weaviateClient: clients.weaviateClient,
         embeddingModel: embedModel
@@ -263,7 +263,7 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
   console.timeEnd("persistDocuments Run Time");
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<CustomVectorStoreIndex> { 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<LoggingVectorStoreIndex> { 
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
 
@@ -275,7 +275,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create index and embed documents
   // this is what actaully embeds the nodes
   // (even if they already have embeddings, stupidly)
-  const index = await CustomVectorStoreIndex.init({
+  const index = await LoggingVectorStoreIndex.init({
     nodes, 
     storageContext, 
     logProgress: true,
@@ -289,7 +289,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   if (vectorStore) {
     if (vectorStore instanceof PGVectorStore || vectorStore instanceof SimpleVectorStore) {
       await vectorStore.persist(join(config.storagePath, sanitizeProjectName(config.projectName), "vector_store.json"));
-    } else if (vectorStore instanceof PatchedWeaviateVectorStore) {
+    } else if (vectorStore instanceof BatchingWeaviateVectorStore) {
       // WeaviateVectorStore does not have a persist method, it persists automatically
       console.log("Pretending to persist Weaviate vector store, but it actually persists automatically.");
     } else {
@@ -302,7 +302,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   return index;
 }
 
-async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | PatchedWeaviateVectorStore> {
+async function createVectorStore(config: EmbeddingConfig, settings: Settings, clients: Clients): Promise<PGVectorStore | SimpleVectorStore | BatchingWeaviateVectorStore> {
   const embeddingModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
 
@@ -320,7 +320,7 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       return new SimpleVectorStore({embeddingModel: embeddingModel});
 
     case "weaviate": 
-      const vectorStore = new PatchedWeaviateVectorStore({
+      const vectorStore = new BatchingWeaviateVectorStore({
         indexName: capitalizeFirstLetter(sanitizeProjectName(config.projectName)), 
         weaviateClient: clients.weaviateClient, 
         embeddingModel: embeddingModel 
