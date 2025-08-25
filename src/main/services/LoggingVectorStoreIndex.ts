@@ -9,7 +9,7 @@ export interface VectorIndexOptions extends BaseVectorIndexOptions {
 
 // Subclass VectorStoreIndex to handle progressCallback
 // @ts-ignore
-export class CustomVectorStoreIndex extends VectorStoreIndex {
+export class LoggingVectorStoreIndex extends VectorStoreIndex {
   public static async init(
     options: VectorIndexOptions,
   ): Promise<VectorStoreIndex> {
