@@ -35,6 +35,16 @@
     // Then convert newlines to <br> tags
     return escaped.replace(/\\n/g, '<br>');
   }
+
+  function is_link(text: string): boolean {
+    if (typeof text !== 'string') return false;
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return urlPattern.test(text);
+  }
+
+  function linkify(text_that_is_a_link: string): string {
+    return `<a href="${text_that_is_a_link}" target="_blank" class="text-blue-500 hover:underline">${text_that_is_a_link}</a>`;
+  }
 </script>
 
 <div class="w-full overflow-x-auto">
@@ -58,6 +68,8 @@
                 {(row[column] * 100).toFixed(1)}%
               {:else if column === textColumn}
                 {@html sanitizeAndFormatText(row[column] || '')}
+              {:else if is_link(row[column])}
+                {@html linkify(row[column])}
               {:else}
                 {(row[column]) || ''}
               {/if}
