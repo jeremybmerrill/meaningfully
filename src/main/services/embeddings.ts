@@ -206,7 +206,7 @@ export function getEmbedModel(
   let embedModel; 
   if (config.modelProvider === "openai" ){
     embedModel = new OpenAIEmbedding({ model: config.modelName, apiKey: settings.openAIKey ? settings.openAIKey : undefined} );
-    embedModel.chunkSize = 20;
+    embedModel.embedBatchSize = 50; // all embedding models enforce a maximum of 300,000 tokens summed across all inputs in a single request
   } else if (config.modelProvider === "ollama") {
     embedModel = new OllamaEmbedding({ model: config.modelName, config: {
       host: settings.oLlamaBaseURL ? settings.oLlamaBaseURL : undefined
