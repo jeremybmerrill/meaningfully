@@ -10,7 +10,8 @@ import {
   storageContextFromDefaults,
   SimpleVectorStore,
   StorageContext,
-  Settings as LlamaindexSettings
+  Settings as LlamaindexSettings,
+  SimpleDocumentStore
 } from "llamaindex";
 import { OllamaEmbedding} from '@llamaindex/ollama'
 import { MistralAIEmbedding, MistralAIEmbeddingModelType } from '@llamaindex/mistral'
@@ -252,7 +253,16 @@ export async function getStorageContext(config: EmbeddingConfig, settings: Setti
   const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
   return await storageContextFromDefaults({
     persistDir: persistDir,
-    vectorStores: {[ModalityType.TEXT]: vectorStore}
+    vectorStores: {[ModalityType.TEXT]: vectorStore},
+    docStore: new SimpleDocumentStore()
+      /*
+        if docStore is created with a persist path (as it is by default in storageContextFromDefaults)
+        then it will write to disk after every put(), which happens 2+ times per document.
+
+        so we create it without a persist path, and then explicitly persist it when we're done adding documents.
+
+        see https://github.com/jeremybmerrill/meaningfully/issues/52
+      */
   });
 }
 
@@ -260,6 +270,12 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
   console.time("persistDocuments Run Time");
   const storageContext = await getStorageContext(config, settings, clients);
   await storageContext.docStore.addDocuments(documents, true);
+
+  // see comments in getStorageContext
+  const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName) );
+  // @ts-ignore
+  await (storageContext.docStore as SimpleDocumentStore).kvStore.persist(join(persistDir, "doc_store.json"));
+
   console.timeEnd("persistDocuments Run Time");
 }
 
