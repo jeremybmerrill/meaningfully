@@ -100,7 +100,7 @@ export async function getExistingVectorStoreIndex(config: EmbeddingConfig, setti
   const embedModel = getEmbedModel(config, settings);
   switch (config.vectorStoreType) {
     case "simple":
-      const persistDir = join(config.storagePath, 'simple_vector_store', sanitizeProjectName(config.projectName));
+      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName));
       const storageContext = await storageContextFromDefaults({
         persistDir: persistDir,
       });
@@ -333,7 +333,8 @@ async function createVectorStore(config: EmbeddingConfig, settings: Settings, cl
       });
 
     case "simple":
-      return new SimpleVectorStore({embeddingModel: embeddingModel});
+      const persistDir = join(config.storagePath, sanitizeProjectName(config.projectName));
+      return SimpleVectorStore.fromPersistDir(persistDir, embeddingModel);
 
     case "weaviate": 
       const vectorStore = new BatchingWeaviateVectorStore({
