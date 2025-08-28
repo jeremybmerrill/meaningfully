@@ -141,7 +141,7 @@ export class DocumentService {
   }
 
 
-    async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10,   filters?: MetadataFilter[]  ) {
+  async searchDocumentSet(documentSetId: number, query: string, n_results: number = 10,   filters?: MetadataFilter[]  ) {
     const documentSet = await this.manager.getDocumentSet(documentSetId);
     const settings = await this.manager.getSettings();
     if (!documentSet) {
