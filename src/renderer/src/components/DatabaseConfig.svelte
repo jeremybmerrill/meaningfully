@@ -20,7 +20,13 @@
   let chunkSize = $state(defaultChunkSize);
   let chunkOverlap = $state(defaultChunkOverlap);
   
-  // Model options grouped by provider
+  const nice_error_messages: Record<string, string> = {
+    "Error invoking remote method 'upload-csv': SqliteError: UNIQUE constraint failed: document_sets.name": 
+      "A dataset with that name already exists. Please choose a different name.",
+    "Error invoking remote method 'upload-csv': Error: fetch failed": 
+      "There was a network problem. Check your internet connection, restart the app (seriously) and try again.",
+  };
+      // Model options grouped by provider
   const modelOptions = {
     "openai": ["text-embedding-3-small", "text-embedding-3-large"],
     "azure": ["text-embedding-3-small", "text-embedding-3-large"],
@@ -155,7 +161,7 @@
         error = 'Upload failed';
       }
     } catch (e) {
-      error = e.message;
+      error = nice_error_messages[e.message] || e.message || 'Upload failed with unknown error';
     } finally {
       uploading = false;
     }
