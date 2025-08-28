@@ -49,7 +49,7 @@ export class DocumentService {
       // Delete the document set from the database
       await this.manager.deleteDocumentSet(documentSetId);
       // Delete the associated files from the filesystem
-      fs.rmSync(join(this.storagePath, 'simple_vector_store', result.name), { recursive: true, force: true });
+      fs.rmSync(join(this.storagePath, result.name), { recursive: true, force: true });
       fs.rmSync(join(this.storagePath, 'weaviate_data', capitalizeFirstLetter(result.name)), { recursive: true, force: true });
     }
     return { success: true };
