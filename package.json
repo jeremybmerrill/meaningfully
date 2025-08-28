@@ -1,7 +1,7 @@
 {
   "name": "meaningfully",
   "version": "0.1.2",
-  "description": "Semantic search over CSVs`",
+  "description": "Semantic search over CSVs",
   "main": "./out/main/index.js",
   "author": "example.com",
   "homepage": "https://electron-vite.org",
