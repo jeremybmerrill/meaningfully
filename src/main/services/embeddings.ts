@@ -28,7 +28,7 @@ import { sanitizeProjectName, capitalizeFirstLetter } from "../utils";
 import * as fs from 'fs';
 import { OpenAIEmbedding } from "@llamaindex/openai";
 import { BatchingWeaviateVectorStore } from "./batchingWeaviateVectorStore";
-import { LoggingVectorStoreIndex } from "./LoggingVectorStoreIndex";
+import { ProgressVectorStoreIndex } from "./progressVectorStoreIndex";
 
 // unused, but probalby eventually will be used.
 // to be used by postgres store, which it' slooking increasingly like I have to enable again
@@ -279,7 +279,7 @@ export async function persistDocuments(documents: Document[], config: EmbeddingC
   console.timeEnd("persistDocuments Run Time");
 }
 
-export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<LoggingVectorStoreIndex> { 
+export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, settings: Settings, clients: Clients, progressCallback?: (progress: number, total: number) => void): Promise<ProgressVectorStoreIndex> {
   // Create and configure vector store based on type
   console.time("persistNodes Run Time");
 
@@ -291,7 +291,7 @@ export async function persistNodes(nodes: TextNode[], config: EmbeddingConfig, s
   // Create index and embed documents
   // this is what actaully embeds the nodes
   // (even if they already have embeddings, stupidly)
-  const index = await LoggingVectorStoreIndex.init({
+  const index = await ProgressVectorStoreIndex.init({
     nodes, 
     storageContext, 
     logProgress: true,
