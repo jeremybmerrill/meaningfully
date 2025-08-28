@@ -121,7 +121,7 @@
     <div class="space-y-2">
       <h1 class="text-2xl font-bold" data-testid="document-set-name">{documentSet.name}</h1>
       <p class="text-gray-600">
-        {documentSet.totalDocuments} documents • Uploaded {documentSet.uploadDate.toLocaleDateString()}
+        {documentSet.totalDocuments.toLocaleString()} documents • Uploaded {documentSet.uploadDate.toLocaleDateString()}
       </p>
     </div>
 
