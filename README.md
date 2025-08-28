@@ -62,7 +62,7 @@ For Macs, use the x64 binary if you have an Intel chip and arm64 if you have App
 
 I don't have a Windows computer, so I can't test the Windows builds.
 
-If you use Windows and want to try `meaningfully`, please try development mode below. It works fine, at least for smaller CSVs, although it will be slower and the file-sizes larger than on Mac and Windows, because the Weaviate database binary isn't available for Windwos.
+If you use Windows and want to try `meaningfully`, please try development mode below. It works fine, at least for smaller CSVs, although it will be slower and the file-sizes larger than on Mac and Linux, because the Weaviate database binary isn't available for Windows.
 
 Alternatively, you can set up [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install), run `export DISPLAY=:0`, then install and run Meaningfully as described below, in the [Linux instructions](#Linux).
 
