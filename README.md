@@ -84,9 +84,19 @@ There's a weird bug where sometimes I think the storage directory isn't created 
 
 meaningfully has both unit tests and end-to-end integration tests.
 
-Run the unit tests for the backend with `npm test`. Run the integration tests for the frontend by building (`npm run build:<platform>`) with `npm run wdio`; specify a specific file with `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts --spec ./e2e/features/upload-process.feature`.
+Run the unit tests for the backend with `npm test`. Run the integration tests for the frontend by building (`npm run build:<platform>`) and then running `npm run wdio`.
 
-Specify a specific test with `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
+Test a specific feature file with `npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature` -- again, testing the already-built version.
+
+You can also run just a single test in a specific file with `npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
+
+If you want to run against the development code (rather than building a whole artifact, which can be time-consuming), build (`npm run build`) and use the `NODE_ENV=test` env var.
+
+E.g. 
+
+ - test everything `npm run build && NODE_ENV=test npm run wdio`
+ - test one file `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature`.
+ - run one test `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
 
 ## My documents are PDFs, not spreadsheets. Can I use Meaningfully?
 
