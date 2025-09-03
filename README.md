@@ -90,13 +90,13 @@ Test a specific feature file with `npm run wdio run ./wdio.conf.ts -- --spec ./e
 
 You can also run just a single test in a specific file with `npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
 
-If you want to run against the development code (rather than building a whole artifact, which can be time-consuming), build (`npm run build`) and use the `NODE_ENV=test` env var.
+If you want to run against the development code (rather than building a whole artifact, which can be time-consuming), build (`npm run build`) and use the `WDIO_DEV=true` env var.
 
 E.g. 
 
- - test everything `npm run build && NODE_ENV=test npm run wdio`
- - test one file `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature`.
- - run one test `npm run build && NODE_ENV=test npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
+ - test everything `npm run build &&  WDIO_DEV=true npm run wdio`
+ - test one file `npm run build && WDIO_DEV=true npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature`.
+ - run one test `npm run build && WDIO_DEV=true npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
 
 ## My documents are PDFs, not spreadsheets. Can I use Meaningfully?
 
