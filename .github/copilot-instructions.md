@@ -25,7 +25,7 @@ The project is structured into several key components:
    - End-to-end tests for frontend workflows using WebdriverIO and Cucumber.js.
 
 4. **Data Storage**:
-   - All data is stored locally, with vectors stored in weaviate (with fallback to simple_vector_store for Windows or if weaviate fails to start) and documents stored in JSON in LlamaIndex's simple_doc_store
+   - All data is stored locally, with vectors stored in weaviate (with fallback to simple_vector_store for Windows or if weaviate fails to start) and documents stored in JSON in LlamaIndex's simple_doc_store.
 ## Developer Workflows
 
 ### Running the App in Development Mode
