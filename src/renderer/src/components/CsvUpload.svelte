@@ -2,9 +2,6 @@
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
 
-  import { fileDataStore } from '../filestore';
-
-
   let {
     validApiKeysSet
   } = $props();
@@ -32,13 +29,14 @@
           return;
         }
 
+        // Store file data in sessionStorage for the next step
         const fileData = {
           name: file.name,
           size: file.size,
           lastModified: file.lastModified,
           availableColumns,
         };
-
+        
         // Store the actual file as a base64 string
         const reader = new FileReader();
         reader.onload = () => {
@@ -53,11 +51,10 @@
             fileContent = 'data:text/csv;base64,' + btoa(fileContent);
           }
           
-          fileDataStore.set({
+          sessionStorage.setItem('csvFileData', JSON.stringify({
             ...fileData,
             fileContent
-          });
-
+          }));
           // Navigate to configuration page
           navigate('/configure-upload');
         };
