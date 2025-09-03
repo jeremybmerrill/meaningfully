@@ -7,7 +7,7 @@ const CSV_UPLOAD_PAGE_SELECTOR = '[data-testid="csv-upload-settings"]';
 const PREVIEW_COMPONENT_SELECTOR = '[data-testid="preview"]';
 
 const TEST_CSV_FILE_NAME = "newline-test.csv"; // The name of the test CSV file to use.
-
+const TEST_LARGE_CSV_FILE_NAME = "sources-george4x.csv"; // a large CSV file
 // Step: Simulate file selection using the test CSV file.
 Given(
     "a file has been selected in the {string} component", 
@@ -19,6 +19,26 @@ Given(
         const fileInput = await $(fileInputSelector);
         // Resolve path to the test CSV file.
         const filePath = path.resolve(process.cwd(), `e2e/test-storage/${TEST_CSV_FILE_NAME}`);
+        // Upload the file (this copies the file to a temporary location on the Selenium server).
+        const remoteFilePath = await browser.uploadFile(filePath);
+        await fileInput.setValue(remoteFilePath);
+        // Allow time for the file selection to process.
+        await browser.pause(1000);
+    }
+);
+
+
+// Step: Simulate file selection using the test CSV file.
+Given(
+    "a large file has been selected in the {string} component", 
+    async (componentName: string) => {
+        // Locate the file input inside the specified component.
+        const fileInputSelector = `[data-testid="${componentName
+            .toLowerCase()
+            .replace(/ /g, '-')}"] input[type="file"]`;
+        const fileInput = await $(fileInputSelector);
+        // Resolve path to the test CSV file.
+        const filePath = path.resolve(process.cwd(), `e2e/test-storage/${TEST_LARGE_CSV_FILE_NAME}`);
         // Upload the file (this copies the file to a temporary location on the Selenium server).
         const remoteFilePath = await browser.uploadFile(filePath);
         await fileInput.setValue(remoteFilePath);

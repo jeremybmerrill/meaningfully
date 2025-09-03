@@ -57,3 +57,18 @@ Feature: Upload page
     And the "Preview" component should be visible
     And the "Upload button" component should be enabled
 
+  @largefile
+  Scenario: Verify upload page is shown once a file is selected
+    Given the application has started
+    And the app is navigated to the "Home" link
+
+    # TODO: this should be in a background step
+    And the settings store is empty 
+    And the app is navigated to the 'Settings / API Keys' link
+    And the uploadCsv function has been mocked
+    And the OpenAI API Key value is set on the page
+    And the "Save" component has been clicked
+
+    And a large file has been selected in the "Upload a Spreadsheet" component
+    Then the "CSV Upload Settings" component should be visible
+    And the "Preview" component should not be visible
