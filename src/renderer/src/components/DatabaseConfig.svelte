@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { openDB } from 'idb';
   import { onMount } from 'svelte';
   import { navigate } from 'svelte-routing';
   import { debounce } from 'lodash';
@@ -50,15 +51,24 @@
   let progress = $state(0);
   let progressTotal = $state(100);
 
-  onMount(() => {
-    // Check if we have file data from the previous step
-    const storedData = sessionStorage.getItem('csvFileData');
+  onMount(async () => {
+    const params = new URLSearchParams(window.location.search);
+    const fileId = params.get('fileId');
+
+    if (!fileId) {
+      navigate('/'); // Redirect back to home if no fileId
+      return;
+    }
+
+    const db = await openDB('CsvUploadDB', 1);
+    const storedData = await db.get('files', fileId);
+
     if (!storedData) {
       navigate('/'); // Redirect back to home if no file data
       return;
     }
-    
-    fileData = JSON.parse(storedData);
+
+    fileData = storedData;
     datasetName = fileData.name.replace(/\.csv$/, '');
   });
 

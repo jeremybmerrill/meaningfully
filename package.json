@@ -35,6 +35,7 @@
     "@llamaindex/weaviate": "^0.0.34",
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
+    "idb": "^8.0.3",
     "js-tiktoken": "^1.0.8",
     "llamaindex": "^0.11.14",
     "lodash": "^4.17.21",

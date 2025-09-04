@@ -1,6 +1,7 @@
 <script lang="ts">
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
+  import { openDB } from 'idb';
 
   let {
     validApiKeysSet
@@ -13,56 +14,52 @@
     if (!input.files?.length) return;
 
     const file = input.files[0];
-    
+
     // Parse CSV to get column names and validate it's a valid CSV
-    Papa.parse(file, {      
+    Papa.parse(file, {
       complete: async (results) => {
         if (results.errors.length > 0) {
           error = 'Invalid CSV file';
           console.error('CSV parsing errors:', results.errors);
           return;
         }
-        
+
         const availableColumns = results.meta.fields || [];
         if (availableColumns.length === 0) {
           error = 'CSV file has no columns';
           return;
         }
 
-        // Store file data in sessionStorage for the next step
-        const fileData = {
-          name: file.name,
-          size: file.size,
-          lastModified: file.lastModified,
-          availableColumns,
-        };
-        
-        // Store the actual file as a base64 string
+        // Store file data in IndexedDB for the next step
+        const db = await openDB('CsvUploadDB', 1, {
+          upgrade(db) {
+            if (!db.objectStoreNames.contains('files')) {
+              db.createObjectStore('files', { keyPath: 'id' });
+            }
+          },
+        });
+
+        const fileId = `${file.name}-${file.lastModified}`;
         const reader = new FileReader();
-        reader.onload = () => {
-          let fileContent = reader.result as string;
-          
-          // Check if it's already a file URL encoded -- which is base64 encoded and starts with data:text/csv;base64, prefix
-          // in real life it always will be since we used readAsDataURL, but not in test, for some reason
-          // probably due to a webdriver quirk.
-          // or maybe due to me understanding my build pipeline wrong? in which case this might be unnecessary.
-          if (!fileContent.startsWith('data:')) {
-            // only needed in test.
-            fileContent = 'data:text/csv;base64,' + btoa(fileContent);
-          }
-          
-          sessionStorage.setItem('csvFileData', JSON.stringify({
-            ...fileData,
-            fileContent
-          }));
-          // Navigate to configuration page
-          navigate('/configure-upload');
+        reader.onload = async () => {
+          const fileContent = reader.result as string;
+          await db.put('files', {
+            id: fileId,
+            name: file.name,
+            size: file.size,
+            lastModified: file.lastModified,
+            availableColumns,
+            fileContent,
+          });
+
+          // Navigate to configuration page with fileId
+          navigate(`/configure-upload?fileId=${encodeURIComponent(fileId)}`);
         };
         reader.readAsDataURL(file);
       },
       header: true,
       skipEmptyLines: true,
-      preview: 10 // Only parse first 10 rows for validation
+      preview: 10, // Only parse first 10 rows for validation
     });
   };
 </script>
