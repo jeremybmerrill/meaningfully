@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { navigate } from 'svelte-routing';
   import { debounce } from 'lodash';
   import Preview from './Preview.svelte';
@@ -62,8 +62,8 @@
       datasetName = fileData.name.replace(/\.csv$/, '');
     });
 
-    // Cleanup subscription on unmount
-    return unsubscribe;
+    // Ensure cleanup on destroy
+    onDestroy(unsubscribe);
   });
 
   // Poll the backend every second for upload progress
