@@ -45,6 +45,7 @@ Feature: Search page
     Then the "Results" component should be visible
     And the "Results" component should have multiple rows shown
 
+  @resultmodal
   Scenario: Verify the result modal is shown
     Given the application has started
     And the app is navigated to the 'Home' link

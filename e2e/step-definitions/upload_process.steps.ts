@@ -7,7 +7,7 @@ const CSV_UPLOAD_PAGE_SELECTOR = '[data-testid="csv-upload-settings"]';
 const PREVIEW_COMPONENT_SELECTOR = '[data-testid="preview"]';
 
 const TEST_CSV_FILE_NAME = "newline-test.csv"; // The name of the test CSV file to use.
-const TEST_LARGE_CSV_FILE_NAME = "sources-george4x.csv"; // a large CSV file
+const TEST_LARGE_CSV_FILE_NAME = "complaints-2025-09-03_09_25.csv"; // a large CSV file
 // Step: Simulate file selection using the test CSV file.
 Given(
     "a file has been selected in the {string} component", 
