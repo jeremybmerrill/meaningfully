@@ -63,7 +63,9 @@
     });
 
     // Ensure cleanup on destroy
-    onDestroy(unsubscribe);
+    onDestroy(() => {
+      unsubscribe();
+    });
   });
 
   // Poll the backend every second for upload progress
