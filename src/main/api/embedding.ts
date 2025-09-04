@@ -31,11 +31,13 @@ export async function createEmbeddings(
     
     const nodes = await transformDocumentsToNodes(documents, config);
         
-    const index = await persistNodes(nodes, config, settings, clients, (progress, total) => {
-      const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
-      progressManager.updateProgress(operationId, percentage);
-    });
-    await persistDocuments(documents, config, settings, clients);
+    const [index] = await Promise.all([
+      persistNodes(nodes, config, settings, clients, (progress, total) => {
+        const percentage = Math.floor((progress / total) * 90) + 5; // Map to 5-95% of total progress
+        progressManager.updateProgress(operationId, percentage);
+      }),
+      persistDocuments(documents, config, settings, clients)
+    ]);
     
     progressManager.completeOperation(operationId);
     console.timeEnd("createEmbeddings Run Time");
