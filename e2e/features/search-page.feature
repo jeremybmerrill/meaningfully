@@ -48,7 +48,20 @@ Feature: Search page
   @resultmodal
   Scenario: Verify the result modal is shown
     Given the application has started
-    And the app is navigated to the 'Home' link
+    And the settings store is empty 
+    And the app is navigated to the 'Settings / API Keys' link
+    And the uploadCsv function has been mocked
+    And the OpenAI API Key value is set on the page
+    And the "Save" component has been clicked
+
+    And a file has been selected in the "Upload a Spreadsheet" component
+    And the column "paragraph" has been selected as column to embed
+    And the metadata column with name "font-size" has been selected 
+    And the metadata column with name "cik" has been selected
+    And the "Dataset Name input" component has been set to "Test Dataset 1"
+    And the "Upload button" component has been clicked
+    And the app is navigated to the "Home" link
+
     And the app is navigated to the "Test Dataset 1" dataset link
     And a search query has been entered
     And the search button has been clicked
