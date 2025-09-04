@@ -63,9 +63,9 @@
     });
 
     // Ensure cleanup on destroy
-    onDestroy(() => {
-      unsubscribe();
-    });
+    // https://svelte.dev/docs/svelte/lifecycle-hooks
+    // "If a function is returned from onMount, it will be called when the component is unmounted."
+    return unsubscribe;
   });
 
   // Poll the backend every second for upload progress

@@ -4,8 +4,9 @@ import { writable } from 'svelte/store';
 export interface FileData {
     name: string;
     size: number;
-    type: string;
-    content: string; // or ArrayBuffer, depending on usage
+    lastModified: number;
+    availableColumns: string[];
+    fileContent: string; // or ArrayBuffer, depending on usage
 }
 
 // Define a Svelte writable store for file data
