@@ -3,6 +3,7 @@
   import { navigate } from 'svelte-routing';
   import { debounce } from 'lodash';
   import Preview from './Preview.svelte';
+  import { fileDataStore } from '../stores/fileDataStore';
 
   let {
     validApiKeysSet
@@ -51,15 +52,20 @@
   let progressTotal = $state(100);
 
   onMount(() => {
-    // Check if we have file data from the previous step
-    const storedData = sessionStorage.getItem('csvFileData');
-    if (!storedData) {
-      navigate('/'); // Redirect back to home if no file data
-      return;
-    }
-    
-    fileData = JSON.parse(storedData);
-    datasetName = fileData.name.replace(/\.csv$/, '');
+    // Subscribe to the file data store
+    const unsubscribe = fileDataStore.subscribe((data) => {
+      if (!data) {
+        navigate('/'); // Redirect back to home if no file data
+        return;
+      }
+      fileData = data;
+      datasetName = fileData.name.replace(/\.csv$/, '');
+    });
+
+    // Ensure cleanup on destroy
+    // https://svelte.dev/docs/svelte/lifecycle-hooks
+    // "If a function is returned from onMount, it will be called when the component is unmounted."
+    return unsubscribe;
   });
 
   // Poll the backend every second for upload progress
@@ -148,8 +154,6 @@
       });
 
       if (uploadResponse.success) {
-        // Clear stored data
-        sessionStorage.removeItem('csvFileData');
         navigate("/search/" + uploadResponse.documentSetId);
       } else {
         error = 'Upload failed';
@@ -197,7 +201,6 @@
   });
 
   const goBack = () => {
-    sessionStorage.removeItem('csvFileData');
     navigate('/');
   };
 </script>

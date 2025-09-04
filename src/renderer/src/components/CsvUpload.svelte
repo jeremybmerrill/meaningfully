@@ -1,6 +1,7 @@
 <script lang="ts">
   import { navigate } from 'svelte-routing';
   import Papa from 'papaparse';
+  import { fileDataStore } from '../stores/fileDataStore';
 
   let {
     validApiKeysSet
@@ -51,10 +52,10 @@
             fileContent = 'data:text/csv;base64,' + btoa(fileContent);
           }
           
-          sessionStorage.setItem('csvFileData', JSON.stringify({
+          fileDataStore.set({
             ...fileData,
             fileContent
-          }));
+          });
           // Navigate to configuration page
           navigate('/configure-upload');
         };
