@@ -1,4 +1,4 @@
-import { rune } from 'svelte';
+import { writable } from 'svelte/store';
 
-// Define a Svelte rune for file data
-export const fileDataStore = rune(null);
+// Define a Svelte store (rune) for file data
+export const fileDataStore = writable(null);
