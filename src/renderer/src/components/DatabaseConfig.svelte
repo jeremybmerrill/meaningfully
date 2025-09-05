@@ -50,6 +50,25 @@
   // Progress tracking
   let progress = $state(0);
   let progressTotal = $state(100);
+  let elapsedTimeMs = $state(0);
+  let estimatedTimeRemainingMs = $state(null);
+
+  // Helper function to format time in human-readable format
+  const formatTime = (timeMs: number | null): string => {
+    if (!timeMs || timeMs < 1000) return '<1m';
+    
+    const totalSeconds = Math.floor(timeMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    let result = '';
+    if (hours > 0) result += `${hours}h`;
+    if (minutes > 0) result += `${minutes}m`;
+    if (seconds > 0 || result === '') result += `${seconds}s`;
+    
+    return result;
+  };
 
   onMount(() => {
     // Subscribe to the file data store
@@ -75,6 +94,8 @@
       const result = await window.api.getUploadProgress();
       progress = result.progress;
       progressTotal = result.total;
+      elapsedTimeMs = result.elapsedTimeMs;
+      estimatedTimeRemainingMs = result.estimatedTimeRemainingMs;
     } catch(e) {
       console.error("Error fetching progress:", e);
     }
@@ -134,6 +155,10 @@
     try {
       uploading = true;
       error = '';
+      
+      // Reset timing variables
+      elapsedTimeMs = 0;
+      estimatedTimeRemainingMs = null;
 
       // Start polling for progress
       pollProgress();
@@ -162,6 +187,9 @@
       error = e.message;
     } finally {
       uploading = false;
+      // Reset timing variables when upload finishes
+      elapsedTimeMs = 0;
+      estimatedTimeRemainingMs = null;
     }
   };
 
@@ -428,9 +456,14 @@
             style="width: {Math.min(100, Math.round((progress / progressTotal) * 100))}%"
           ></div>
         </div>
-        <p class="text-sm text-gray-600 mt-1">
-          Progress: {progress <= 5 ? 'processing upload' : ( progress >= 95 ? 'finishing up' : 'embedding') }  ({Math.round((progress / progressTotal) * 100)}%)
-        </p>
+        <div class="text-sm text-gray-600 mt-2 space-y-1">
+          <p>
+            Progress: {progress <= 5 ? 'processing upload' : ( progress >= 95 ? 'finishing up' : 'embedding') }  ({Math.round((progress / progressTotal) * 100)}%)
+            {#if estimatedTimeRemainingMs !== null}
+              | {formatTime(estimatedTimeRemainingMs)} remaining (est.)
+            {/if}
+          </p>
+        </div>
       {/if }
     </div>
   </div>
