@@ -27,7 +27,7 @@
     "azure": ["text-embedding-3-small", "text-embedding-3-large"],
     "ollama": ["mxbai-embed-large", "nomic-embed-text"],
     "mistral": ["mistral-embed"],
-    "gemini": ["text-embedding-004"]
+    "gemini": ["gemini-embedding-001"]
   };
   
   let modelProvider = $state("openai");
