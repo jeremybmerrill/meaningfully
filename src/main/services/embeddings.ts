@@ -37,7 +37,7 @@ const MODEL_DIMENSIONS = {
   "text-embedding-3-large": 3072,
   "mxbai-embed-large": 1024,
   "mistral-embed": 1024,
-  "text-embedding-004": 768, // Gemini embedding model
+  "gemini-embedding-001": 768, // Gemini embedding model
 };
 
 const PRICE_PER_1M = {
@@ -46,7 +46,7 @@ const PRICE_PER_1M = {
   "mistral-embed": 0.1, 
   "mxbai-embed-large": 0, // local model, free
   "nomic-embed-text": 0, // local model, free
-  "text-embedding-004": 0.0, // Gemini embedding is currently free
+  "gemini-embedding-001": 0.0, // Gemini embedding is currently free (unless you're on the paid tier, in which case it is $0.15/million tokens)
 };
 
 
