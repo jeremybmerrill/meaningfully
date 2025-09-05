@@ -66,6 +66,6 @@ interface Window {
     setSettings: (settings: Settings) => Promise<{success: boolean}>;
     deleteDocumentSet: (documentSetId: number) => Promise<void>;
     getDocumentSet: (documentSetId: number) => Promise<DocumentSet>;
-    getUploadProgress: () => Promise<{ progress: number, total: number }>;
+    getUploadProgress: () => Promise<{ progress: number, total: number, elapsedTimeMs: number, estimatedTimeRemainingMs: number | null }>;
   }
 }

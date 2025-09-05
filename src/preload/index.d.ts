@@ -47,6 +47,8 @@ export interface Settings {
 export interface UploadProgress {
   progress: number;
   total: number;
+  elapsedTimeMs: number;
+  estimatedTimeRemainingMs: number | null;
 }
 
 export interface BaseUploadFormData {
