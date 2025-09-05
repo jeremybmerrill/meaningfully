@@ -2,7 +2,7 @@
  * A simple manager to track progress of various operations
  */
 
-const FUDGE_FACTOR = 1.2;
+const FUDGE_FACTOR = 1.2; // seat of my pants guess
 
 export class ProgressManager {
   private static instance: ProgressManager;

@@ -55,7 +55,7 @@
 
   // Helper function to format time in human-readable format
   const formatTime = (timeMs: number | null): string => {
-    if (!timeMs || timeMs < 1000) return '<1m';
+    if (!timeMs || timeMs < 1000) return '<1s';
     
     const totalSeconds = Math.floor(timeMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
