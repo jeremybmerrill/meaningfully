@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { DocumentService } from './DocumentSetService'
+import { MeaningfullyAPI } from './Meaningfully'
 import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
@@ -13,7 +13,7 @@ import { ProgressManager } from './services/progressManager';
 const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
 const storagePath = storageArg ? storageArg.split('=')[1] : app.getPath('userData');;
 
-const docService = new DocumentService({ 
+const docService = new MeaningfullyAPI({ 
   storagePath,
   weaviateClient: null // Initially set to null, will be updated after DB service is init'ec.
 });

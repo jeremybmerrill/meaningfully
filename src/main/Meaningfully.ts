@@ -14,7 +14,7 @@ const maskKey = (key: string, n: number = 20): string => {
 };
 
 
-export class DocumentService {
+export class MeaningfullyAPI {
   private manager: DocumentSetManager;
   private storagePath: string;
   private clients: Clients;
