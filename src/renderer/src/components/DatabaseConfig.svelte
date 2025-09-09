@@ -50,7 +50,6 @@
   // Progress tracking
   let progress = $state(0);
   let progressTotal = $state(100);
-  let elapsedTimeMs = $state(0);
   let estimatedTimeRemainingMs = $state(null);
 
   // Helper function to format time in human-readable format
@@ -94,7 +93,6 @@
       const result = await window.api.getUploadProgress();
       progress = result.progress;
       progressTotal = result.total;
-      elapsedTimeMs = result.elapsedTimeMs;
       estimatedTimeRemainingMs = result.estimatedTimeRemainingMs;
     } catch(e) {
       console.error("Error fetching progress:", e);
@@ -157,7 +155,6 @@
       error = '';
       
       // Reset timing variables
-      elapsedTimeMs = 0;
       estimatedTimeRemainingMs = null;
 
       // Start polling for progress
@@ -188,7 +185,6 @@
     } finally {
       uploading = false;
       // Reset timing variables when upload finishes
-      elapsedTimeMs = 0;
       estimatedTimeRemainingMs = null;
     }
   };
