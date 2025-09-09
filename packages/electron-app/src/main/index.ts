@@ -1,14 +1,14 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
-import { MeaningfullyAPI } from './Meaningfully'
+import icon from '../../../../resources/icon.png?asset'
+import { MeaningfullyAPI } from '@meaningfully/core/main/Meaningfully'
 import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
-import { DocumentSetParams, MetadataFilter } from './types';
-import { create_weaviate_database, teardown_weaviate_database } from './services/weaviateService';
-import { ProgressManager } from './services/progressManager';
+import { DocumentSetParams, MetadataFilter } from '@meaningfully/core/main/types';
+import { create_weaviate_database, teardown_weaviate_database } from '@meaningfully/core/main/services/weaviateService';
+import { ProgressManager } from '@meaningfully/core/main/services/progressManager';
 
 const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
 const storagePath = storageArg ? storageArg.split('=')[1] : app.getPath('userData');;

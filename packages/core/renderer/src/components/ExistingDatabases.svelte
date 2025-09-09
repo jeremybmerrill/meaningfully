@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import type { DocumentSet } from '../main';
+  import type { DocumentSet } from '../types';
   import { Link } from 'svelte-routing';
 
   let documentSets: DocumentSet[] = $state([]);

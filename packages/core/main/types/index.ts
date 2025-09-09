@@ -81,3 +81,15 @@ export interface Clients {
   weaviateClient: any;
   postgresClient: any;
 }
+
+declare module '*.png?asset' {
+  const src: string;
+}
+
+declare module '*.jpg?asset' {
+  const src: string;
+}
+
+declare module '*.svg?asset' {
+  const src: string;
+}

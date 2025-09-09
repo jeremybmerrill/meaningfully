@@ -1,10 +1,10 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.json",
   "include": [
-    "src/renderer/src/env.d.ts",
-    "src/renderer/src/**/*",
-    "src/renderer/src/**/*.svelte",
-    "src/preload/*.d.ts"
+    "packages/core/renderer/src/env.d.ts",
+    "packages/core/renderer/src/**/*",
+    "packages/core/renderer/src/**/*.svelte",
+    "packages/electron-app/src/preload/*.d.tsd.ts"
   ],
   "compilerOptions": {
     "verbatimModuleSyntax": true,
@@ -12,7 +12,11 @@
     "strict": false,
     "allowJs": true,
     "checkJs": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": ".",
+    "paths": {
+      "@meaningfully/core/*": ["packages/core/*"]
+    }
   },
   "references": [{ "path": "./tsconfig.node.json" }]
 }

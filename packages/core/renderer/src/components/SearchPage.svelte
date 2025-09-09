@@ -1,6 +1,6 @@
 <script lang="ts">
   import { navigate } from 'svelte-routing';
-  import type { DocumentSet } from '../main';
+  import type { DocumentSet } from '../types';
   import Results from './Results.svelte';
 
   interface Props {
