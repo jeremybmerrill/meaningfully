@@ -28,13 +28,13 @@ Feature: Search page
     Then the "Search button" component should be visible
     And the "Search button" component should be disabled
 
+  @ifquery
   Scenario: Verify search button is enabled if there is a query
     Given the app is navigated to the "Test Dataset 1" dataset link
-    And the app is navigated to the 'Home' link
-    And the app is navigated to the "Test Dataset 1" dataset link
     And a search query has been entered
     Then the "Search button" component should be enabled
 
+  @verifyresults
   Scenario: Verify results are shown
     Given the app is navigated to the "Test Dataset 1" dataset link
     And a search query has been entered
