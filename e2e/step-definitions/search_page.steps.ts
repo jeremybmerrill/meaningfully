@@ -21,8 +21,9 @@ When("no search query has been entered", async () => {
 
 
 // Step: Verify search button state.
-Then("the search button is {string}", async (state: string) => {
-    const searchButton = await $('[data-testid="search-button"]');
+Then("the {string} button is {string}", async (buttonName: string, state: string) => {
+    let selector: string  = `[data-testid="${buttonName.toLowerCase().replace(/ /g, '-')}-button"]`;
+    const searchButton = await $(selector);
     await searchButton.waitForDisplayed({ timeout: 5000 });
     const isDisabled = await searchButton.getAttribute("disabled");
     if (state === "disabled") {
@@ -35,8 +36,8 @@ Then("the search button is {string}", async (state: string) => {
 });
 
 // Step: Click the search button.
-When("the search button has been clicked", async () => {
-    const searchButton = await $('[data-testid="search-button"]');
+When("the {string} button has been clicked", async (buttonName: string) => {
+    const searchButton = await $(`[data-testid="${buttonName.toLowerCase().replace(/ /g, '-')}-button"]`);
     await searchButton.waitForDisplayed({ timeout: 5000 });
     await searchButton.click();
     // Allow search results to load.
@@ -81,4 +82,21 @@ Then("the details component should be scrollable", async () => {
     const scrollHeight = await details.getProperty("scrollHeight");
     const clientHeight = await details.getProperty("clientHeight");
     expect(scrollHeight).toBeGreaterThan(clientHeight);
+});
+
+Then('a CSV file named "results.csv" should be downloaded', async () => {
+    // Wait for the download to be triggered
+    // The Results.svelte component creates an <a> element with download="results.csv"
+    // Check that such an element appears in the DOM after clicking the button
+
+    // Allow time for the download event to be triggered
+    await browser.pause(1);
+
+    // Find anchor element with download attribute
+    const downloadLink = await $('a[download="results.csv"]');
+    const isDisplayed = await downloadLink.isExisting();
+
+    // Optionally, check that the href is a blob URL
+    const href = await downloadLink.getAttribute('href');
+    expect(href).toContain('blob:');
 });
