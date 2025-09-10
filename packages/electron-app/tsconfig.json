@@ -1,0 +1,22 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.json",
+  "include": [
+    "../../packages/core/renderer/src/env.d.ts",
+    "../../packages/core/renderer/src/**/*",
+    "../../packages/core/renderer/src/**/*.svelte",
+    "src/preload/*.d.tsd.ts"
+  ],
+  "compilerOptions": {
+    "verbatimModuleSyntax": true,
+    "useDefineForClassFields": true,
+    "strict": false,
+    "allowJs": true,
+    "checkJs": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "baseUrl": ".",
+    "paths": {
+      "@meaningfully/core/*": ["../../packages/core/*"]
+    }
+  },
+  "references": [{ "path": "./tsconfig.node.json" }]
+}

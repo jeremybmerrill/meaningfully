@@ -44,7 +44,8 @@
     "svelte": "^5.0.0",
     "svelte-routing": "^2.13.0",
     "weaviate-client": "^3.5.3",
-    "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded"
+    "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded",
+    "@meaningfully/core": "../core"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",

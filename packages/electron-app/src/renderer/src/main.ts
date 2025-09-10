@@ -1,4 +1,4 @@
-import '@meaningfully/core/renderer/src/assets/main.css'
+import './main.css'
 
 import App from '@meaningfully/core/renderer/src/App.svelte';
 import { mount } from "svelte";
