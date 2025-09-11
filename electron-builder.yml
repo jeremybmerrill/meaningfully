@@ -80,6 +80,7 @@ publish:
   provider: snapStore
   channels: ["stable"]
   repo: "meaningfully"
+  token: "${SNAPCRAFT_TOKEN}"
   # url: https://example.com/auto-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
