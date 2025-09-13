@@ -1,22 +1,45 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.json",
   "include": [
-    "packages/core/renderer/src/env.d.ts",
-    "packages/core/renderer/src/**/*",
-    "packages/core/renderer/src/**/*.svelte",
-    "packages/electron-app/src/preload/*.d.tsd.ts"
+    "src/renderer/src/env.d.ts",
+    "src/renderer/src/**/*",
+    "src/renderer/src/**/*.svelte",
+    "src/preload/*.d.tsd.ts"
   ],
+  "skipLibCheck": true,
+
   "compilerOptions": {
     "verbatimModuleSyntax": true,
     "useDefineForClassFields": true,
     "strict": false,
     "allowJs": true,
     "checkJs": true,
+
+
+    "target": "ES2022",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    /**
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable checkJs if you'd like to use dynamic types in JS.
+     * Note that setting allowJs false does not prevent the use
+     * of JS in `.svelte` files.
+     */
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "baseUrl": ".",
-    "paths": {
-      "@meaningfully/core/*": ["packages/core/*"]
-    }
-  },
-  "references": [{ "path": "./tsconfig.node.json" }]
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+    },
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "exclude": [
+    "node_modules",
+    "../meaningfully-ui/dist",
+    "../meaningfully-ui/dist/**/*",
+    "../meaningfully-core/dist",
+    "../meaningfully-core/dist/**/*"
+  ]
 }

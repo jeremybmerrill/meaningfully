@@ -4,6 +4,12 @@
   "compilerOptions": {
     "composite": true,
     "types": ["electron-vite/node"],
-    "moduleResolution": "bundler"    
-  }
+    "moduleResolution": "bundler",
+  },
+  "skipLibCheck": true,
+  "exclude": [
+    "../meaningfully-ui/dist",
+    "../meaningfully-ui/dist/*"
+  ]
+
 }

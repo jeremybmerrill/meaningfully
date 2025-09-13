@@ -1,0 +1,6 @@
+{
+  "ignore": [
+    "../meaningfully-ui/dist/**/*",
+    "../meaningfully-core/dist/**/*"
+  ]
+}
