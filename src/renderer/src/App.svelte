@@ -55,7 +55,7 @@
     <Route path="configure-upload">
       <DatabaseConfig validApiKeysSet={validApiKeysSet} />
     </Route>
-    <Route path="search/:id"><SearchPage validApiKeysSet={validApiKeysSet} /></Route>
+    <Route path="search/:id" let:params><SearchPage validApiKeysSet={validApiKeysSet} documentSetId={Number(params.id)} /></Route>
     <Route path="help" component={HelpPage} />
     <Route path="settings">
       {#if settings}

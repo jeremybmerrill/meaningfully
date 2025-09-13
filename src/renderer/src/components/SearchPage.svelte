@@ -5,11 +5,11 @@
 
   interface Props {
     validApiKeysSet: boolean;
+    documentSetId: number;
   }
 
-  let { validApiKeysSet }: Props = $props();
+  let { validApiKeysSet, documentSetId }: Props = $props();
 
-  let documentSetId = parseInt(window.location.href.split("?")[0].split('/').pop());
   let documentSet: DocumentSet | null = $state(null);
   let documentSetLoading = $state(true);
   let metadataColumns: string[] = $state([]);
