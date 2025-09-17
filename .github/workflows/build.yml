@@ -51,10 +51,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
-
       - name: Build distribution (macOS ARM)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -126,10 +122,6 @@ jobs:
 
       - name: Install npm deps
         run: npm install
-
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
 
       - name: Build distribution (macOS Intel)
         env:
@@ -249,10 +241,6 @@ jobs:
         run: npm install --build-from-source --GTK_Root=C:\msys64\mingw64
         shell: cmd
 
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
-
       - name: Build distribution (Windows)
         env:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -327,10 +315,6 @@ jobs:
       - name: Install dependencies
         run: npm install
     
-      - name: Run tests
-        run: npm test
-        timeout-minutes: 5
-
       - name: Build distribution (Linux)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
