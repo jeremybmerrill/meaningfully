@@ -1,6 +1,6 @@
 {
   "name": "@meaningfully/electron-app",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Semantic search over CSVs",
   "main": "./out/main/index.js",
   "author": "jeremybmerrill.com",
@@ -34,6 +34,8 @@
     "@llamaindex/openai": "^0.4.14",
     "@llamaindex/postgres": "^0.0.62",
     "@llamaindex/weaviate": "^0.0.34",
+    "@meaningfully/core": "^0.1.1",
+    "@meaningfully/ui": "^0.0.2",
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
@@ -45,9 +47,7 @@
     "svelte": "^5.0.0",
     "svelte-routing": "^2.13.0",
     "weaviate-client": "^3.5.3",
-    "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded",
-    "@meaningfully/core": "../meaningfully-core",
-    "@meaningfully/ui": "../meaningfully-ui"
+    "weaviate-ts-embedded": "github:jeremybmerrill/typescript-embedded"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",
