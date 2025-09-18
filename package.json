@@ -65,7 +65,7 @@
     "@wdio/spec-reporter": "^9.12.6",
     "bufferutil": "^4.0.9",
     "electron": "31.0.2",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^26.0.12",
     "electron-notarize": "^1.2.2",
     "electron-vite": "^2.3.0",
     "eslint": "^8.57.0",
