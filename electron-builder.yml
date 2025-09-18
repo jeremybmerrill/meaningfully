@@ -78,8 +78,9 @@ deb:
   description: "Meaningfully is a semantic search tool for text data in spreadsheets."
 npmRebuild: false
 publish:
-  provider: snapStore
-  channels: ["stable"]
+  provider: 'snapStore'
+  channels: 
+    - "stable"
   repo: "meaningfully"
   token: "${SNAPCRAFT_TOKEN}"
   # url: https://example.com/auto-updates
