@@ -57,7 +57,7 @@ linux:
     - snap
   maintainer: electronjs.org
   category: Utility
-  executableName: "${productName}-${version}-snap.${ext}"
+  executableName: "${productName}-${version}.${ext}"
 appImage:
   artifactName: ${productName}-${version}.${ext}
 deb: 
