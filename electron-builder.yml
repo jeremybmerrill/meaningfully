@@ -49,7 +49,7 @@ dmg:
   writeUpdateInfo: false
 snap:
   grade: stable
-  artifactName: meaningfully
+  # snap target by default publishes to snap store (the app store for Linux). To force publishing to another providers, explicitly specify publish configuration for snap.
 linux:
   target:
     - AppImage
@@ -57,7 +57,8 @@ linux:
     - snap
   maintainer: electronjs.org
   category: Utility
-  executableName: "${productName}-${version}.${ext}"
+  executableName: meaningfully
+  artifactName: ${productName}-${version}.${ext}
 appImage:
   artifactName: ${productName}-${version}.${ext}
 deb: 
@@ -76,12 +77,5 @@ deb:
   priority: optional
   description: "Meaningfully is a semantic search tool for text data in spreadsheets."
 npmRebuild: false
-# publish:
-#   provider: 'snapStore'
-#   channels: 
-#     - "stable"
-#   repo: "meaningfully"
-#   token: "${SNAPCRAFT_TOKEN}"
-#   # url: https://example.com/auto-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
