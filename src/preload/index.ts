@@ -8,7 +8,6 @@ contextBridge.exposeInMainWorld('api', {
   getDocumentSet: (documentSetId: number) => ipcRenderer.invoke('get-document-set', documentSetId),
   deleteDocumentSet: (documentSetId: number) => ipcRenderer.invoke('delete-document-set', documentSetId),
   uploadCsv: (formData: {
-      fileContent: string;
       fileName: string;
       datasetName: string,
       description: string,
@@ -19,6 +18,7 @@ contextBridge.exposeInMainWorld('api', {
       sploderMaxSize: number, 
       chunkSize: number,
       chunkOverlap: number,
+      fileContent: string;
     }) => {
     if (process.env.NODE_ENV === 'test') {
       formData["modelProvider"] = "mock"; // Ensure modelProvider is set to "mock" so we don't hit a paid API.
@@ -30,7 +30,6 @@ contextBridge.exposeInMainWorld('api', {
   // but different return types (because uploadCsv mutates the state of the
   // various databases returning an ID and generatePreviewData just returns a list of records)
   generatePreviewData: (formData: {
-      fileContent: string;
       fileName: string;
       datasetName: string,
       description: string,
@@ -41,6 +40,8 @@ contextBridge.exposeInMainWorld('api', {
       sploderMaxSize: number, 
       chunkSize: number,
       chunkOverlap: number,
+      fileContent: string;
+
     }) => {
     return ipcRenderer.invoke('generate-preview-data', formData);
   },
