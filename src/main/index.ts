@@ -2,20 +2,21 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { MeaningfullyAPI } from './Meaningfully'
+import { MeaningfullyAPI, ProgressManager } from '@meaningfully/core'
+import type { DocumentSetParams, MetadataFilter } from '@meaningfully/core'
 import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join as pathJoin } from 'path'
-import { DocumentSetParams, MetadataFilter } from './types';
-import { create_weaviate_database, teardown_weaviate_database } from './services/weaviateService';
-import { ProgressManager } from './services/progressManager';
+import { create_weaviate_database, teardown_weaviate_database } from './weaviateService';
+import { SqliteMetadataManager } from './Sqlite3MetadataManager.js';
 
 const storageArg = process.argv.find(arg => arg.startsWith('--storage-path='));
 const storagePath = storageArg ? storageArg.split('=')[1] : app.getPath('userData');;
 
 const docService = new MeaningfullyAPI({ 
   storagePath,
-  weaviateClient: null // Initially set to null, will be updated after DB service is init'ec.
+  weaviateClient: null, // Initially set to null, will be updated after DB service is init'ec.
+  metadataManager: new SqliteMetadataManager(storagePath)
 });
 
 create_weaviate_database(storagePath).then((weaviateClient) => {

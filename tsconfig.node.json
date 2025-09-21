@@ -1,9 +1,15 @@
 {
   "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
-  "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*"],
+  "include": ["electron.vite.config.*", "packages/core/main/**/*", "packages/electron-app/src/preload/**/*"],
   "compilerOptions": {
     "composite": true,
     "types": ["electron-vite/node"],
-    "moduleResolution": "bundler"    
-  }
+    "moduleResolution": "bundler",
+  },
+  "skipLibCheck": true,
+  "exclude": [
+    "../meaningfully-ui/dist",
+    "../meaningfully-ui/dist/*"
+  ]
+
 }

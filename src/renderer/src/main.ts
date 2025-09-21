@@ -1,18 +1,12 @@
-import './assets/main.css'
+import './main.css'
 
-import App from './App.svelte'
-import { mount } from "svelte";
+import { App } from '@meaningfully/ui';
+import { mount } from 'svelte'
+import electronApi from './electronApi';
 
 const app = mount(App, {
-  target: document.getElementById('app')
+  target: document.getElementById('app')!,
+  props: {api: electronApi}
 })
 
-export default app
-
-export interface DocumentSet {
-  documentSetId: number;
-  name: string;
-  uploadDate: Date;
-  parameters: Record<string, unknown>;
-  totalDocuments: number;
-}
+export default app;
