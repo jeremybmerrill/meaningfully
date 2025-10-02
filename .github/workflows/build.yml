@@ -77,7 +77,7 @@ jobs:
 
   build-intel:
     name: Build macOS (Intel)
-    runs-on: macos-13
+    runs-on: macos-15-intel
     environment: "mac build"
     outputs:
       version: ${{ steps.get-version.outputs.version }}
