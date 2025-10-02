@@ -78,7 +78,21 @@ npm install
 npm run dev
 ```
 
-There's a weird bug where sometimes I think the storage directory isn't created right. If you get weird errors like `Error searching document set: Error: ENOENT: no such file or directory`, maybe try running `mkdir ~/Library/Application\ Support/meaningfully/simple_vector_store/` and trying again. I'm trying to fix it. :D
+Most of the application logic for Meaningfully is in two child packages:
+
+- [@meaningfully/ui](https://github.com/jeremybmerrill/meaningfully-ui) for the UI
+- [@meaningfully/core](https://github.com/jeremybmerrill/meaningfully-core) for the main application logic (embedding, document splitting, etc.)
+
+To modify this app locally in development, you'll want to clone down those repos, modify this repo's `package.json` to point to your local copies
+
+```diff
+-    "@meaningfully/core": "^0.1.3",
+-    "@meaningfully/ui": "^0.0.4",
++    "@meaningfully/core": "../meaningfully-core/",
++    "@meaningfully/ui": "../meaningfully-ui",
+```
+
+Then, after you've made your modifications, you'll want to build the child library with `npm run build` (or `npm run watch` to build on file modification), then run `npm run dev` in this repo.
 
 ### Testing:
 
