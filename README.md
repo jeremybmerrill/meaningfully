@@ -1,4 +1,4 @@
-# Meaningfully (is still in pre-alpha but you can try it!)
+# Meaningfully (is in alpha but you can try it!)
 
 Meaningfully is a semantic search tool for text data in spreadsheets. 
 
