@@ -6,7 +6,7 @@ import electronApi from './electronApi';
 
 const app = mount(App, {
   target: document.getElementById('app')!,
-  props: {api: electronApi}
+  props: {api: electronApi, basePath: "/"}
 })
 
 export default app;
