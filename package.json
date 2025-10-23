@@ -1,6 +1,6 @@
 {
   "name": "@meaningfully/electron-app",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Semantic search over CSVs",
   "main": "./out/main/index.js",
   "author": "jeremybmerrill.com",
@@ -34,7 +34,7 @@
     "@llamaindex/openai": "^0.4.14",
     "@llamaindex/postgres": "^0.0.62",
     "@llamaindex/weaviate": "^0.0.34",
-    "@meaningfully/core": "^0.1.4",
+    "@meaningfully/core": "^0.1.5",
     "@meaningfully/ui": "^0.0.6",
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
