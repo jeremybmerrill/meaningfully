@@ -21,9 +21,9 @@ It's a middle-ground between AI chatbot search and keyword search. It uses the s
 
 ## Is Meaningfully ready to use?
 
-Not really, but you can try it! It is kind of the minimum viable semantic search app. If people like it, I hope to sand down the rough edges and build extra features. Right now, I make zero promises about whether it will work. **Please email me or open a ticket to tell me about how Meaningfully worked (or didn't work) for you.**
+Yeah! It is kind of the minimum viable semantic search app. If people like it, I hope to sand down the rough edges and build extra features. Right now, it's only been used by a few people, so you may discover errors or bugs. **Please email me or open a ticket to tell me about how Meaningfully worked (or didn't work) for you.**
 
-In particular, Meaningfully is _slow_ and can't handle large document sets (>10,000 rows, let's say) yet.
+In particular, Meaningfully is _slow_ and can't handle huge spreadsheets (>100,000 rows, let's say) yet.
 
 ## How do I search with meaningfully?
 
