@@ -6,6 +6,11 @@ export interface SearchResult {
   text: string;
   score: number;
   metadata: Record<string, any>;
+  previousNodeId?: string;
+  nextNodeId?: string;
+  sourceNodeId?: string;
+  beforeContext?: string | null;
+  afterContext?: string | null;
 }
 
 export interface EmbeddingResult {
