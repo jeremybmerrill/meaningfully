@@ -82,7 +82,7 @@ app.whenReady().then(() => {
     try {
       return await docService.listDocumentSets(page, pageSize);
     } catch (error) {
-      console.error('Error listing document sets:', error);
+      console.error('Error listing spreadsheets:', error);
       throw error;
     }
   });

@@ -1,42 +1,44 @@
 import { MetadataManager } from '@meaningfully/core';
-import Database from 'better-sqlite3';
-import { type Database as SqliteDatabase } from 'better-sqlite3';
+import knex, { Knex } from 'knex';
 import { join } from 'path';
 
-
 export class SqliteMetadataManager extends MetadataManager {
-  private sqliteDb: SqliteDatabase;
+  protected knex: Knex;
 
   constructor(storagePath: string) {
     super();
-    this.sqliteDb = new Database(join(storagePath, 'metadata.db'));
+    this.knex = knex({
+      client: 'better-sqlite3',
+      connection: {
+        filename: join(storagePath, 'metadata.db')
+      },
+      useNullAsDefault: true
+    });
     this.initializeDatabase();
   }
 
   protected async initializeDatabase(): Promise<void> {
-    this.sqliteDb.exec(this.queries.createDocumentSetsTable);
-    this.sqliteDb.exec(this.queries.createSettingsTable);
-  }
-
-  protected async runQuery<T>(query: string, params: any[] = []): Promise<T[]> {
-    const stmt = this.sqliteDb.prepare(query.replaceAll(/\$[0-9]+/g, '?'));
-    if (params.length > 0) {
-      return stmt.all(...params) as T[];
-    } else {
-      return stmt.all() as T[];
+    const hasDocumentSetsTable = await this.knex.schema.hasTable('document_sets');
+    if (!hasDocumentSetsTable) {
+      await this.knex.schema.createTable('document_sets', (table) => {
+        table.increments('set_id').primary();
+        table.text('name').notNullable().unique();
+        table.timestamp('upload_date').notNullable();
+        table.text('parameters').notNullable();
+        table.integer('total_documents').notNullable().defaultTo(0);
+      });
     }
-  }
 
-  protected async runQuerySingle<T>(query: string, params: any[] = []): Promise<T | null> {
-    const stmt = this.sqliteDb.prepare(query.replaceAll(/\$[0-9]+/g, '?'));
-    if (params.length > 0) {
-      return stmt.get(...params) as T | null;
-    } else {
-      return stmt.get() as T | null;
+    const hasSettingsTable = await this.knex.schema.hasTable('meaningfully_settings');
+    if (!hasSettingsTable) {
+      await this.knex.schema.createTable('meaningfully_settings', (table) => {
+        table.increments('settings_id').primary();
+        table.text('settings').notNullable();
+      });
     }
   }
 
   protected close(): void {
-    this.sqliteDb.close();
+    this.knex.destroy();
   }
 }
