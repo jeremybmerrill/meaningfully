@@ -192,6 +192,16 @@ app.whenReady().then(() => {
     return ProgressManager.getInstance().getCurrentProgress();
   });
 
+  ipcMain.handle('get-available-model-options', async () => {
+    try {
+      const availableModelOptions = await docService.getAvailableModelOptions();
+      return availableModelOptions;
+    } catch (error) {
+      console.error('Error getting available model options:', error);
+      throw error;
+    }
+  });
+
   createWindow()
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
