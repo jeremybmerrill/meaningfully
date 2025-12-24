@@ -67,7 +67,8 @@ contextBridge.exposeInMainWorld('api', {
     geminiApiKey: string;
   }) => ipcRenderer.invoke('set-settings', settings),
   
-  getUploadProgress: () => ipcRenderer.invoke('get-upload-progress')
+  getUploadProgress: () => ipcRenderer.invoke('get-upload-progress'),
+  getAvailableModelOptions: () => ipcRenderer.invoke('get-available-model-options'),
 })
 
 // Expose electron utilities
