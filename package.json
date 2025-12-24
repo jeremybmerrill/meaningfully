@@ -1,6 +1,6 @@
 {
   "name": "@meaningfully/electron-app",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Semantic search over CSVs",
   "main": "./out/main/index.js",
   "author": "jeremybmerrill.com",
@@ -39,6 +39,7 @@
     "better-sqlite3": "^11.8.1",
     "electron-updater": "^6.1.7",
     "js-tiktoken": "^1.0.8",
+    "knex": "^3.1.0",
     "llamaindex": "^0.11.14",
     "lodash": "^4.17.21",
     "natural": "^8.1.0",
