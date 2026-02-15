@@ -70,6 +70,31 @@ export interface UploadFormData extends BaseUploadFormData {
   fileName: string;
 }
 
+export interface TopicDefinition {
+  name: string;
+  keywords: string[];
+  color?: string;
+}
+
+export interface EmbeddingMapPoint {
+  id: string;
+  text: string;
+  metadata: Record<string, any>;
+  topic: string;
+  x: number;
+  y: number;
+}
+
+export interface EmbeddingMapResponse {
+  method: 'pacmap' | 'umap' | 'tsne';
+  points: EmbeddingMapPoint[];
+  stats: {
+    total: number;
+    missingEmbeddings: number;
+    usedWeaviate: boolean;
+  };
+}
+
 declare global {
   interface Window {
     electron: ElectronAPI
@@ -100,6 +125,16 @@ declare global {
         availableModelOptions: Record<string, string[]>;
         allModelOptions: Record<string, string[]>;
       }>,
+      getEmbeddingMap: (params: {
+        documentSetId: number;
+        method: 'pacmap' | 'umap' | 'tsne';
+        topics?: TopicDefinition[];
+      }) => Promise<EmbeddingMapResponse>,
+      generateEmbeddingMap: (params: {
+        documentSetId: number;
+        method: 'pacmap' | 'umap' | 'tsne';
+        topics?: TopicDefinition[];
+      }) => Promise<EmbeddingMapResponse>,
     }
   }
 }

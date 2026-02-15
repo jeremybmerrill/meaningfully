@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { MeaningfullyAPI, ProgressManager } from '@meaningfully/core'
+import { MeaningfullyAPI, ProgressManager, generateEmbeddingMap, type TopicDefinition } from '@meaningfully/core'
 import type { DocumentSetParams, MetadataFilter } from '@meaningfully/core'
 import { writeFileSync } from 'fs'
 import { tmpdir } from 'os'
@@ -198,6 +198,28 @@ app.whenReady().then(() => {
       return availableModelOptions;
     } catch (error) {
       console.error('Error getting available model options:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('generate-embedding-map', async (_, params: { documentSetId: number; method: 'pacmap' | 'umap' | 'tsne'; topics?: TopicDefinition[] }) => {
+    try {
+      const documentSet = await docService.getDocumentSet(params.documentSetId);
+      if (!documentSet) {
+        throw new Error('Document set not found');
+      }
+      const settings = await docService.getSettings();
+
+      return await generateEmbeddingMap({
+        documentSet,
+        storagePath,
+        method: params.method,
+        topics: params.topics ?? [],
+        settings,
+        clients: docService.getClients(),
+      });
+    } catch (error) {
+      console.error('Error generating embedding map:', error);
       throw error;
     }
   });
