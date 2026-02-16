@@ -6,6 +6,12 @@ export interface SearchResult {
   text: string;
   score: number;
   metadata: Record<string, any>;
+  sourceNodeId?: string;
+}
+
+export interface SearchResponse {
+  results: SearchResult[];
+  hasMore: boolean;
 }
 
 export interface EmbeddingResult {
@@ -81,12 +87,13 @@ declare global {
         documentSetId: number;
         query: string;
         n_results: number;
+        offset?: number;
         filters?: { 
           key: string, 
           operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
           value: any 
         }[];
-      }) => Promise<SearchResult[]>,
+      }) => Promise<SearchResponse>,
       getDocument(params: {
         documentSetId: number;
         documentId: string;
