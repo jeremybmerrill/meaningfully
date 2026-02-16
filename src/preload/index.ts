@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('api', {
       sploderMaxSize: number, 
       chunkSize: number,
       chunkOverlap: number,
+      modelName: string,
+      modelProvider: string,
       fileContent: string;
     }) => {
     if (process.env.NODE_ENV === 'test') {
@@ -49,6 +51,7 @@ contextBridge.exposeInMainWorld('api', {
     documentSetId: number;
     query: string;
     n_results: number;
+    offset?: number;
     filters?: Record<string, any>;
   }) => ipcRenderer.invoke('search-document-set', params),
   
