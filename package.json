@@ -1,6 +1,6 @@
 {
   "name": "@meaningfully/electron-app",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Semantic search over CSVs",
   "main": "./out/main/index.js",
   "author": "jeremybmerrill.com",
