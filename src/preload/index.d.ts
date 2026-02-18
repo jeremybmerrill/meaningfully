@@ -86,12 +86,11 @@ export interface EmbeddingMapPoint {
 }
 
 export interface EmbeddingMapResponse {
-  method: 'pacmap' | 'umap' | 'tsne';
+  method: 'umap' | 'tsne';
   points: EmbeddingMapPoint[];
   stats: {
     total: number;
     missingEmbeddings: number;
-    usedWeaviate: boolean;
   };
 }
 
@@ -127,12 +126,12 @@ declare global {
       }>,
       getEmbeddingMap: (params: {
         documentSetId: number;
-        method: 'pacmap' | 'umap' | 'tsne';
+        method: 'umap' | 'tsne';
         topics?: TopicDefinition[];
       }) => Promise<EmbeddingMapResponse>,
       generateEmbeddingMap: (params: {
         documentSetId: number;
-        method: 'pacmap' | 'umap' | 'tsne';
+        method: 'umap' | 'tsne';
         topics?: TopicDefinition[];
       }) => Promise<EmbeddingMapResponse>,
     }

@@ -71,13 +71,13 @@ contextBridge.exposeInMainWorld('api', {
   getAvailableModelOptions: () => ipcRenderer.invoke('get-available-model-options'),
   generateEmbeddingMap: (params: {
     documentSetId: number;
-    method: 'pacmap' | 'umap' | 'tsne';
+    method: 'umap' | 'tsne';
     topics?: { name: string; keywords: string[]; color?: string }[];
   }) => ipcRenderer.invoke('generate-embedding-map', params),
   // alias to match MeaningfullyAPI typing used in the renderer
   getEmbeddingMap: (params: {
     documentSetId: number;
-    method: 'pacmap' | 'umap' | 'tsne';
+    method: 'umap' | 'tsne';
     topics?: { name: string; keywords: string[]; color?: string }[];
   }) => ipcRenderer.invoke('generate-embedding-map', params),
 })

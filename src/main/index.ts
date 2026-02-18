@@ -202,7 +202,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('generate-embedding-map', async (_, params: { documentSetId: number; method: 'pacmap' | 'umap' | 'tsne'; topics?: TopicDefinition[] }) => {
+  ipcMain.handle('generate-embedding-map', async (_, params: { documentSetId: number; method: 'umap' | 'tsne'; topics?: TopicDefinition[] }) => {
     try {
       const documentSet = await docService.getDocumentSet(params.documentSetId);
       if (!documentSet) {
