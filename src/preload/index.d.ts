@@ -13,6 +13,11 @@ export interface SearchResult {
   afterContext?: string | null;
 }
 
+export interface SearchResponse {
+  results: SearchResult[];
+  hasMore: boolean;
+}
+
 export interface EmbeddingResult {
   success: boolean;
   error?: string;
@@ -86,12 +91,13 @@ declare global {
         documentSetId: number;
         query: string;
         n_results: number;
+        offset?: number;
         filters?: { 
           key: string, 
           operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
           value: any 
         }[];
-      }) => Promise<SearchResult[]>,
+      }) => Promise<SearchResponse>,
       getDocument(params: {
         documentSetId: number;
         documentId: string;
@@ -100,7 +106,11 @@ declare global {
       setSettings: (settings: Settings) => Promise<void>,
       deleteDocumentSet: (documentSetId: number) => Promise<{ success: boolean }>,
       generatePreviewData: (formData: UploadFormData) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
-      getUploadProgress: () => Promise<UploadProgress>
+      getUploadProgress: () => Promise<UploadProgress>,
+      getAvailableModelOptions: () => Promise<{
+        availableModelOptions: Record<string, string[]>;
+        allModelOptions: Record<string, string[]>;
+      }>,
     }
   }
 }

@@ -29,7 +29,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 1"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
     Then the "Existing Spreadsheets" component should be visible
     And 1 datasets should be listed
 
@@ -44,7 +44,7 @@ Feature: Initial Application View
     # set an API key
     
     And the settings store is empty 
-    And the app is navigated to the 'Settings / API Keys' link
+    And the app is navigated to the 'Settings / API Keys' navbar link
     And the uploadCsv function has been mocked
     And the OpenAI API Key value is set on the page
     And the "Save" component has been clicked
@@ -55,7 +55,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 1"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
 
     And a file has been selected in the "Upload a Spreadsheet" component
@@ -64,7 +64,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 2"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
 
     And a file has been selected in the "Upload a Spreadsheet" component
@@ -73,7 +73,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 3"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -81,7 +81,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 4"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -89,7 +89,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 5"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -97,7 +97,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 6"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -105,7 +105,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 7"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -113,7 +113,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 8"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -121,7 +121,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 9"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -129,7 +129,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 10"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     And a file has been selected in the "Upload a Spreadsheet" component
     And the column "paragraph" has been selected as column to embed
@@ -137,7 +137,7 @@ Feature: Initial Application View
     And the metadata column with name "cik" has been selected
     And the "Dataset Name input" component has been set to "Test Dataset 11"
     And the "Upload button" component has been clicked, waiting 2000
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
     Then the "Existing Spreadsheets" component should be visible
     And 10 datasets should be listed

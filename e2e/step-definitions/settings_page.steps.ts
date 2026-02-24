@@ -17,14 +17,6 @@ When("the OpenAI API Key value is set on the page", async () => {
     await browser.pause(500);
 });
 
-// // Step: Simulate clicking the Save button.
-// When('the "Save" component has been clicked', async () => {
-//     const btn = await $(SAVE_BUTTON);
-//     await btn.waitForDisplayed({ timeout: 5000 });
-//     await btn.click();
-//     await browser.pause(500);
-// });
-
 Then('the {string} component should be empty', async (componentName: string) => {
     let selector = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const input = await $(selector);

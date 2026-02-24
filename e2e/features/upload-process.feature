@@ -2,16 +2,14 @@ Feature: Upload page
 
   Background: 
     Given the application has started
-    And the app is navigated to the "Home" link
-
-    # TODO: this should be in a background step
+    And the app is navigated to the "Home" navbar link
     And the settings store is empty 
-    And the app is navigated to the 'Settings / API Keys' link
+    And the app is navigated to the 'Settings / API Keys' navbar link
     And the uploadCsv function has been mocked
     And the OpenAI API Key value is set on the page
     And the "Save" component has been clicked
 
-    And the app is navigated to the "Home" link
+    And the app is navigated to the "Home" navbar link
 
   Scenario: Verify upload page is shown once a file is selected
     When a file has been selected in the "Upload a Spreadsheet" component

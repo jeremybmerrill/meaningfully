@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('api', {
       sploderMaxSize: number, 
       chunkSize: number,
       chunkOverlap: number,
+      modelName: string,
+      modelProvider: string,
       fileContent: string;
     }) => {
     if (process.env.NODE_ENV === 'test') {
@@ -49,6 +51,7 @@ contextBridge.exposeInMainWorld('api', {
     documentSetId: number;
     query: string;
     n_results: number;
+    offset?: number;
     filters?: Record<string, any>;
   }) => ipcRenderer.invoke('search-document-set', params),
   
@@ -67,7 +70,8 @@ contextBridge.exposeInMainWorld('api', {
     geminiApiKey: string;
   }) => ipcRenderer.invoke('set-settings', settings),
   
-  getUploadProgress: () => ipcRenderer.invoke('get-upload-progress')
+  getUploadProgress: () => ipcRenderer.invoke('get-upload-progress'),
+  getAvailableModelOptions: () => ipcRenderer.invoke('get-available-model-options'),
 })
 
 // Expose electron utilities

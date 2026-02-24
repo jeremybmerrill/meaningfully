@@ -54,6 +54,11 @@ The project is structured into several key components:
   npm run build && CUCUMBER_TEST_ONLY_FEATURE=upload-process npm run wdio
   ```
 
+  To run a specific test (in this case, the one tagged with `@resultmodal` in the `search-page.feature` file):
+  ```bash
+  WDIO_DEV=true npm run wdio -- --spec ./e2e/features/search-page.feature --cucumberOpts.tags="@resultmodal"
+  ```
+
 ### Debugging Common Issues
 - If you encounter `ENOENT` errors, ensure the storage directory exists:
   ```bash

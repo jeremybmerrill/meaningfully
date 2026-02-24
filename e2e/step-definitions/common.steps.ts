@@ -26,7 +26,7 @@ When('the {string} component has been clicked', async (componentName: string) =>
 
 
 // Step: Simulate clicking the Save button.
-When('the {string} component has been clicked, waiting {int}', async (componentName: string, waitTime: int) => {
+When('the {string} component has been clicked, waiting {int}', async (componentName: string, waitTime: number) => {
     let selector: string  = `[data-testid="${componentName.toLowerCase().replace(/ /g, '-')}"]`;
     const btn = await $(selector);
     await btn.waitForDisplayed({ timeout: 5000 });
@@ -53,7 +53,7 @@ Then("the {string} component should not be visible", async (componentName: strin
 
 // Navigation step: go to the search page.
 // Adjust the URL as needed for your Electron app.
-Given("the app is navigated to the {string} link", async (linkText: string) => {
+Given("the app is navigated to the {string} navbar link", async (linkText: string) => {
     // Example: navigate to a search page with a document set id of 1.
     const settingsLink = await $('.navbar').$(`a*=${linkText}`);
     await settingsLink.click();
