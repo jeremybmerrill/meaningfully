@@ -1,7 +1,7 @@
-# Copilot Instructions for the `meaningfully` Project
+# Agent Instructions for the `meaningfully` Project
 
 ## Project Overview
-`meaningfully` is a semantic search tool designed for text data in spreadsheets. It leverages AI embeddings to enable more intuitive and effective searches compared to traditional keyword-based methods. The project is intended to be used by journalists, researchers and other semi-technical users. `meaningfully` should do one job very well: allow users to search CSV files using semantic search, so that they can find what they need, and then move on with their tasks in other tools.
+`meaningfully` is a semantic search tool designed for text data in spreadsheets. It leverages AI embeddings to enable different searches compared to traditional keyword-based methods. The project is intended to be used by journalists, researchers and other semi-technical users. `meaningfully` should do one job very well: allow users to search CSV files using semantic search, so that they can find what they need, and then move on with their tasks in other tools.
 
 ### Key Features:
 - **Semantic Search**: Uses AI embeddings to "understand" text and find relevant results.
@@ -9,23 +9,33 @@
 - **End-to-End Testing**: Utilizes Cucumber.js for frontend integration tests.
 
 ## Architecture
-The project is structured into several key components:
+The project is structured into several key components in several packages, each with their own repo.
 
-1. **Embedding Services**:
-   - Located in `src/main/services/embeddings.ts`.
-   - Handles embedding model selection and vector store integration.
+1. **Core Business Logic**:
+   - Handles embeddings, searching and storing vectors (and documents) in a storage backend (Postgres, local "embedded" Weaviate, or local JSON)
    - Supports multiple embedding providers (OpenAI, Azure, etc.) and vector stores (Postgres, Weaviate, etc.).
+   - located at https://github.com/jeremybmerrill/meaningfully-core and likely at "../meaningfully-core" relative to this file's parent folder.
 
 2. **Frontend**:
-   - Built with Svelte (see `svelte.config.mjs`) and uses svelte-routing for routing.
+   - Built with Svelte (see `svelte.config.mjs`) and uses [svelte-routing](https://www.npmjs.com/package/svelte-routing) for routing.
    - Provides the user interface for uploading CSVs and performing searches.
+   - located at https://github.com/jeremybmerrill/meaningfully-ui and likely at "../meaningfully-ui" relative to this file's parent folder.
 
-3. **Testing**:
+3. Electron App:
+   - located in this repo.
+   - Users can install and run this Electron App on Mac, Linux and Windows.
+   - The Electron app is open-source and uses embedded Weaviate (falling back to local JSON files on Windows, or if Weaviate fails)
+
+4. Hosted webapp:
+   - located at https://github.com/jeremybmerrill/meaningfully-hosted and likely at "../meaningfully-hosted" relative to this file's parent folder.
+   - Closed source.
+   - The hosted webapp is meant to be installed internally at a company, so that any user can access it. Eventually it'll have user management.
+   - Uses Postgres to store vectors and documents.
+
+5. **Testing**:
    - Unit tests for backend logic.
    - End-to-end tests for frontend workflows using WebdriverIO and Cucumber.js.
 
-4. **Data Storage**:
-   - All data is stored locally, with vectors stored in weaviate (with fallback to simple_vector_store for Windows or if weaviate fails to start) and documents stored in JSON in LlamaIndex's simple_doc_store.
 ## Developer Workflows
 
 ### Running the App in Development Mode
@@ -41,23 +51,29 @@ The project is structured into several key components:
 
 ### Testing
 - **Unit Tests**:
+  
+  Run the unit tests for the backend with `npm test`. 
+
   ```bash
   npm test
   ```
 - **End-to-End Tests**:
-  Build the app and run WebdriverIO tests:
-  ```bash
-  npm run build && npm run wdio
-  ```
-  To run a specific feature file:
-  ```bash
-  npm run build && CUCUMBER_TEST_ONLY_FEATURE=upload-process npm run wdio
-  ```
 
-  To run a specific test (in this case, the one tagged with `@resultmodal` in the `search-page.feature` file):
-  ```bash
-  WDIO_DEV=true npm run wdio -- --spec ./e2e/features/search-page.feature --cucumberOpts.tags="@resultmodal"
-  ```
+  Run the integration tests for the frontend by building (`npm run build:<platform>`) and then running `npm run wdio`.
+
+  Test a specific feature file with `npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature` -- again, testing the already-built version.
+
+  You can also run just a single test in a specific file with `npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
+
+  If you want to run against the development code (rather than building a whole artifact, which can be time-consuming), build (`npm run build`) and use the `WDIO_DEV=true` env var.
+
+  E.g. 
+
+  - test everything `npm run build &&  WDIO_DEV=true npm run wdio`
+  - test one file `npm run build && WDIO_DEV=true npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature`.
+  - run one test `npm run build && WDIO_DEV=true npm run wdio run ./wdio.conf.ts -- --spec ./e2e/features/upload-process.feature --cucumberOpts.tags=@largefile`.
+
+
 
 ### Debugging Common Issues
 - If you encounter `ENOENT` errors, ensure the storage directory exists:
