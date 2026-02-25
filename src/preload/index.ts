@@ -52,6 +52,7 @@ contextBridge.exposeInMainWorld('api', {
     query: string;
     n_results: number;
     offset?: number;
+    showContext?: boolean;
     filters?: Record<string, any>;
   }) => ipcRenderer.invoke('search-document-set', params),
   

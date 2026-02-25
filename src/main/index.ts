@@ -104,9 +104,9 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number, offset?: number, filters?: MetadataFilter[]}) => {
+  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number, offset?: number, showContext?: boolean, filters?: MetadataFilter[]}) => {
     try {
-      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results, params.filters, params.offset ?? 0);
+      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results, params.filters, params.offset ?? 0, params.showContext ?? false);
     } catch (error) {
       console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results, params.offset, params.filters);
       throw error;  

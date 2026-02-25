@@ -73,6 +73,7 @@ export interface BaseUploadFormData {
   chunkOverlap: number;
   modelName: string;
   modelProvider: string;
+  showContext: boolean;
 }
 
 export interface UploadFormData extends BaseUploadFormData {
@@ -92,6 +93,7 @@ declare global {
         query: string;
         n_results: number;
         offset?: number;
+        showContext?: boolean;
         filters?: { 
           key: string, 
           operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
