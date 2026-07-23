@@ -42,10 +42,31 @@ contextBridge.exposeInMainWorld('api', {
       sploderMaxSize: number, 
       chunkSize: number,
       chunkOverlap: number,
+      modelName: string,
+      modelProvider: string,
       fileContent: string;
 
     }) => {
     return ipcRenderer.invoke('generate-preview-data', formData);
+  },
+  // Re-previews a sample already returned by generatePreviewData, under a (possibly
+  // changed) config. No file content to send -- just the small cached sample.
+  refinePreviewSample: (formData: {
+      datasetName: string,
+      description: string,
+      textColumns: string[],
+      metadataColumns: string[],
+      splitIntoSentences: boolean,
+      combineSentencesIntoChunks: boolean,
+      sploderMaxSize: number,
+      chunkSize: number,
+      chunkOverlap: number,
+      modelName: string,
+      modelProvider: string,
+      sample: Array<{ text: string; metadata: Record<string, any> }>;
+      documentCount: number;
+    }) => {
+    return ipcRenderer.invoke('refine-preview-sample', formData);
   },
   searchDocumentSet: (params: {
     documentSetId: number;
