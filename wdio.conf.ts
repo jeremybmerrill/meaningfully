@@ -46,7 +46,10 @@ export const config: WebdriverIO.Config = {
     // and 30 processes will get spawned. The property handles how many capabilities
     // from the same test should run tests.
     //
-    maxInstances: 10,
+    // Each spec file boots its own embedded Weaviate server; running specs concurrently
+    // starves them all of leader-election time, causing intermittent "leader not found"
+    // upload failures. Running serially avoids that contention.
+    maxInstances: 1,
     //
     // If you have trouble getting all important capabilities together, check out the
     // Sauce Labs platform configurator - a great tool to configure your capabilities:
@@ -165,7 +168,9 @@ export const config: WebdriverIO.Config = {
         // <string> (expression) only execute the features or scenarios with tags matching the expression
         tagExpression: '',
         // <number> timeout for step definitions
-        timeout: 60000,
+        // Generous because the embedded Weaviate instance can take a while to finish
+        // starting up (raft leader election, first schema write) on a loaded machine.
+        timeout: 75000,
         // <boolean> Enable this config to treat undefined definitions as warnings.
         ignoreUndefinedDefinitions: false
     },

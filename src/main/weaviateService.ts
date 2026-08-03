@@ -24,7 +24,11 @@ export async function create_weaviate_database(storagePath: string) {
       host: '127.0.0.1',
       port: 9898,
       persistenceDataPath: path.join(storagePath, "weaviate_data"),
-      binaryPath: findWeaviate()
+      binaryPath: findWeaviate(),
+      // Without this, a single embedded node can wait indefinitely for raft to see
+      // enough peers before it elects a leader, surfacing as "leader not found" on
+      // any schema read/write shortly after startup.
+      env: { RAFT_BOOTSTRAP_EXPECT: '1' }
     });
     
     embedded_db = new EmbeddedDB(embeddedOptions);

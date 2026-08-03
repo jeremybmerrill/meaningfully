@@ -9,9 +9,12 @@ const DATASET_ROW_SELECTOR = '[data-testid="existing-spreadsheet-row"]'; // Sele
 // execSync('sqlite3  ./e2e/test-storage/metadata.db "CREATE TABLE IF NOT EXISTS meaningfully_settings (settings_id INTEGER PRIMARY KEY AUTOINCREMENT,  settings TEXT NOT NULL );" "CREATE TABLE IF NOT EXISTS document_sets ( set_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, upload_date TEXT NOT NULL, parameters TEXT NOT NULL, total_documents INTEGER NOT NULL DEFAULT 0);"');
 
 Given("the metadata store is empty", async () => {
-    // execSync('sqlite3  ./e2e/test-storage/metadata.db "DELETE FROM document_sets"');
-    // starts empty!
-    1+1
+    await browser.execute(async () => {
+        // @ts-ignore
+        const { documents } = await window.api.listDocumentSets(1, 1000);
+        // @ts-ignore
+        await Promise.all(documents.map((d) => window.api.deleteDocumentSet(d.documentSetId)));
+    });
 });
 
 Given("the uploadCsv function has been mocked", async () => {
@@ -119,13 +122,13 @@ Given("the metadata store contains {int} entries", async (count: number) => {
 });
 
 Then("no datasets should be listed", async () => {
-    const datasets = await $$(DATASET_ROW_SELECTOR);
-    await expect(datasets).toBeElementsArrayOfSize(0);
+    // Don't await $$ before passing to expect: an already-resolved array can't be
+    // re-queried, so expect's built-in retry/polling would just recheck a stale snapshot.
+    await expect($$(DATASET_ROW_SELECTOR)).toBeElementsArrayOfSize(0);
 });
 
 Then("{int} datasets should be listed", async (expectedCount: number) => {
-    const datasets = await $$(DATASET_ROW_SELECTOR);
-    await expect(datasets).toBeElementsArrayOfSize(expectedCount);
+    await expect($$(DATASET_ROW_SELECTOR)).toBeElementsArrayOfSize(expectedCount);
 });
 
 Then("the dataset {string} should be listed", async (datasetName: string) => {

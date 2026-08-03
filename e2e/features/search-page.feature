@@ -1,8 +1,9 @@
 Feature: Search page
 
-  Background: 
+  Background:
     Given the application has started
-    And the settings store is empty 
+    And the metadata store is empty
+    And the settings store is empty
     And the app is navigated to the 'Settings / API Keys' navbar link
     And the uploadCsv function has been mocked
     And the OpenAI API Key value is set on the page

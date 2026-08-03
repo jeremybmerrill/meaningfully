@@ -18,7 +18,7 @@ Feature: Initial Application View
     # set an API key
     
     And the settings store is empty 
-    And the app is navigated to the 'Settings / API Keys' link
+    And the app is navigated to the 'Settings / API Keys' navbar link
     And the uploadCsv function has been mocked
     And the OpenAI API Key value is set on the page
     And the "Save" component has been clicked
