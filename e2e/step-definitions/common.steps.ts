@@ -21,7 +21,16 @@ When('the {string} component has been clicked', async (componentName: string) =>
     const btn = await $(selector);
     await btn.waitForDisplayed({ timeout: 5000 });
     await btn.click();
-    await browser.pause(500);
+    if (componentName === 'Search button') {
+        // Wait for the actual async search (a real vector store query) to finish,
+        // rather than a fixed pause: the button's own text flips back once it's done.
+        await browser.waitUntil(async () => {
+            const text = await (await $(selector)).getText();
+            return !text.includes('Searching');
+        }, { timeout: 30000, interval: 250 });
+    } else {
+        await browser.pause(500);
+    }
 });
 
 
@@ -31,7 +40,19 @@ When('the {string} component has been clicked, waiting {int}', async (componentN
     const btn = await $(selector);
     await btn.waitForDisplayed({ timeout: 5000 });
     await btn.click();
-    await browser.pause(waitTime);
+    if (componentName === 'Upload button') {
+        // Wait for the actual async upload (embedding + vector store write) to finish,
+        // rather than a fixed pause: otherwise the next scenario step can start a second
+        // upload while this one is still running, and the two race on the vector store.
+        await browser.waitUntil(async () => {
+            const el = await $(selector);
+            if (!(await el.isExisting())) return true; // navigated away on success
+            const text = await el.getText();
+            return !text.includes('Uploading');
+        }, { timeout: 60000, interval: 250 });
+    } else {
+        await browser.pause(waitTime);
+    }
 });
 
 

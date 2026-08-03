@@ -46,9 +46,12 @@ Then("the {string} component should have multiple rows shown", async (componentN
     } else {
         throw new Error(`Unknown component for rows: ${componentName}`);
     }
-    const rows = await $$(selector);
-    // Expect at least 2 rows.
-    expect(rows.length).toBeGreaterThan(1);
+    // Don't snapshot $$ into a plain array before checking: that defeats retrying,
+    // since results render asynchronously after the search resolves.
+    await browser.waitUntil(async () => (await $$(selector)).length > 1, {
+        timeout: 15000,
+        timeoutMsg: `expected more than 1 row for "${componentName}"`
+    });
 });
 
 // // Step: Click a result row modal button.
