@@ -169,7 +169,20 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('get-settings', async () => {   
+  // Re-previews a sample already fetched via generate-preview-data, under a (possibly
+  // changed) config. No file I/O -- callers should use this instead of
+  // generate-preview-data for config-only changes (chunk size, splitting, model) that don't
+  // require re-reading the source CSV.
+  ipcMain.handle('refine-preview-sample', async (_, formData: (DocumentSetParams & { sample: Array<{ text: string, metadata: Record<string, any> }>, documentCount: number })) => {
+    try {
+      return await docService.refinePreviewSample(formData);
+    } catch (error) {
+      console.error('Error refining preview sample:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('get-settings', async () => {
     try {
       return await docService.getMaskedSettings();
     } catch (error) {

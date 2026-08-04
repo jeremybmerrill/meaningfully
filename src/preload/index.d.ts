@@ -20,6 +20,11 @@ export interface EmbeddingResult {
   index?: any;
 }
 
+export interface SampleDocument {
+  text: string;
+  metadata: Record<string, any>;
+}
+
 export interface PreviewResult {
   success: boolean;
   error?: string;
@@ -30,7 +35,11 @@ export interface PreviewResult {
   estimatedPrice?: number;
   tokenCount?: number;
   pricePer1M?: number;
-} 
+  // present on generatePreviewData's response so refinePreviewSample can be called later
+  // without re-reading the source file
+  documentCount?: number;
+  sample?: SampleDocument[];
+}
 
 export interface DocumentSetMetadata {
   documentSetId: number;
@@ -76,6 +85,11 @@ export interface UploadFormData extends BaseUploadFormData {
   fileName: string;
 }
 
+export interface RefinePreviewSampleFormData extends BaseUploadFormData {
+  sample: SampleDocument[];
+  documentCount: number;
+}
+
 declare global {
   interface Window {
     electron: ElectronAPI
@@ -101,7 +115,8 @@ declare global {
       getSettings: () => Promise<Settings>, 
       setSettings: (settings: Settings) => Promise<void>,
       deleteDocumentSet: (documentSetId: number) => Promise<{ success: boolean }>,
-      generatePreviewData: (formData: UploadFormData) => Promise<{ success: boolean, nodes: Record<string, any>[], estimatedPrice: number, tokenCount: number }>,
+      generatePreviewData: (formData: UploadFormData) => Promise<PreviewResult>,
+      refinePreviewSample: (formData: RefinePreviewSampleFormData) => Promise<PreviewResult>,
       getUploadProgress: () => Promise<UploadProgress>,
       getAvailableModelOptions: () => Promise<{
         availableModelOptions: Record<string, string[]>;
