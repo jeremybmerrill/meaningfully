@@ -84,6 +84,7 @@ contextBridge.exposeInMainWorld('api', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   setSettings: (settings: {  openAIKey: string;
     oLlamaBaseURL: string;
+    lmStudioBaseURL: string;
     azureOpenAIKey: string;
     azureOpenAIEndpoint: string;
     azureOpenAIApiVersion: string;
