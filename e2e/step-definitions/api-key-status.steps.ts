@@ -15,6 +15,7 @@ Given("the settings store is empty", async () => {
             window.api.setSettings({ 
                 openAIKey: "", 
                 oLlamaBaseURL: "",
+                lmStudioBaseURL: "",
                 azureOpenAIKey: "",
                 azureOpenAIEndpoint: "",
                 azureOpenAIApiVersion: "",
@@ -35,6 +36,7 @@ Given("the setting store has an OpenAI API Key value", async () => {
             window.api.setSettings({ 
                 openAIKey: "sk-proj-meaningfullytesting-1234567890123456789012345678901234567890", 
                 oLlamaBaseURL: "",
+                lmStudioBaseURL: "",
                 azureOpenAIKey: "",
                 azureOpenAIEndpoint: "",
                 azureOpenAIApiVersion: "",
