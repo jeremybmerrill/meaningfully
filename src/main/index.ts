@@ -104,12 +104,12 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number, offset?: number, filters?: MetadataFilter[]}) => {
+  ipcMain.handle('search-document-set', async (_, params: { documentSetId: number, query: string, n_results: number, offset?: number, filters?: MetadataFilter[], searchMode?: 'semantic' | 'bm25' }) => {
     try {
-      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results, params.filters, params.offset ?? 0);
+      return await docService.searchDocumentSet(params.documentSetId, params.query, params.n_results, params.filters, params.offset ?? 0, params.searchMode ?? 'semantic');
     } catch (error) {
-      console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results, params.offset, params.filters);
-      throw error;  
+      console.error('Error searching document set:', error, params.documentSetId, params.query, params.n_results, params.offset, params.filters, params.searchMode);
+      throw error;
     }
   });
 

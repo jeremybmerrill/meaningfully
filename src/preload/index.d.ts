@@ -103,11 +103,12 @@ declare global {
         query: string;
         n_results: number;
         offset?: number;
-        filters?: { 
-          key: string, 
-          operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty", 
-          value: any 
+        filters?: {
+          key: string,
+          operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty",
+          value: any
         }[];
+        searchMode?: "semantic" | "bm25";
       }) => Promise<SearchResponse>,
       getDocument(params: {
         documentSetId: number;
