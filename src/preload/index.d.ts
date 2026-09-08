@@ -108,7 +108,7 @@ declare global {
           operator: "==" | "in" | ">" | "<" | "!=" | ">=" | "<=" | "nin" | "any" | "all" | "text_match" | "contains" | "is_empty",
           value: any
         }[];
-        searchMode?: "semantic" | "bm25";
+        searchMode?: "semantic" | "hybrid";
       }) => Promise<SearchResponse>,
       getDocument(params: {
         documentSetId: number;
