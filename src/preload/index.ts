@@ -74,6 +74,7 @@ contextBridge.exposeInMainWorld('api', {
     n_results: number;
     offset?: number;
     filters?: Record<string, any>;
+    searchMode?: 'semantic' | 'hybrid';
   }) => ipcRenderer.invoke('search-document-set', params),
   
   getDocument: (params: {
