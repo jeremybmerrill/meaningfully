@@ -1,6 +1,7 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'node:path'
 
 export default defineConfig({
   main: {
@@ -20,6 +21,14 @@ export default defineConfig({
     }
   },
   renderer: {
-    plugins: [svelte(), tailwindcss()]
+    plugins: [svelte(), tailwindcss()],
+    server: {
+      fs: {
+        allow: [
+          resolve(__dirname),
+          resolve(__dirname, '../meaningfully-ui') // allow serving fonts in dev mode
+        ]
+      }
+    }
   }
 })
