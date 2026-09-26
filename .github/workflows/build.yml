@@ -227,7 +227,7 @@ jobs:
             dist/README.txt
   build-windows:
     name: Build Windows
-    runs-on: windows-latest
+    runs-on: windows-2022
     environment: "mac build" 
     outputs:
       version: ${{ steps.get-version.outputs.version }}
@@ -260,12 +260,39 @@ jobs:
             Write-Host "package.json: $PACKAGE_VERSION"
             Write-Host "tag: $TAG_NAME"
           }
+      - name: Make Windows PowerShell available to electron-builder
+        shell: pwsh
+        run: |
+          $powerShellDirectory = Join-Path `
+            $env:SystemRoot `
+            "System32\WindowsPowerShell\v1.0"
 
+          $powerShellExecutable = Join-Path `
+            $powerShellDirectory `
+            "powershell.exe"
+
+          if (-not (Test-Path $powerShellExecutable)) {
+            throw "Windows PowerShell was not found at $powerShellExecutable"
+          }
+
+          $powerShellDirectory |
+            Out-File `
+              -FilePath $env:GITHUB_PATH `
+              -Encoding utf8 `
+              -Append
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22' # Or your specific Node.js version
           cache: 'npm'
+      - name: Verify Windows build tools
+        shell: pwsh
+        run: |
+          Get-Command powershell.exe -ErrorAction Stop
+          Get-Command npm.cmd -ErrorAction Stop
+          node --version
+          npm --version
+
       # Keep your MSYS2 setup for GTK and other build tools, but ensure it's
       # installing the correct GTK version (GTK3 is generally preferred for modern canvas)
       - name: Setup MSYS2 and GTK
@@ -318,7 +345,7 @@ jobs:
         shell: powershell
 
       - name: Install dependencies with GTK path
-        run: npm install --build-from-source --GTK_Root=C:\msys64\mingw64
+        run: npm ci --build-from-source --GTK_Root=C:\msys64\mingw64
         shell: cmd
 
       - name: Build distribution (Windows)
