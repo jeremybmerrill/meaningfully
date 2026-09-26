@@ -149,7 +149,7 @@ jobs:
       - name: Clean up signing keychain
         if: ${{ always() }}
         shell: bash
-        run: |d
+        run: |
           security delete-keychain \
             "$RUNNER_TEMP/app-signing.keychain-db" \
             2>/dev/null || true
