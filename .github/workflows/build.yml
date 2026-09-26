@@ -184,7 +184,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Or your specific Node.js version
+          node-version: '22' # Or your specific Node.js version
           cache: 'npm'
       # Keep your MSYS2 setup for GTK and other build tools, but ensure it's
       # installing the correct GTK version (GTK3 is generally preferred for modern canvas)
