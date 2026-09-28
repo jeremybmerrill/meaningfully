@@ -420,6 +420,7 @@ jobs:
           sudo snap install snapcraft --classic
           sudo snap install lxd
           sudo usermod -aG lxd $USER
+          newgrp lxd
           lxd init --minimal
           
       - name: Install dependencies
