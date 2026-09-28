@@ -59,7 +59,7 @@ linux:
   target:
     - AppImage
     - deb
-    - snapcraft
+    - snap
   maintainer: electronjs.org
   category: Utility
   executableName: meaningfully
