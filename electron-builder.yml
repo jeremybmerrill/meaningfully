@@ -46,14 +46,20 @@ dmg:
   artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
   writeUpdateInfo: false
-snap:
-  grade: stable
-  # snap target by default publishes to snap store (the app store for Linux). To force publishing to another providers, explicitly specify publish configuration for snap.
+snapcraft:
+  base: "core24"
+  core24:
+    confinement: "strict"
+  publish:
+    provider: snapStore
+    repo: meaningfully
+    channels:
+      - stable
 linux:
   target:
     - AppImage
     - deb
-    - snap
+    - snapcraft
   maintainer: electronjs.org
   category: Utility
   executableName: meaningfully

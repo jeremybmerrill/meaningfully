@@ -201,7 +201,7 @@ jobs:
         run: brew install pkg-config cairo pango libjpeg giflib librsvg
 
       - name: Install npm deps
-        run: npm install
+        run: npm ci
 
       - name: Build distribution (macOS Intel)
         env:
@@ -420,14 +420,14 @@ jobs:
           sudo snap install snapcraft --classic
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
     
       - name: Build distribution (Linux)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
+          SNAP_CSC_LINK: ${{ secrets.SNAP_CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
         run: npm run build:linux -- --publish always
 
       # - name: Run integration tests 
