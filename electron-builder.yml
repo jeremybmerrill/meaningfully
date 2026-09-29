@@ -50,7 +50,7 @@ snapcraft:
   base: "core24"
   core24:
     confinement: "strict"
-    useMultipass: true  
+    useLXD: true
   publish:
     provider: snapStore
     repo: meaningfully
