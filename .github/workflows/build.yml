@@ -434,7 +434,7 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           SNAP_CSC_LINK: ${{ secrets.SNAP_CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:linux -- --publish always
+        run: sg lxd -c 'npm run build:linux -- --publish always'
 
       # - name: Run integration tests 
       #   run: |
