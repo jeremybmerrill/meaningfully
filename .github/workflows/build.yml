@@ -421,10 +421,18 @@ jobs:
       - name: install LXD (needed for building snaps)
         uses: canonical/setup-lxd@v1
         with:
-          group: lxd
           channel: latest/stable
-      - name: start LXD
-        run: sudo lxd init --minimal
+      - name: Diagnose LXD
+        run: |
+          echo "USER=$(whoami)"
+          echo "Groups:"
+          id
+          echo
+          echo "LXD group:"
+          getent group lxd || true
+          echo
+          echo "LXD:"
+          lxc info || true
       - name: Install dependencies
         run: npm ci
     
