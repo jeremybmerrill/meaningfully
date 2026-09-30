@@ -64,6 +64,7 @@ linux:
   maintainer: electronjs.org
   category: Utility
   executableName: meaningfully
+  syncDesktopName: true
   artifactName: ${productName}-${version}.${ext}
 appImage:
   artifactName: ${productName}-${version}.${ext}

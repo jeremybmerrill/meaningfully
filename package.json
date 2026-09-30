@@ -6,6 +6,7 @@
   "author": "jeremybmerrill.com",
   "homepage": "https://github.com/jeremybmerrill/meaningfully",
   "type": "module",
+  "desktopName": "meaningfully.desktop",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
