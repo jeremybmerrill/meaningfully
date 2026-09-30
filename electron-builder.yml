@@ -3,17 +3,15 @@ productName: meaningfully
 directories:
   buildResources: build
 files:
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
-  - '!{.git,.github,.husky,.idea,.vscode}'
-  - '!{coverage,docs,public,e2e}'
-  - '!{scripts}'
-asarUnpack:
-  - resources/**
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!{.git,.github,.husky,.idea,.vscode}"
+  - "!{coverage,docs,public,e2e}"
+  - "!{scripts}"
 win:
   executableName: meaningfully
 nsis:
@@ -27,29 +25,31 @@ mac:
     NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
   notarize: true
   category: public.app-category.utilities
-  target: "dmg"
-  hardenedRuntime: true
-  gatekeeperAssess: false
-  entitlements: "./build/entitlements.mac.plist"
-  entitlementsInherit: "./build/entitlements.mac.plist"
-  binaries: 
-    - Contents/Resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node
-    - Contents/Resources/app.asar.unpacked/resources/weaviate/weaviate-embedded-latest
+  target: dmg
   extraResources:
     - from: weaviate-embedded-latest
       to: weaviate-embedded-latest
-      filter: 
+      filter:
         - "**/*"
-  asarUnpack: 
-    - "node_modules/better-sqlite3/**/*"
+  asar:
+    unpack:
+      - resources/**
+      - node_modules/better-sqlite3/**/*
+  sign:
+    entitlements: ./build/entitlements.mac.plist
+    entitlementsInherit: ./build/entitlements.mac.plist
+    binaries:
+      - Contents/Resources/app.asar.unpacked/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+      - Contents/Resources/app.asar.unpacked/resources/weaviate/weaviate-embedded-latest
+    hardenedRuntime: true
 dmg:
   artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
   writeUpdateInfo: false
 snapcraft:
-  base: "core24"
+  base: core24
   core24:
-    confinement: "strict"
+    confinement: strict
     useLXD: true
   publish:
     provider: snapStore
@@ -67,7 +67,7 @@ linux:
   artifactName: ${productName}-${version}.${ext}
 appImage:
   artifactName: ${productName}-${version}.${ext}
-deb: 
+deb:
   artifactName: ${productName}-${version}.${ext}
   depends:
     - libappindicator1
@@ -81,9 +81,14 @@ deb:
     - libgbm-dev
     - gconf-service-backend
   priority: optional
-  description: "Meaningfully is a semantic search tool for text data in spreadsheets."
-npmRebuild: false
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
+  description: Meaningfully is a semantic search tool for text data in spreadsheets.
 extraMetadata:
   name: meaningfully
+nativeModules:
+  npmRebuild: false
+asar:
+  unpack:
+    - resources/**
+electronGet:
+  mirrorOptions:
+    mirror: https://npmmirror.com/mirrors/electron/
