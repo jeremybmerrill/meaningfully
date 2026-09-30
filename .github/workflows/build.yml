@@ -422,6 +422,10 @@ jobs:
         uses: canonical/setup-lxd@v1
         with:
           channel: latest/stable
+      - name: Add runner to lxd group
+        run: |
+          sudo usermod -aG lxd "$USER"
+          getent group lxd          
       - name: Diagnose LXD
         run: |
           echo "USER=$(whoami)"
@@ -442,8 +446,9 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           SNAP_CSC_LINK: ${{ secrets.SNAP_CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: sg lxd -c 'npm run build:linux -- --publish always'
-
+        run: sudo --preserve-env=CSC_KEY_PASSWORD,CSC_LINK,SNAP_CSC_LINK,GITHUB_TOKEN \
+            -u "$USER" \
+            bash -c 'id && npm run build:linux -- --publish always'
       # - name: Run integration tests 
       #   run: |
       #     mkdir -p screenshots
