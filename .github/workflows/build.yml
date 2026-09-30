@@ -130,7 +130,7 @@ jobs:
           unset CSC_LINK
           unset CSC_KEY_PASSWORD
 
-          npm run build:mac
+          npm run build:mac -- --publish always
 
       - name: Create README
         run: |
