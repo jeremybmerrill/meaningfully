@@ -465,15 +465,11 @@ jobs:
         if: failure()
         run: |
           echo "=== Generated snapcraft.yaml ==="
-          cat dist/__snap-amd64/snapcraft.yaml || true
+          cat dist/__snap-amd64/snap/snapcraft.yaml || true
 
           echo
-          echo "=== Generated files ==="
-          find dist/__snap-amd64 -maxdepth 5 -type f -print || true
-
-          echo
-          echo "=== Desktop files ==="
-          find dist -name '*.desktop' -print -exec cat {} \; || true
+          echo "=== Desktop file ==="
+          cat dist/__snap-amd64/snap/gui/meaningfully.desktop || true
       - name: Create README
         run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
 
