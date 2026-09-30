@@ -47,9 +47,10 @@ dmg:
   sign: false
   writeUpdateInfo: false
 snapcraft:
-  base: custom
-  custom:
-    yaml: snapcraft.yaml
+  base: "core24"
+  core24:
+    confinement: "strict"
+    useLXD: true
   publish:
     provider: snapStore
     repo: meaningfully
@@ -63,7 +64,6 @@ linux:
   maintainer: electronjs.org
   category: Utility
   executableName: meaningfully
-  syncDesktopName: true
   artifactName: ${productName}-${version}.${ext}
 appImage:
   artifactName: ${productName}-${version}.${ext}
