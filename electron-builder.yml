@@ -47,7 +47,6 @@ dmg:
   sign: false
   writeUpdateInfo: false
 snapcraft:
-  base: "core24"
   base: custom
   custom:
     yaml: snapcraft.yaml
