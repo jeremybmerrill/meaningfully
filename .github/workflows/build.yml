@@ -10,61 +10,132 @@ jobs:
   build-apple:
     name: Build macOS (Apple Silicon)
     runs-on: macos-latest
-    environment: "mac build" 
+    environment: "mac build"
+
     outputs:
       version: ${{ steps.get-version.outputs.version }}
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Get version from package.json
         id: get-version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        shell: bash
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" \
+            >> "$GITHUB_OUTPUT"
 
       - name: Validate version consistency
+        shell: bash
         run: |
           PACKAGE_VERSION="${{ steps.get-version.outputs.version }}"
           TAG_NAME="${{ github.ref_name }}"
-          
-          # Check if both are semantic versions (x.y.z format)
-          if [[ $PACKAGE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ $TAG_NAME =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+
+          if [[ "$PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] &&
+            [[ "$TAG_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Both package.json version ($PACKAGE_VERSION) and tag ($TAG_NAME) are semantic versions"
+
             if [ "$PACKAGE_VERSION" != "$TAG_NAME" ]; then
               echo "ERROR: Version mismatch!"
               echo "package.json version: $PACKAGE_VERSION"
               echo "Git tag version: $TAG_NAME"
               exit 1
-            else
-              echo "✅ Versions match: $PACKAGE_VERSION"
             fi
+
+            echo "Versions match: $PACKAGE_VERSION"
           else
             echo "Skipping version validation - not both semantic versions"
             echo "package.json: $PACKAGE_VERSION"
             echo "tag: $TAG_NAME"
-          fi 
+          fi
+
       - name: Configure Node caching
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-npm-
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Install macOS signing certificate
+        shell: bash
+        env:
+          MAC_CERTIFICATE_BASE64: ${{ secrets.CSC_LINK }}
+          MAC_CERTIFICATE_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          : "${MAC_CERTIFICATE_BASE64:?CSC_LINK secret is missing}"
+          : "${MAC_CERTIFICATE_PASSWORD:?CSC_KEY_PASSWORD secret is missing}"
+
+          CERTIFICATE_PATH="$RUNNER_TEMP/developer-id.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+
+          echo -n "$MAC_CERTIFICATE_BASE64" |
+            base64 --decode -o "$CERTIFICATE_PATH"
+
+          security create-keychain \
+            -p "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security set-keychain-settings \
+            -lut 21600 \
+            "$KEYCHAIN_PATH"
+
+          security unlock-keychain \
+            -p "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security import "$CERTIFICATE_PATH" \
+            -P "$MAC_CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security list-keychains \
+            -d user \
+            -s "$KEYCHAIN_PATH"
+
+          security find-identity \
+            -v \
+            -p codesigning \
+            "$KEYCHAIN_PATH"
+
+          echo "CSC_KEYCHAIN=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
 
       - name: Build distribution (macOS ARM)
+        shell: bash
         env:
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLEID: ${{ secrets.APPLEID }}
-          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
-          APPLETEAMID: ${{ secrets.APPLETEAMID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:mac
+
+          # Standard electron-builder notarization variable names
+          APPLE_ID: ${{ secrets.APPLEID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLEIDPASS }}
+          APPLE_TEAM_ID: ${{ secrets.APPLETEAMID }}
+        run: |
+          # Ensure electron-builder uses CSC_KEYCHAIN instead of creating
+          # its own temporary keychain through the broken 26.15.3 path.
+          unset CSC_LINK
+          unset CSC_KEY_PASSWORD
+
+          npm run build:mac -- --publish always
 
       - name: Create README
         run: |
-          echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt
+          echo "More information: https://github.com/jeremybmerrill/meaningfully" \
+            > dist/README.txt
 
       - name: Upload artifact (macOS)
         id: upload
@@ -75,6 +146,15 @@ jobs:
             dist/meaningfully-${{ steps.get-version.outputs.version }}.arm64.dmg
             dist/README.txt
 
+      - name: Clean up signing keychain
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          security delete-keychain \
+            "$RUNNER_TEMP/app-signing.keychain-db" \
+            2>/dev/null || true
+
+          rm -f "$RUNNER_TEMP/developer-id.p12"
   build-intel:
     name: Build macOS (Intel)
     runs-on: macos-15-intel
@@ -121,7 +201,7 @@ jobs:
         run: brew install pkg-config cairo pango libjpeg giflib librsvg
 
       - name: Install npm deps
-        run: npm install
+        run: npm ci
 
       - name: Build distribution (macOS Intel)
         env:
@@ -147,7 +227,7 @@ jobs:
             dist/README.txt
   build-windows:
     name: Build Windows
-    runs-on: windows-latest
+    runs-on: windows-2022
     environment: "mac build" 
     outputs:
       version: ${{ steps.get-version.outputs.version }}
@@ -180,12 +260,39 @@ jobs:
             Write-Host "package.json: $PACKAGE_VERSION"
             Write-Host "tag: $TAG_NAME"
           }
+      - name: Make Windows PowerShell available to electron-builder
+        shell: pwsh
+        run: |
+          $powerShellDirectory = Join-Path `
+            $env:SystemRoot `
+            "System32\WindowsPowerShell\v1.0"
 
+          $powerShellExecutable = Join-Path `
+            $powerShellDirectory `
+            "powershell.exe"
+
+          if (-not (Test-Path $powerShellExecutable)) {
+            throw "Windows PowerShell was not found at $powerShellExecutable"
+          }
+
+          $powerShellDirectory |
+            Out-File `
+              -FilePath $env:GITHUB_PATH `
+              -Encoding utf8 `
+              -Append
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Or your specific Node.js version
+          node-version: '22' # Or your specific Node.js version
           cache: 'npm'
+      - name: Verify Windows build tools
+        shell: pwsh
+        run: |
+          Get-Command powershell.exe -ErrorAction Stop
+          Get-Command npm.cmd -ErrorAction Stop
+          node --version
+          npm --version
+
       # Keep your MSYS2 setup for GTK and other build tools, but ensure it's
       # installing the correct GTK version (GTK3 is generally preferred for modern canvas)
       - name: Setup MSYS2 and GTK
@@ -238,7 +345,7 @@ jobs:
         shell: powershell
 
       - name: Install dependencies with GTK path
-        run: npm install --build-from-source --GTK_Root=C:\msys64\mingw64
+        run: npm ci --build-from-source --GTK_Root=C:\msys64\mingw64
         shell: cmd
 
       - name: Build distribution (Windows)
@@ -311,18 +418,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libarchive-tools libfuse2 libgtk-3-0 libnss3 libxshmfence1 libatk-bridge2.0-0 libx11-xcb1 libxcb-dri3-0 libxcomposite1 libxcursor1 libxdamage1 libxfixes3 libxi6 libxrandr2 libxtst6 libgbm1 libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0
           sudo snap install snapcraft --classic
-
+      - name: install LXD (needed for building snaps)
+        uses: canonical/setup-lxd@v1
+        with:
+          channel: latest/stable
+      - name: Add runner to lxd group
+        run: |
+          sudo usermod -aG lxd "$USER"
+          getent group lxd          
+      - name: Diagnose LXD
+        run: |
+          echo "USER=$(whoami)"
+          echo "Groups:"
+          id
+          echo
+          echo "LXD group:"
+          getent group lxd || true
+          echo
+          echo "LXD:"
+          lxc info || true
       - name: Install dependencies
-        run: npm install
+        run: npm ci
     
       - name: Build distribution (Linux)
         env:
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
+          SNAP_CSC_LINK: ${{ secrets.SNAP_CSC_LINK }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}          
-        run: npm run build:linux -- --publish always
-
+        run: sudo --preserve-env=CSC_KEY_PASSWORD,CSC_LINK,SNAP_CSC_LINK,GITHUB_TOKEN -u "$USER" bash -c 'id && npm run build:linux -- --publish always'
       # - name: Run integration tests 
       #   run: |
       #     mkdir -p screenshots
@@ -337,7 +461,15 @@ jobs:
       #     path: screenshots/*.png
       #     retention-days: 30
       #     if-no-files-found: ignore
+      - name: Debug generated Snapcraft files
+        if: failure()
+        run: |
+          echo "=== Generated snapcraft.yaml ==="
+          cat dist/__snap-amd64/snap/snapcraft.yaml || true
 
+          echo
+          echo "=== Desktop file ==="
+          cat dist/__snap-amd64/snap/gui/meaningfully.desktop || true
       - name: Create README
         run: 'echo "More information: https://github.com/jeremybmerrill/meaningfully" > dist/README.txt'
 

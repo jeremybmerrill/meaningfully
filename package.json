@@ -6,6 +6,7 @@
   "author": "jeremybmerrill.com",
   "homepage": "https://github.com/jeremybmerrill/meaningfully",
   "type": "module",
+  "desktopName": "meaningfully",
   "scripts": {
     "format": "prettier --plugin prettier-plugin-svelte --write .",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
@@ -67,8 +68,7 @@
     "@wdio/spec-reporter": "^9.12.6",
     "bufferutil": "^4.0.9",
     "electron": "31.0.2",
-    "electron-builder": "^26.0.12",
-    "electron-notarize": "^1.2.2",
+    "electron-builder": "^27.0.0-alpha.9",
     "electron-vite": "^2.3.0",
     "eslint": "^8.57.0",
     "eslint-plugin-svelte": "^2.45.1",
