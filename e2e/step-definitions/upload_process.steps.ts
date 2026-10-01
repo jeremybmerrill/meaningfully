@@ -17,6 +17,8 @@ Given(
             .toLowerCase()
             .replace(/ /g, '-')}"] input[type="file"]`;
         const fileInput = await $(fileInputSelector);
+        // The upload zone hides its native <input type="file">; unhide it so WebDriver can set its value.
+        await browser.execute((el) => el.classList.remove('hidden'), fileInput);
         // Resolve path to the test CSV file.
         const filePath = path.resolve(process.cwd(), `e2e/test-storage/${TEST_CSV_FILE_NAME}`);
         // Upload the file (this copies the file to a temporary location on the Selenium server).
@@ -37,6 +39,8 @@ Given(
             .toLowerCase()
             .replace(/ /g, '-')}"] input[type="file"]`;
         const fileInput = await $(fileInputSelector);
+        // The upload zone hides its native <input type="file">; unhide it so WebDriver can set its value.
+        await browser.execute((el) => el.classList.remove('hidden'), fileInput);
         // Resolve path to the test CSV file.
         const filePath = path.resolve(process.cwd(), `e2e/test-storage/${TEST_LARGE_CSV_FILE_NAME}`);
         // Upload the file (this copies the file to a temporary location on the Selenium server).
@@ -69,6 +73,14 @@ When("no column has been selected as column to embed", async () => {
 When("the metadata column with name {string} has been selected", async (columnName: string) => {
     const checkboxSelector = `${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="metadata-${columnName}"]`;
     const checkbox = await $(checkboxSelector);
+    await checkbox.click();
+    await browser.pause(500);
+});
+
+// Step: Tick the "also search" checkbox that appears next to a selected metadata column.
+When("the metadata column with name {string} has been selected to also be searched", async (columnName: string) => {
+    const checkbox = await $(`${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="embed-${columnName}"]`);
+    await checkbox.waitForDisplayed({ timeout: 5000 });
     await checkbox.click();
     await browser.pause(500);
 });
