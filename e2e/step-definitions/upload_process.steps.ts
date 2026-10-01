@@ -77,6 +77,19 @@ When("the metadata column with name {string} has been selected", async (columnNa
     await browser.pause(500);
 });
 
+// Steps: switch the text-column selector to multi-select checkboxes, and tick text columns.
+When('the "Search multiple columns" button has been clicked', async () => {
+    const button = await $(`${CSV_UPLOAD_PAGE_SELECTOR} button[data-testid="toggle-multiple-text-columns"]`);
+    await button.waitForDisplayed({ timeout: 5000 });
+    await button.click();
+    await browser.pause(500);
+});
+When("the text column with name {string} has been selected", async (columnName: string) => {
+    const checkbox = await $(`${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="text-${columnName}"]`);
+    await checkbox.click();
+    await browser.pause(500);
+});
+
 // Step: Tick the "also search" checkbox that appears next to a selected metadata column.
 When("the metadata column with name {string} has been selected to also be searched", async (columnName: string) => {
     const checkbox = await $(`${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="embed-${columnName}"]`);
