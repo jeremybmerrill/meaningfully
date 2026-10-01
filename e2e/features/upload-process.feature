@@ -35,6 +35,16 @@ Feature: Upload page
     And the "Preview" component should contain a header row with name "font-size"
     And the "Preview" component should contain a header row with name "cik"
 
+  Scenario: Verify a metadata column can also be searched
+    When a file has been selected in the "Upload a Spreadsheet" component
+    And the column "paragraph" has been selected as column to embed
+    And the metadata column with name "cik" has been selected
+    And the metadata column with name "cik" has been selected to also be searched
+    Then the "CSV Upload Settings" component should be visible
+    And the "Preview" component should be visible
+    And the "Preview" component should contain a header row with name "cik"
+    And the "Upload button" component should be enabled
+
   Scenario: Verify upload button is disabled if no column is selected
     When a file has been selected in the "Upload a Spreadsheet" component
     And no column has been selected as column to embed
