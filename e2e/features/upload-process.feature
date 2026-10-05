@@ -47,7 +47,6 @@ Feature: Upload page
 
   Scenario: Verify multiple text columns can be selected and are shown in the preview
     When a file has been selected in the "Upload a Spreadsheet" component
-    And the "Search multiple columns" button has been clicked
     And the text column with name "paragraph" has been selected
     And the text column with name "cik" has been selected
     Then the "CSV Upload Settings" component should be visible
