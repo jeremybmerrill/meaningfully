@@ -45,6 +45,16 @@ Feature: Upload page
     And the "Preview" component should contain a header row with name "cik"
     And the "Upload button" component should be enabled
 
+  Scenario: Verify multiple text columns can be selected and are shown in the preview
+    When a file has been selected in the "Upload a Spreadsheet" component
+    And the text column with name "paragraph" has been selected
+    And the text column with name "cik" has been selected
+    Then the "CSV Upload Settings" component should be visible
+    And the "Preview" component should be visible
+    And the "Preview" component should contain a header row with name "paragraph"
+    And the "Preview" component should contain a header row with name "cik"
+    And the "Upload button" component should be enabled
+
   Scenario: Verify upload button is disabled if no column is selected
     When a file has been selected in the "Upload a Spreadsheet" component
     And no column has been selected as column to embed

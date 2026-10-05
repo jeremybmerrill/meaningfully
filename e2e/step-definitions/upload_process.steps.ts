@@ -52,37 +52,41 @@ Given(
 );
 
 // Step: Simulate choosing a column to embed.
-When("the column {string} has been selected as column to embed", async (columnName: string) => {
-    // Assume the CSV Upload page contains a <select> for the text column.
-    // Here we target the first select element inside the CSV Upload page.
-    const selectSelector = `${CSV_UPLOAD_PAGE_SELECTOR} select[data-testid="column-to-embed-select"]`;
-    const selectElem = await $(selectSelector);
-    await selectElem.waitForDisplayed({ timeout: 5000 });
-    // Select by index (skipping the default placeholder at index 0).
-    await selectElem.selectByVisibleText(columnName); // Replace with the actual index of the column you want to embed.
+// Columns are sorted into bins by drag and drop, or by clicking a column's card and then
+// choosing a bin from the menu that appears. WebDriver can't reliably drive HTML5 drag and drop,
+// so these steps use the click path.
+const moveColumnToBin = async (columnName: string, bin: "text" | "search" | "show" | "none") => {
+    const chip = await $(`${CSV_UPLOAD_PAGE_SELECTOR} [data-testid="column-chip-${columnName}"]`);
+    await chip.waitForDisplayed({ timeout: 5000 });
+    await chip.click();
+    const destination = await $(`${CSV_UPLOAD_PAGE_SELECTOR} [data-testid="column-move-menu"] [data-testid="move-to-${bin}"]`);
+    await destination.waitForDisplayed({ timeout: 5000 });
+    await destination.click();
     await browser.pause(500);
+};
+
+When("the column {string} has been selected as column to embed", async (columnName: string) => {
+    await moveColumnToBin(columnName, "text");
 });
 When("no column has been selected as column to embed", async () => {
-    const selectSelector = `${CSV_UPLOAD_PAGE_SELECTOR} select[data-testid="column-to-embed-select"]`;
-    // Select the default empty option, assuming it has an empty value.
-    await $(selectSelector).selectByAttribute('value', '');
-    await browser.pause(500);
+    const chips = await $$(`${CSV_UPLOAD_PAGE_SELECTOR} [data-testid="column-bin-text"] [data-column-chip]`);
+    for (const columnName of await chips.map(chip => chip.getAttribute("data-column-chip"))) {
+        await moveColumnToBin(columnName, "none");
+    }
 });
 
-// Step: Simulate selecting two metadata columns.
+// Step: put a column in the "Details to show only" bin.
 When("the metadata column with name {string} has been selected", async (columnName: string) => {
-    const checkboxSelector = `${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="metadata-${columnName}"]`;
-    const checkbox = await $(checkboxSelector);
-    await checkbox.click();
-    await browser.pause(500);
+    await moveColumnToBin(columnName, "show");
 });
 
-// Step: Tick the "also search" checkbox that appears next to a selected metadata column.
+When("the text column with name {string} has been selected", async (columnName: string) => {
+    await moveColumnToBin(columnName, "text");
+});
+
+// Step: put a column in the "Additional details to search and show" bin.
 When("the metadata column with name {string} has been selected to also be searched", async (columnName: string) => {
-    const checkbox = await $(`${CSV_UPLOAD_PAGE_SELECTOR} input[type="checkbox"][id="embed-${columnName}"]`);
-    await checkbox.waitForDisplayed({ timeout: 5000 });
-    await checkbox.click();
-    await browser.pause(500);
+    await moveColumnToBin(columnName, "search");
 });
 
 // Step: Verify header row content in the Preview component.
