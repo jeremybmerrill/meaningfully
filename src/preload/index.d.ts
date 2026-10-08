@@ -72,6 +72,7 @@ export interface BaseUploadFormData {
   description: string;
   textColumns: string[];
   metadataColumns: string[];
+  embeddedMetadataColumns?: string[];
   splitIntoSentences: boolean;
   combineSentencesIntoChunks: boolean;
   sploderMaxSize: number;
