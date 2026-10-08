@@ -46,21 +46,21 @@ dmg:
   artifactName: ${productName}-${version}.${arch}.${ext}
   sign: false
   writeUpdateInfo: false
-snapcraft:
-  base: core24
-  core24:
-    confinement: strict
-    useLXD: true
-  publish:
-    provider: snapStore
-    repo: meaningfully
-    channels:
-      - stable
+# snapcraft:
+#   base: core24
+#   core24:
+#     confinement: strict
+#     useLXD: true
+#   publish:
+#     provider: snapStore
+#     repo: meaningfully
+#     channels:
+#       - stable
 linux:
   target:
     - AppImage
     - deb
-    - snap
+    # - snap
   maintainer: electronjs.org
   category: Utility
   executableName: meaningfully
