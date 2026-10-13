@@ -80,5 +80,50 @@ elif [[ "$MODE" == "prod" ]]; then
   update_dep "$ROOT_PKG"     "@meaningfully/core" "^$CORE_VERSION"
   # update_dep "$BACKEND_PKG"  "@meaningfully/core" "^$CORE_VERSION"
   update_dep "$ROOT_PKG" "@meaningfully/ui"   "^$UI_VERSION"
-  echo "Done. Run 'npm install' to fetch packages from npm."
+
+  # Clean stale local package references from package-lock.json and node_modules
+  LOCK_FILE="$ROOT_DIR/package-lock.json"
+  if [[ -f "$LOCK_FILE" ]]; then
+    node -e "
+      const fs = require('fs');
+      const lockPath = '$LOCK_FILE';
+      const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+      let modified = false;
+      const staleKeys = [
+        '../meaningfully-core',
+        '../meaningfully-ui',
+        'node_modules/@meaningfully/core',
+        'node_modules/@meaningfully/ui'
+      ];
+      if (lock.packages) {
+        for (const key of Object.keys(lock.packages)) {
+          if (staleKeys.includes(key) || key.startsWith('../meaningfully-core/') || key.startsWith('../meaningfully-ui/')) {
+            delete lock.packages[key];
+            modified = true;
+          }
+        }
+      }
+      if (lock.dependencies) {
+        for (const dep of ['@meaningfully/core', '@meaningfully/ui']) {
+          if (lock.dependencies[dep]) {
+            delete lock.dependencies[dep];
+            modified = true;
+          }
+        }
+      }
+      if (modified) {
+        fs.writeFileSync(lockPath, JSON.stringify(lock, null, 2) + '\n');
+        console.log('  Cleaned local reference entries from package-lock.json');
+      }
+    "
+  fi
+
+  rm -rf "$ROOT_DIR/node_modules/@meaningfully"
+  echo "  Removed local symlinks in node_modules/@meaningfully"
+
+  echo ""
+  echo "Installing prod packages and updating package-lock.json..."
+  (cd "$ROOT_DIR" && npm install "@meaningfully/core@^$CORE_VERSION" "@meaningfully/ui@^$UI_VERSION")
+  echo ""
+  echo "Done. Switched to production npm packages successfully."
 fi
